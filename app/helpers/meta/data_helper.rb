@@ -110,17 +110,17 @@ module Meta
           selected = Array(meta_datum.object.value)
           @people ||= meta_key.object_type.constantize.with_media_entries
           all_options = @people.collect {|x| {:label => x.to_s, :id => x.id, :selected => selected.include?(x.id)}}
-        when "Keyword"
+        when "Meta::Keyword"
           keywords = meta_datum.object.deserialized_value
           meta_term_ids = keywords.collect(&:meta_term_id)
-          all_grouped_keywords = Keyword.group(:meta_term_id)
+          all_grouped_keywords = Meta::Keyword.group(:meta_term_id)
           all_grouped_keywords = all_grouped_keywords.where(["meta_term_id NOT IN (?)", meta_term_ids]) unless meta_term_ids.empty?
           all_options = keywords.collect {|x| {:label => x.to_s, :id => x.meta_term_id, :selected => true}}
           all_options += all_grouped_keywords.collect {|x| {:label => x.to_s, :id => x.meta_term_id, :selected => false}}
           all_options.sort! {|a,b| a[:label].downcase <=> b[:label].downcase}
       end
   
-      is_extensible = (meta_key.is_extensible_list? or ["Keyword", "Person"].include?(meta_key.object_type))
+      is_extensible = (meta_key.is_extensible_list? or ["Meta::Keyword", "Person"].include?(meta_key.object_type))
       with_toggle = !["keywords", "author", "creator", "description author", "description author before import"].include?(meta_key.label)
   
       h = content_tag :div, :class => "madek_multiselect_container",
@@ -227,7 +227,7 @@ module Meta
           # TODO set String for 'subject' key, TODO multiple fields for array 
           #       when "String"
           #          h += text_area_tag "media_entry[meta_data_attributes][0][value]", meta_datum.object.to_s
-          when "Keyword"
+          when "Meta::Keyword"
             h += widget_meta_terms_multiselect(meta_datum, meta_key)
             h += link_to icon_tag("button_add_keyword"), keywords_media_entries_path, :class => "dialog_link", :style => "margin-top: .5em;"
   
