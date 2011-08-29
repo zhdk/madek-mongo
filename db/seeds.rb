@@ -60,7 +60,9 @@ end
 
 puts "Importing keys..."
 parsed_import["meta_keys"].each do |h|
-  factory_klass(h, Meta::Key)
+  meta_term_ids = h.delete("meta_term_ids")
+  meta_key = factory_klass(h, Meta::Key)
+  meta_key.meta_terms << meta_term_ids.map {|id| @map[Meta::Term][id] } unless meta_term_ids.blank?
 end
 
 ##########################################################################
