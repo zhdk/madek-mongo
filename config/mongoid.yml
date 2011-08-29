@@ -1,0 +1,30 @@
+defaults: &defaults
+  host: localhost
+  # slaves:
+  #   - host: slave1.local
+  #     port: 27018
+  #   - host: slave2.local
+  #     port: 27019
+  # NOT recommended for any production: http://mongoid.org/docs/indexing/
+  autocreate_indexes: true
+  # If you are using inheritance in your application model please set this to true
+  # or you will experience querying inconsistencies in dev mode.
+  # Note that this will severely decrease performance in dev mode only.
+  preload_models: true
+
+
+development:
+  <<: *defaults
+  database: madek_development
+
+test:
+  <<: *defaults
+  database: madek_test
+
+# set these environment variables on your prod server
+production:
+  host: <%= ENV['MONGOID_HOST'] %>
+  port: <%= ENV['MONGOID_PORT'] %>
+  username: <%= ENV['MONGOID_USERNAME'] %>
+  password: <%= ENV['MONGOID_PASSWORD'] %>
+  database: <%= ENV['MONGOID_DATABASE'] %>

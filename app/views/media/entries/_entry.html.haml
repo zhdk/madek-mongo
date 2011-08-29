@@ -1,0 +1,73 @@
+.container_12
+  #detail-main.grid_8.alpha
+    %h2.title{:style => "margin: 0 10px 10px 0;"}
+      = entry.meta_data.get_value_for("title")
+    #detail-image
+      = thumb_for(entry, :large)
+
+
+
+    #detail-action-bar.clearfix
+      %ul#toggle-panel.clearfix
+        - if can? :update, entry => Media::Resource
+          %li
+            = link_to edit_resource_path(entry), :title => _("Editieren") do
+              .button_edit_active
+        %li
+          %span.favorite_link{:id => "fav_#{entry.id}", :title => _("Favorit")}
+            =#mongo# render :partial => "media_entries/favorite_link", :locals => {:entry => entry}
+        %li
+          = link_to browse_resource_path(entry), :title => _("Erkunden") do
+            .button_explore
+        %li
+          = link_to "#", :panel => "download", :title => _("Exportieren") do
+            .button_download
+        %li
+          = link_to "#", :panel => "media_set", :title => _("Zu Set/Projekt hinzufügen") do
+            .button_addto
+        - if can? :manage, entry => Media::Resource
+          %li
+            = link_to "#", :panel => "delete", :title => _("Löschen") do
+              .button_delete_active
+        .clear
+        - if false #mongo# is_expert and entry.snapshotable?
+          %li= link_to _("Metadaten für MIZ-Archiv editieren"), edit_tms_entry_path(@entry)
+          - if can_edit
+            %li= link_to _("Kopie für MIZ-Archiv erstellen"), to_snapshot_entry_path(entry)
+    #delete-panel.actionbar-panel{:style => "display: none"}
+      .actionbar-inner-panel
+        = _("Wollen Sie diesen Medieneintrag und alle zugehörigen Dateien wirklich löschen? Sie können dies nicht rückgängig machen. Die Daten sind unwiederbringlich verloren.")
+        = link_to _("Löschen"), resource_path(entry), :id => "delete_me", :method => :delete, :confirm => _("Sind Sie sicher?"), :"data-id" => entry.id
+    #download-panel.actionbar-panel{:style => "display: none"}
+      .actionbar-inner-panel
+        =#mongo# render :partial => "download", :object => entry, :as => :entry
+    #media_set-panel.actionbar-panel{:style => "display: none"}
+      .actionbar-inner-panel
+        - if logged_in?
+          =#mongo# media_sets_setter(media_sets_entry_path(entry))
+        - else
+          = _("Bitte anmelden.")
+
+
+
+
+    .clear
+    #additional-metadata
+      %h3.tab-title= _("Metadaten")
+      #detail_specification.tabs
+        %ul
+          - contexts = Meta::Context.default_contexts #mongo# TODO (MetaContext.defaults + entry.individual_contexts)
+          - contexts.collect do |context|
+            %li= link_to context, "#context_#{context.id}"
+
+        - contexts.collect do |context|
+          %div{:id => "context_#{context.id}"}
+            = display_meta_data_for(entry, context)
+            
+  #detail-sidebar.grid_4.omega
+    #detail-excerpt.sidebar-box
+      = display_core_meta_data_for(entry)
+      - sets = entry.media_sets.accessible_by(current_ability)
+      = media_sets_list(sets) unless sets.empty?
+
+.clear
