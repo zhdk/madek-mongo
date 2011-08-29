@@ -42,6 +42,11 @@ module Upload
             media_entry = upload_session.media_entries.create
             media_file = media_entry.create_media_file
             media_file.store_file(uploaded_data)
+            
+            #mongo# TODO move to Media::Entry#generate_permissions ?? or just delegate to upload_controller#set_permissions ??
+            h = {:subject => current_user, :view => true, :edit => true, :manage => true, :hi_res => true}
+            media_entry.permissions.create(h)
+
 
             # If this is a path-based upload for e.g. video files, it's almost impossible that we've imported the title
             # correctly because some file formats don't give us that metadata. Let's overwrite with an auto-import default then.

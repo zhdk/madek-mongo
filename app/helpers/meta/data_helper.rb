@@ -111,9 +111,9 @@ module Meta
           @people ||= meta_key.object_type.constantize.with_media_entries
           all_options = @people.collect {|x| {:label => x.to_s, :id => x.id, :selected => selected.include?(x.id)}}
         when "Meta::Keyword"
-          keywords = meta_datum.object.deserialized_value
+          keywords = meta_datum.object.meta_keywords
           meta_term_ids = keywords.collect(&:meta_term_id)
-          all_grouped_keywords = Meta::Keyword.group(:meta_term_id)
+          all_grouped_keywords = [] #mongo# TODO Meta::Keyword.group(:meta_term_id)
           all_grouped_keywords = all_grouped_keywords.where(["meta_term_id NOT IN (?)", meta_term_ids]) unless meta_term_ids.empty?
           all_options = keywords.collect {|x| {:label => x.to_s, :id => x.meta_term_id, :selected => true}}
           all_options += all_grouped_keywords.collect {|x| {:label => x.to_s, :id => x.meta_term_id, :selected => false}}
@@ -229,7 +229,7 @@ module Meta
           #          h += text_area_tag "media_entry[meta_data_attributes][0][value]", meta_datum.object.to_s
           when "Meta::Keyword"
             h += widget_meta_terms_multiselect(meta_datum, meta_key)
-            h += link_to icon_tag("button_add_keyword"), keywords_media_entries_path, :class => "dialog_link", :style => "margin-top: .5em;"
+            h += link_to icon_tag("button_add_keyword"), keywords_resources_path, :class => "dialog_link", :style => "margin-top: .5em;"
   
           when "Meta::Term"
             meta_terms = meta_key.meta_terms
@@ -341,12 +341,12 @@ module Meta
             h += widget_meta_terms_multiselect(meta_datum, meta_key)
   
           when "Meta::Copyright"
-            h += meta_datum.hidden_field :value, :class => "copyright_value"
-  ###          h += hidden_field_tag field_id, meta_datum.object.value.first, :class => "copyright_value"
-  
+            #old# h += meta_datum.hidden_field :value, :class => "copyright_value"
+            h += hidden_field_tag "#{meta_datum.object_name}[value]", meta_datum.object.value.try(:first), :class => "copyright_value"
+
             @copyright_all ||= Meta::Copyright.all # OPTIMIZE
             @copyright_roots ||= Meta::Copyright.roots
-            value = meta_datum.object.deserialized_value.try(:first) # OPTIMIZE
+            value = meta_datum.object.value.try(:first) #mongo# TODO # meta_datum.object.deserialized_value.try(:first) # OPTIMIZE
             selected = @copyright_roots.detect{|s| (value and s.is_or_is_ancestor_of?(value)) }.try(:id)
             h += select_tag "options_root", options_from_collection_for_select(@copyright_roots, :id, :to_s, selected), :class => "options_root" 
   

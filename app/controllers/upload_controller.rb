@@ -64,8 +64,8 @@ class UploadController < ApplicationController
     pre_load
     @upload_session.update_attributes(:is_complete => true)
 
-    params[:resources][:media_entry].each_pair do |key, value|
-      media_entry = @media_entries.detect{|me| me.id == key.to_i } #old# .find(key)
+    params[:resources]["media/entry"].each_pair do |key, value|
+      media_entry = @media_entries.detect{|me| me.id.to_s == key } #old# .find(key)
       media_entry.update_attributes(value)
     end
 
@@ -86,7 +86,8 @@ class UploadController < ApplicationController
 
       media_sets = Media::Set.find_by_id_or_create_by_title(params[:media_set_ids], current_user)
       media_sets.each do |media_set|
-        media_set.media_entries.push_uniq @media_entries
+        #mongo# TODO media_set.media_resources.push_uniq @media_entries
+        media_set.media_resources << @media_entries
       end
     
       redirect_to root_path

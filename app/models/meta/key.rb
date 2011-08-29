@@ -57,8 +57,10 @@ module Meta
       HERECODE
 
       #r = Media::Resource.collection.map_reduce(map, reduce, { :out => "keywords_counter"})
-      r = Media::Resource.collection.map_reduce(map, reduce, { :query => { :"meta_data.meta_key_id" => "keywords" }, :out => "keywords_counter"})
-      r.find().first["value"].to_i 
+      r = Media::Resource.collection.
+            map_reduce(map, reduce, { :query => { :"meta_data.meta_key_id" => "keywords" }, :out => "keywords_counter"}).
+            find().first
+      r ? r["value"].to_i : 0
     end
     
   end

@@ -63,4 +63,16 @@ class ResourcesController < ApplicationController
     #tmp# respond_with @resource
   end
 
+############################################################################################
+
+  def keywords
+    @all_keywords = [] #mongo# TODO Keyword.select("*, COUNT(*) AS q").group(:meta_term_id).order("q DESC")
+    @my_keywords = [] #mongo# TODO Keyword.select("*, COUNT(*) AS q").where(:user_id => current_user).group(:meta_term_id).order("q DESC")
+        
+    respond_to do |format|
+      format.html
+      format.js { render :layout => false }
+    end
+  end
+
 end

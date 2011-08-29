@@ -29,6 +29,7 @@ MAdeKMongo::Application.routes.draw do
     end
     collection do
       get :favorites, :to => "resources#index"
+      get :keywords #mongo# TODO
     end
   end
 

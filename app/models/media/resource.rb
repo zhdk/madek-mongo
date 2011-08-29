@@ -89,22 +89,30 @@ module Media
       t = "Ohne Titel" if t.blank?
       t
     end
+
+    def title_and_user
+      s = ""
+      s += "[Projekt] " if is_a?(Media::Project)
+      s += "#{title} (#{user})"
+    end
     
     # OPTIMIZE
     def owner
-      permissions.where(:manage => true).detect {|x| x.subject.is_a? Person}.subject
+      #mongo# TODO validates presence of the owner's permissions?
+      permissions.where(:manage => true).detect {|x| x.subject.is_a? Person}.try(:subject)
     end
-    def user
+    def user # TODO alias ??
       owner
     end
 
     #########################################################
 
     def default_permission
-      permissions.find_or_initialize_by(:subject => nil)
+      permissions.find_or_initialize_by(:subject_id => nil)
     end
 
 =begin
+#mongo# TODO prevent generate on seed  
     private
   
     def generate_permissions

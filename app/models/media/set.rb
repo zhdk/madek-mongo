@@ -22,5 +22,22 @@ module Media
       media_resources.first.try(:thumb_base64, size)
     end
 
+
+    ########################################################
+    
+    # OPTIMIZE get rid of this method
+    def self.find_by_id_or_create_by_title(values, user)
+      records = Array(values).map do |v|
+                        a = where(:id => v).first
+                        a ||= begin
+                          mk = Meta::Key.where(:label => "title").first
+                          #mongo# TODO user.media_sets.create(:meta_data_attributes => [{:meta_key_id => mk.id, :value => v}])
+                          Media::Set.create(:meta_data_attributes => [{:meta_key_id => mk.id, :value => v}])
+                        end
+                    end
+      records.compact
+    end
+
+
   end
 end
