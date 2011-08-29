@@ -41,8 +41,8 @@ module Meta
     # TODO merge with Meta::Datum#to_s
     def formatted_value(meta_datum)
       capture_haml do
-        unless meta_datum.meta_tags.blank?
-          s = meta_datum.meta_tags.map do |v|
+        unless meta_datum.meta_keywords.blank?
+          s = meta_datum.meta_keywords.map do |v|
             #mongo# TODO link_to dv, filter_search_path(:meta_key_id => meta_datum.meta_key, :meta_term_id => dv.id), :method => :post, :remote => true, :"data-meta_term_id" => dv.id
             link_to v, resources_path(:query => v.to_s)
           end

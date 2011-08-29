@@ -42,7 +42,6 @@ parsed_import = JSON.parse(File.read(file_path))
 
 ##########################################################################
   
-# TODO Keyword to Meta::Term (Meta::Tag)
 puts "Importing terms..."
 
 def factory_klass(h, klass)
@@ -61,6 +60,7 @@ end
 puts "Importing keys..."
 parsed_import["meta_keys"].each do |h|
   meta_term_ids = h.delete("meta_term_ids")
+  h["object_type"] = "Meta::Keyword" if h["object_type"] == "Keyword"
   meta_key = factory_klass(h, Meta::Key)
   meta_key.meta_terms << meta_term_ids.map {|id| @map[Meta::Term][id] } unless meta_term_ids.blank?
 end
@@ -194,11 +194,11 @@ def factory_meta_data(h, resource)
         meta_data.value = value
       when "Meta::Term"
         value.each do |x|
-          meta_data.meta_tags.build(:meta_term => @map[Meta::Term][x])
+          meta_data.meta_keywords.build(:meta_term => @map[Meta::Term][x])
         end
-      when "Keyword"
+      when "Meta::Keyword"
         md["deserialized_value"].each do |dv|
-          meta_data.meta_tags.build(:meta_term => @map[Meta::Term][dv["meta_term_id"]],
+          meta_data.meta_keywords.build(:meta_term => @map[Meta::Term][dv["meta_term_id"]],
                                      :created_at => dv["created_at"],
                                      :subject => @map["User"][dv["user_id"]])
         end

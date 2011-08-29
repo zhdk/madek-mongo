@@ -1,6 +1,6 @@
 # -*- encoding : utf-8 -*-
 module Meta
-  class Tag
+  class Keyword
     include Mongoid::Document
     include Mongoid::Timestamps::Created
   

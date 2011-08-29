@@ -28,7 +28,7 @@ module Meta
       
       #mongo# TODO virtual-collection and index
       #Media::Resource.where(:"meta_data.meta_key_id" => "keywords").fields(:meta_data => 1).collect do |r|
-      #  r.meta_data.where(:meta_key_id => "keywords").first.meta_tags.count
+      #  r.meta_data.where(:meta_key_id => "keywords").first.meta_keywords.count
       #end.sum
 
       map = <<-HERECODE
@@ -36,9 +36,9 @@ module Meta
           //this.meta_data.filter
           if(this.meta_data && this.meta_data.length){
             this.meta_data.forEach(function(md) {
-              if(md.meta_key_id == "keywords" && md.meta_tags)
-                //emit("keywords", {size: md.meta_tags.length});
-                emit("keywords", md.meta_tags.length);
+              if(md.meta_key_id == "keywords" && md.meta_keywords)
+                //emit("keywords", {size: md.meta_keywords.length});
+                emit("keywords", md.meta_keywords.length);
             });
             //emit(this._id, {cc:this.meta_data.length});
           }
