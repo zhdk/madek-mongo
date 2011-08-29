@@ -60,7 +60,7 @@ end
 puts "Importing keys..."
 parsed_import["meta_keys"].each do |h|
   meta_term_ids = h.delete("meta_term_ids")
-  h["object_type"] = "Meta::Keyword" if h["object_type"] == "Keyword"
+  h["object_type"] = "Meta::#{h["object_type"]}" if %w(Keyword Copyright).include? h["object_type"] 
   meta_key = factory_klass(h, Meta::Key)
   meta_key.meta_terms << meta_term_ids.map {|id| @map[Meta::Term][id] } unless meta_term_ids.blank?
 end
@@ -175,7 +175,7 @@ def factory_meta_data(h, resource)
         value.each do |x|
           meta_data.meta_references.build(:reference => @map[Person][x])
         end
-      when "Copyright"
+      when "Meta::Copyright"
         value.each do |x|
           meta_data.meta_references.build(:reference => @map[Meta::Copyright][x])
         end

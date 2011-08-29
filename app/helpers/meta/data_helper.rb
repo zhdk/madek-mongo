@@ -340,12 +340,12 @@ module Meta
           when "Meta::Department"
             h += widget_meta_terms_multiselect(meta_datum, meta_key)
   
-          when "Copyright"
+          when "Meta::Copyright"
             h += meta_datum.hidden_field :value, :class => "copyright_value"
   ###          h += hidden_field_tag field_id, meta_datum.object.value.first, :class => "copyright_value"
   
-            @copyright_all ||= Copyright.all # OPTIMIZE
-            @copyright_roots ||= Copyright.roots
+            @copyright_all ||= Meta::Copyright.all # OPTIMIZE
+            @copyright_roots ||= Meta::Copyright.roots
             value = meta_datum.object.deserialized_value.try(:first) # OPTIMIZE
             selected = @copyright_roots.detect{|s| (value and s.is_or_is_ancestor_of?(value)) }.try(:id)
             h += select_tag "options_root", options_from_collection_for_select(@copyright_roots, :id, :to_s, selected), :class => "options_root" 
