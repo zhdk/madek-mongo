@@ -77,6 +77,7 @@ module Media
         :is_public => !!permissions.detect {|x| x.subject_id.nil? and x.view },
         :is_editable => !!permissions.detect {|x| x.subject_id == user.id and x.edit },
         :is_manageable => !!permissions.detect {|x| x.subject_id == user.id and x.manage },
+        :can_maybe_browse => !meta_data.for_meta_terms.blank?,
         :thumb_base64 => thumb_base64(:small_125),
         :title => meta_data.get_value_for("title"),
         :author => meta_data.get_value_for("author") }

@@ -12,7 +12,14 @@ module Meta
     embeds_many :meta_dates, class_name: "Meta::Date"
     belongs_to :meta_key, class_name: "Meta::Key" #mongo# , index: true #mongo# index :meta_key_id, unique: true
 
+    #########################################################
+
     validates_presence_of :meta_key_id
+
+    #########################################################
+
+    # OPTIMIZE
+    scope :for_meta_terms, where(:meta_key_id.in => Meta::Key.where(:object_type => "Meta::Term").collect(&:id)) 
 
     #########################################################
 

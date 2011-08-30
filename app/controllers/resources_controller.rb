@@ -65,6 +65,16 @@ class ResourcesController < ApplicationController
 
 ############################################################################################
 
+  def browse
+    # TODO merge with index/show
+    authorize! :read, @resource => Media::Resource
+
+    #@viewable_resources = Media::Resource.accessible_by(current_ability)
+    @viewable_media_entries = Media::Entry.accessible_by(current_ability)
+  end
+
+############################################################################################
+
   def keywords
     @all_keywords = [] #mongo# TODO Keyword.select("*, COUNT(*) AS q").group(:meta_term_id).order("q DESC")
     @my_keywords = [] #mongo# TODO Keyword.select("*, COUNT(*) AS q").where(:user_id => current_user).group(:meta_term_id).order("q DESC")

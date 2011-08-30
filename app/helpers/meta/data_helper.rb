@@ -81,6 +81,19 @@ module Meta
       end
     end
 
+    def checkbox_for_term(term, meta_datum, ui)
+      is_checked = (meta_datum.object.value and meta_datum.object.value.include?(term.id))
+      content_tag :li do
+        a = case ui
+          when :radio_button
+            radio_button_tag "#{meta_datum.object_name}[value][]", term.id, is_checked
+          else
+            check_box_tag "#{meta_datum.object_name}[value][]", term.id, is_checked
+        end
+        a += term.to_s
+      end
+    end
+
   ###########################################################
   
     def widget_meta_countries(meta_datum, meta_key)
@@ -114,7 +127,7 @@ module Meta
           keywords = meta_datum.object.meta_keywords
           meta_term_ids = keywords.collect(&:meta_term_id)
           all_grouped_keywords = [] #mongo# TODO Meta::Keyword.group(:meta_term_id)
-          all_grouped_keywords = all_grouped_keywords.where(["meta_term_id NOT IN (?)", meta_term_ids]) unless meta_term_ids.empty?
+          #mongo# TODO all_grouped_keywords = all_grouped_keywords.where(["meta_term_id NOT IN (?)", meta_term_ids]) unless meta_term_ids.empty?
           all_options = keywords.collect {|x| {:label => x.to_s, :id => x.meta_term_id, :selected => true}}
           all_options += all_grouped_keywords.collect {|x| {:label => x.to_s, :id => x.meta_term_id, :selected => false}}
           all_options.sort! {|a,b| a[:label].downcase <=> b[:label].downcase}
