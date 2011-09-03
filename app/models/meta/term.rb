@@ -2,6 +2,9 @@
 module Meta
   class Term
     include Mongoid::Document
+
+    LANGUAGES = [:de_CH, :en_GB]
+    DEFAULT_LANGUAGE = :de_CH
     
     field :en_GB, type: String
     field :de_CH, type: String
@@ -13,10 +16,24 @@ module Meta
       media_resources.collect(&:meta_data).flatten.select{|md| md.meta_keywords.any? {|x| x.meta_term_id == id }}
     end
 
-    def to_s #(lang = nil)
-      #lang ||= DEFAULT_LANGUAGE
-      #self.send(lang)
-      de_CH
+    def to_s(lang = nil)
+      lang ||= DEFAULT_LANGUAGE
+      self.send(lang)
+    end
+
+    #########################################################
+
+    def self.for_s(s)
+      r = Meta::Term.where(DEFAULT_LANGUAGE => s).first
+      r ||= begin
+        r2 = nil
+        LANGUAGES.each do |lang|
+          next if lang == DEFAULT_LANGUAGE
+          r2 ||= Meta::Term.where(lang => s).first
+        end
+        r2
+      end
+      r ||= Meta::Term.create(DEFAULT_LANGUAGE => s)
     end
     
   end
