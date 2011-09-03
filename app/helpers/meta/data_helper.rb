@@ -1,29 +1,44 @@
 # -*- encoding : utf-8 -*-
 module Meta
   module DataHelper
-    
-    def display_meta_data_for(resource, context)
-      meta_data = resource.meta_data.for_context(context, false)
+
+    def display_meta_data_helper(title, values)
       capture_haml do
-        if meta_data.empty?
+        haml_tag :h4, title
+        if values.blank?
           haml_tag :div, _("Es sind keine Metadaten zu diesem Kontext bereit gestellt."), :class => "meta_data_comment"
         else
-          haml_tag :table, :class => "meta_data" do
-            meta_data.each do |meta_datum|
-              next if meta_datum.to_s.blank? #tmp# OPTIMIZE 2007
-              definition = context.meta_definitions.where(:meta_key_id => meta_datum.meta_key_id).first
-              haml_tag :tr do
-                haml_tag :td do
-                  haml_tag :label, definition.label
-                end
-                haml_tag :td, formatted_value(meta_datum)
+          haml_tag :div, :class => "meta_data" do
+            values.each do |value|
+              haml_tag :div do
+                haml_tag :label, value.first
+                haml_tag :br
+                haml_concat value.last
               end
             end
           end
         end
       end
     end
-
+  
+    def display_meta_data_for(resource, context)
+      h = {}
+      meta_data = resource.meta_data.for_context(context, false)
+      meta_data.each do |meta_datum|
+        next if meta_datum.to_s.blank? #tmp# OPTIMIZE 2007
+        definition = context.meta_definitions.where(:meta_key_id => meta_datum.meta_key_id).first
+        h[definition.label] = formatted_value(meta_datum) 
+      end
+      display_meta_data_helper(context, h)
+    end
+    
+    def display_objective_meta_data_for(resource)
+      meta_data = resource.media_file.meta_data_without_binary.sort
+      display_meta_data_helper(_("Datei"), meta_data)
+    end
+    
+    #####################################################################################
+    
     def display_core_meta_data_for(resource)
       context = Meta::Context.core
       meta_data = resource.meta_data.for_context(context)
@@ -37,6 +52,8 @@ module Meta
         end
       end
     end
+
+    #####################################################################################
 
     # TODO merge with Meta::Datum#to_s
     def formatted_value(meta_datum)
@@ -359,8 +376,9 @@ module Meta
 
             @copyright_all ||= Meta::Copyright.all # OPTIMIZE
             @copyright_roots ||= Meta::Copyright.roots
+
             value = meta_datum.object.value.try(:first) #mongo# TODO # meta_datum.object.deserialized_value.try(:first) # OPTIMIZE
-            selected = @copyright_roots.detect{|s| (value and s.is_or_is_ancestor_of?(value)) }.try(:id)
+            selected = value ? @copyright_roots.detect{|s| s.eql?(value) or s.ancestor_of?(value) }.try(:id) : nil
             h += select_tag "options_root", options_from_collection_for_select(@copyright_roots, :id, :to_s, selected), :class => "options_root" 
   
             @copyright_roots.each do |s|
@@ -372,7 +390,7 @@ module Meta
                                       [t.label, t.children.collect {|c| [c.label, c.id] }]
                                     end
                                 end
-              is_selected = (value and s.is_or_is_ancestor_of?(value))
+              is_selected = (value and (s.eql?(value) or s.ancestor_of?(value)))
               h += select_tag "options_#{s.id}", grouped_options_for_select(grouped_options, value.try(:id)), :class => "nested_options options_#{s.id}", :style => (is_selected ? nil : "display: none;")
             end
   

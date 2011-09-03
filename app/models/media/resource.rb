@@ -2,8 +2,7 @@
 module Media
   class Resource
     include Mongoid::Document
-    #include Mongoid::Versioning
-    #max_versions 5
+    include Mongoid::Timestamps # TODO ?? #include Mongoid::Versioning #max_versions 5
     
     paginates_per 36
 
@@ -33,6 +32,12 @@ module Media
     #mongo# TODO validates_uniqueness :subject
     embeds_many :permissions
     #field :permissions, type: Hash, default: {} # {:subject_id => [:action_bits, :action_mask], ...}
+
+    #########################################################
+
+    default_scope order_by([:updated_at, :desc])
+
+    #########################################################
 
     #mongo# TODO index "meta_data.meta_key_id", unique: true
 
@@ -78,6 +83,7 @@ module Media
         :is_editable => !!permissions.detect {|x| x.subject_id == user.id and x.edit },
         :is_manageable => !!permissions.detect {|x| x.subject_id == user.id and x.manage },
         :can_maybe_browse => !meta_data.for_meta_terms.blank?,
+        :is_favorite => user.favorite_resources.include?(self),
         :thumb_base64 => thumb_base64(:small_125),
         :title => meta_data.get_value_for("title"),
         :author => meta_data.get_value_for("author") }

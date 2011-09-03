@@ -54,15 +54,21 @@
     .clear
     #additional-metadata
       %h3.tab-title= _("Metadaten")
-      #detail_specification.tabs
+      #detail_specification
         %ul
-          - contexts = Meta::Context.default_contexts #mongo# TODO (MetaContext.defaults + entry.individual_contexts)
+          - contexts = Meta::Context.default_contexts #mongo# TODO + entry.individual_contexts
           - contexts.collect do |context|
-            %li= link_to context, "#context_#{context.id}"
-
-        - contexts.collect do |context|
-          %div{:id => "context_#{context.id}"}
-            = display_meta_data_for(entry, context)
+            %li
+              = display_meta_data_for(entry, context)
+          %li
+            = display_objective_meta_data_for(entry)
+          - if false # media_entry.media_file.meta_data and media_entry.media_file.meta_data["GPS:GPSLatitude"] and media_entry.media_file.meta_data["GPS:GPSLongitude"]
+            %li
+              =# link_to _("Karte"), [:map, media_entry]
+          - if false #mongo# is_expert
+            - meta_context = Meta::Context.tms
+            %li
+              = display_meta_data_for(media_entry, context)
             
   #detail-sidebar.grid_4.omega
     #detail-excerpt.sidebar-box

@@ -82,6 +82,8 @@ def factory_meta_context(h)
   definitions.each do |definition|
     field = definition.delete("meta_field")
     attr = {:meta_key => @map[Meta::Key][definition["meta_key_id"]]}
+    # TODO remove position ??
+    [:position, :key_map, :key_map_type].each {|x| attr[x] = definition[x.to_s] if definition[x.to_s] }
     [:label, :description, :hint].each {|x| attr[x] = @map[Meta::Term][field[x.to_s]] if field[x.to_s] }
     r.meta_definitions.create(attr)
   end
@@ -169,43 +171,29 @@ def factory_meta_data(h, resource)
   h.each do |md|
     value = md.delete("value")
     meta_key = @map[Meta::Key][md["meta_key_id"]]
-    meta_data = resource.meta_data.build({meta_key: meta_key})
-    case meta_key.object_type
+    v = case meta_key.object_type
       when "Person"
-        value.each do |x|
-          meta_data.meta_references.build(:reference => @map[Person][x])
-        end
+        value.map {|x| @map[Person][x] }
       when "Meta::Copyright"
-        value.each do |x|
-          meta_data.meta_references.build(:reference => @map[Meta::Copyright][x])
-        end
+        value.map {|x| @map[Meta::Copyright][x] }
       when "Meta::Department"
-        # TODO department as subclass of group ??
-        value.each do |x|
-          meta_data.meta_references.build(:reference => @map[Group][x])
+        value.map {|x| @map[Group][x] }
+      when "Meta::Term"
+        value.map {|x| @map[Meta::Term][x] }
+      when "Meta::Keyword"
+        md["deserialized_value"].map do |dv|
+          { :meta_term => @map[Meta::Term][dv["meta_term_id"]],
+            :created_at => dv["created_at"],
+            :subject => @map["User"][dv["user_id"]] }
         end
       when "Meta::Date"
-        # TODO use Ruby Date directly ??
-        value.each do |x|
-          meta_data.meta_dates.build(x)
-        end
+        value
       when "Meta::Country"
-        # TODO define a country class ??
-        meta_data.value = value
-      when "Meta::Term"
-        value.each do |x|
-          meta_data.meta_keywords.build(:meta_term => @map[Meta::Term][x])
-        end
-      when "Meta::Keyword"
-        md["deserialized_value"].each do |dv|
-          meta_data.meta_keywords.build(:meta_term => @map[Meta::Term][dv["meta_term_id"]],
-                                     :created_at => dv["created_at"],
-                                     :subject => @map["User"][dv["user_id"]])
-        end
+        value
       else
-        meta_data.value = value 
+        value 
     end
-    meta_data.save
+    resource.meta_data.create(:meta_key => meta_key, :value => v)
   end
 end
 

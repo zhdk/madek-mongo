@@ -12,7 +12,7 @@ module Media
     field :guid, type: String
     field :content_type, type: String
     field :filename, type: String
-    #mongo# TODO field :meta_data, type: Hash
+    field :meta_data, type: Hash, default: {} #mongo# TODO 
     field :size, type: Integer
     field :height, type: Integer
     field :width, type: Integer
@@ -41,8 +41,7 @@ module Media
 
       target = ::File.join(dir, filename)
       FileUtils.copy(source, target)
-      #mongo# TODO extract_subjective_metadata(target)
-      save #mongo# TODO before_create
+      return target
     end
 
     def get_preview(size = nil)
@@ -106,6 +105,10 @@ module Media
       end
     end
 
+    # OPTIMIZE
+    def meta_data_without_binary
+      meta_data.reject{|k,v| ["!binary |", "Binary data"].any?{|x| v.to_yaml.include?(x)}}
+    end
 
   end
 end

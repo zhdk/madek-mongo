@@ -5,9 +5,10 @@ module Media
     embeds_one :media_file, class_name: "Media::File", as: :media_parent #mongo# TODO belongs_to ??
     belongs_to :upload_session, class_name: "Upload::Session"
 
+    ###############################
+
     def as_json(options={})
-      h = { :is_set => false,
-            :is_favorite => true }
+      h = { :is_set => false }
       super(options).merge(h)
     end
 
@@ -17,6 +18,18 @@ module Media
 
     ###############################
     #
+    before_create :process_file #mongo# TODO ?? :set_copyright
+    
+    private
+    
+    def process_file
+      if (file = attributes.delete("file"))
+        media_file = build_media_file
+        target = media_file.store_file(file)
+        extract_subjective_metadata(target)
+      end
+    end
+
     def extract_subjective_metadata(file_path)
       group_tags = ['XMP-madek', 'XMP-dc', 'XMP-photoshop', 'XMP-iptcCore', 'XMP-xmpRights', 'XMP-expressionmedia', 'XMP-mediapro']
       ignore_fields = [/^XMP-photoshop:ICCProfileName$/,/^XMP-photoshop:LegacyIPTCDigest$/, /^XMP-expressionmedia:(?!UserFields)/, /^XMP-mediapro:(?!UserFields)/]
@@ -55,15 +68,14 @@ module Media
               # TODO dry
               next if entry_value.blank? or entry_value == "-" #mongo# or meta_data.detect {|md| md.meta_key == meta_key } # we do sometimes receive a blank value in metadata, hence the check.
               entry_value.gsub!(/\\n/,"\n") if entry_value.is_a?(String) # OPTIMIZE line breaks in text are broken somehow
-              meta_data.build(:meta_key => meta_key, :value => entry_value )
+              meta_data.create(:meta_key => meta_key, :value => entry_value )
             end
           else
-            #mongo# meta_key = MetaKey.meta_key_for(entry_key) #working here#10 , MetaContext.file_embedded)
-            meta_key = entry_key 
+            meta_key = Meta::Key.meta_key_for(entry_key) #10 TODO ?? , Meta::Context.file_embedded)
 
             next if entry_value.blank? #mongo# or meta_data.detect {|md| md.meta_key == meta_key } # we do sometimes receive a blank value in metadata, hence the check.
             entry_value.gsub!(/\\n/,"\n") if entry_value.is_a?(String) # OPTIMIZE line breaks in text are broken somehow
-            meta_data.build(:meta_key => meta_key, :value => entry_value )
+            meta_data.create(:meta_key => meta_key, :value => entry_value )
           end
   
         end
@@ -71,6 +83,26 @@ module Media
     end
     #
     ###############################
+
+=begin 
+    # see mapping table on http://code.zhdk.ch/projects/madek/wiki/Copyright
+    def set_copyright
+      copyright_status = meta_data.detect {|md| ["copyright status"].include?(md.meta_key.label) }
+      are_usage_or_url_defined = meta_data.detect {|md| ["copyright usage", "copyright url"].include?(md.meta_key.label) }
+      klass = Meta::Copyright
+  
+      if !copyright_status
+        value = (are_usage_or_url_defined ? klass.custom : klass.default)
+        meta_data.build(:meta_key => Meta::Key.where(:label => "copyright status").first, :value => value)
+      elsif copyright_status.value.class == TrueClass or are_usage_or_url_defined 
+        copyright_status.value = klass.custom
+      elsif copyright_status.value.class == FalseClass
+        copyright_status.value = klass.public
+      else
+        copyright_status.value = klass.default
+      end
+    end
+=end
 
   end
 end

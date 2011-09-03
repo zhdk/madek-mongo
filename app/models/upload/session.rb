@@ -1,6 +1,6 @@
 # -*- encoding : utf-8 -*-
 module Upload
-  class Session
+  class Session #mongo# TODO subclass to Media::Set ??
     include Mongoid::Document
     include Mongoid::Timestamps::Created
   

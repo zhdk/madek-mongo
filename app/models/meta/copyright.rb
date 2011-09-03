@@ -18,7 +18,6 @@ module Meta
 
     #######################################
 
-=begin  
     def usage(value = "")
       (is_custom? ? value : read_attribute(:usage))
     end
@@ -39,13 +38,10 @@ module Meta
     def self.public
       @public ||= where(:label => "Public Domain (gemeinfrei)").first
     end
-=end
 
     #######################################
     
 =begin  
-    acts_as_nested_set  
-  
     def self.init(reset = false)
       return 0 unless reset or count == 0
       delete_all
