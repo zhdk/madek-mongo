@@ -64,10 +64,14 @@ module Meta
               meta_keywords.build(x)
             end
           end
-        when "Meta::Date"
-          # TODO use Ruby Date directly ??
+        when "Meta::Date" # TODO use Ruby Date directly ??
+          klass = meta_key.object_type.constantize
           Array(@value).each do |x|
-            meta_dates.build(x)
+            if x.is_a? String
+              meta_dates << klass.parse(x)
+            else
+              meta_dates.build(x)
+            end
           end
         when "Meta::Country"
           # TODO define a country class ??
