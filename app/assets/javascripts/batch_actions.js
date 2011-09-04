@@ -131,7 +131,7 @@ function removeItems(array, item) {
 /////////////////////////////////////////////////////
 
 function setupBatch(json, media_set_id, media_entry_ids_in_set) {
-	display_results(json);
+	if(json != undefined) display_results(json);
     listSelected();
     displayCount();
 	
@@ -171,6 +171,9 @@ function setupBatch(json, media_set_id, media_entry_ids_in_set) {
     $(".check_box").live("click", function(){
 		toggleSelected($(this).closest(".item_box").tmplItem().data);
     });
+
+	// hide the select_deselect_all checkbox on the browse page
+	if($(".item_box .check_box").length < 2) $("#select_deselect_all").hide();
 
 	$("#select_deselect_all input:checkbox").click(function() {	
 	  var media_entries_json = get_media_entries_json();		
@@ -229,6 +232,7 @@ function setupBatch(json, media_set_id, media_entry_ids_in_set) {
 			$('#thumb_' + id).removeClass('selected').removeAttr("style");
 			$('#selected_items [rel="'+id+'"]').remove();
 			if (media_entries_in_set != undefined){ removeItems(media_entries_in_set, id) };
+			$("#positionable").fadeOut(); // only on browse page
 		} else {
 	        media_entries_json.push(me);
 	        $('#thumb_' + id).addClass('selected');
@@ -266,13 +270,13 @@ function displayCount() {
 		$('#selected_items').show();
 		$('.task_bar .action_btn').show();
 	    if (count_checked > 1) {
-			display_count.html(count_checked + " Medieneinträge ausgewählt.");
+			display_count.html(count_checked + " Medieneinträge ausgewählt");
 		}else{
-	        display_count.html("1 Medieneintrag ausgewählt.");
+	        display_count.html("1 Medieneintrag ausgewählt");
 		}
 	} else {
 		$('.task_bar .action_btn').hide();
-		display_count.html("Keine Medieneinträge ausgewählt.");
+		display_count.html("Keine Medieneinträge ausgewählt");
 		$('#selected_items').hide();
 	};
 
