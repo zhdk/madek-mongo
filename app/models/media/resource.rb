@@ -28,6 +28,10 @@ module Media
         end
       end
     end
+    #mongo#
+    #accepts_nested_attributes_for :meta_data, :allow_destroy => true,
+    #                              :reject_if => proc { |attributes| attributes['value'].blank? and attributes['_destroy'].blank? }
+    #                              # NOTE the check on _destroy should be automatic, check Rails > 3.0.3
 
     #mongo# TODO validates_uniqueness :subject
     embeds_many :permissions
@@ -119,7 +123,7 @@ module Media
     end
 
 =begin
-#mongo# TODO prevent generate on seed  
+#mongo#0409# TODO prevent generate on seed  
     private
   
     def generate_permissions

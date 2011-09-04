@@ -38,7 +38,7 @@ module Upload
 
             media_entry = upload_session.media_entries.create(:file => uploaded_data)
             
-            #mongo# TODO move to Media::Entry#generate_permissions ?? or just delegate to upload_controller#set_permissions ??
+            #mongo#0409# TODO move to Media::Entry#generate_permissions ?? or just delegate to upload_controller#set_permissions ??
             h = {:subject => current_user, :view => true, :edit => true, :manage => true, :hi_res => true}
             media_entry.permissions.create(h)
 
