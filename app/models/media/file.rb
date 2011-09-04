@@ -7,6 +7,10 @@ module Media
     THUMBNAILS = { :x_large => '1024x768>', :large => '620x500>', :medium => '300x300>', :small_125 => '125x125>', :small => '100x100>' }
     # NB This is sharded. A good candidate for a fast filesystem, since thumbnails will be used regularly.
     THUMBNAIL_STORAGE_DIR = "#{DIRECTORY}/attachments"
+    FILE_STORAGE_DIR = "#{DIRECTORY}/original"
+    # OPTIMIZE
+    FileUtils.mkdir_p(THUMBNAIL_STORAGE_DIR)
+    FileUtils.mkdir_p(FILE_STORAGE_DIR)
 
 
     field :guid, type: String
@@ -25,21 +29,23 @@ module Media
   
     # TODO validates_format_of :content_type, :with => /^image/,
 
+    #########################################################
+
     def shard
       # TODO variable length of sharding?
-      self.guid[0..0]
+      #mongo# TODO self.guid[0..0]
+      ""
     end
   
     def store_file(file)
       #mongo# TODO shard
-      dir = ::File.join(DIRECTORY, "original")
-      FileUtils.mkdir_p(dir)
       source = file[:tempfile].path #old# ::File.path(file) # uploaded_data[:tempfile].path #tmp# file.tempfile.path
 
       self.size = ::File.size(source)
       self.filename = file[:filename] #tmp# file.original_filename #tmp# File.basename(file)
+      self.content_type = file[:type]
 
-      target = ::File.join(dir, filename)
+      target = file_storage_location
       FileUtils.copy(source, target)
       return target
     end
@@ -56,7 +62,7 @@ module Media
         # OPTIMIZE p could still be nil !!
         return p
       else
-        # get the original
+        # get the original # TODO check permissions
         return file_storage_location
       end
     end
@@ -108,6 +114,59 @@ module Media
     # OPTIMIZE
     def meta_data_without_binary
       meta_data.reject{|k,v| ["!binary |", "Binary data"].any?{|x| v.to_yaml.include?(x)}}
+    end
+
+    #########################################################
+
+    private
+
+    # The final resting place of the media file. consider it permanent storage.
+    # basing the shard on (some non-zero) part of the guid gives us a trivial 'storage balancer' which completely ignores
+    # any size attributes of the file, and distributes amongst directories pseudorandomly (which in practice averages out in the long-term).
+    def file_storage_location
+      #mongo# ::File.join(FILE_STORAGE_DIR, shard, guid)
+      ::File.join(FILE_STORAGE_DIR, filename)
+    end
+  
+    def thumbnail_storage_location
+      #mongo# ::File.join(THUMBNAIL_STORAGE_DIR, shard, guid)
+      ::File.join(THUMBNAIL_STORAGE_DIR, filename)
+    end
+
+    def make_thumbnails(sizes = nil)
+      # this should be a background job
+      if content_type.include?('image')
+        thumbnail_jpegs_for(file_storage_location, sizes)
+      elsif content_type.include?('video')
+        # Extracts a cover image from the video stream
+        covershot = "#{thumbnail_storage_location}_covershot.png"
+        # You can use the -ss option to determine the temporal position in the stream you want to grab from (in seconds)
+        conversion = `ffmpeg -i #{file_storage_location} -y -vcodec png -vframes 1 -an -f rawvideo #{covershot}`
+        thumbnail_jpegs_for(covershot, sizes)
+        submit_encoding_job
+      elsif content_type.include?('audio')
+        #add_audio_thumbnails   # This might be a future method that constructs some meaningful thumbnail for an audio file?
+        submit_encoding_job
+      end
+    end
+
+    def thumbnail_jpegs_for(file, sizes = nil)
+      return unless ::File.exist?(file)
+      THUMBNAILS.each do |thumb_size,value|
+        next if sizes and !sizes.include?(thumb_size)
+        tmparr = "#{thumbnail_storage_location}_#{thumb_size.to_s}"
+        outfile = [tmparr, 'jpg'].join('.')
+        `convert -verbose "#{file}" -auto-orient -thumbnail "#{value}" -flatten -unsharp 0x.5 "#{outfile}"`
+        if ::File.exists?(outfile)
+          x,y = `identify -format "%wx%h" "#{outfile}"`.split('x')
+          if x and y
+            previews.create(:content_type => 'image/jpeg', :filename => outfile.split('/').last, :height => y, :width => x, :thumbnail => thumb_size.to_s )
+          end
+        else
+          # if convert failed, we need to take or delegate off some rescue action, ideally.
+          # but for the moment, lets just imply no-thumbnail need be made for this size
+        end
+      end
     end
 
   end

@@ -3,26 +3,6 @@
 #Meta::Department.fetch_from_ldap
 #Meta::Date.parse_all
 
-######################################
-
-#tmp# [Subject, Meta::Context, Meta::Term, Meta::Key, Media::Resource].each {|x| x.destroy_all }
-
-#########################################################
-
-=begin
-#old# guest_user = User.create(:name => "Guest")
-
-files = Dir[File.join("/Users/itz/Documents/workspace/MAdeK_doc/Testbilder/Testbilder_Fotostudio_IPTC_LR/", '**', '*')]
-files.each do |f|  
-  media_entry = Media::Entry.new
-  media_entry.store_file(f)
-  #old# media_entry.permissions.build(:subject => guest_user, :view => true)
-  media_entry.permissions.build(:view => true)
-  media_entry.permissions.build(:subject => user, :view => true)
-  media_entry.save
-end
-=end
-
 ##########################################################################
 @map = { Meta::Copyright => {},
          Meta::Term => {},
@@ -199,7 +179,6 @@ end
 
 def factory_resource(h, klass)
   resource = klass.new
-  #tmp# media_entry.store_file(f)
   factory_permissions(h["permissions"], resource)
   factory_meta_data(h["meta_data"], resource)
   resource.save
