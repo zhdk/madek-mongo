@@ -36,11 +36,7 @@ module Upload
             # if uploaded_data['filename'].include?
             # uploaded_data['current_user'] = current_user.login # for the use of media_file, if we get a zipfile
 
-            media_entry = upload_session.media_entries.create(:file => uploaded_data)
-            
-            #mongo#0409# TODO move to Media::Entry#generate_permissions ?? or just delegate to upload_controller#set_permissions ??
-            h = {:subject => current_user, :view => true, :edit => true, :manage => true, :hi_res => true}
-            media_entry.permissions.create(h)
+            media_entry = upload_session.media_entries.create(:file => uploaded_data, :owner => current_user)
 
             # If this is a path-based upload for e.g. video files, it's almost impossible that we've imported the title
             # correctly because some file formats don't give us that metadata. Let's overwrite with an auto-import default then.

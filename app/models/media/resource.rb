@@ -39,7 +39,7 @@ module Media
 
     #########################################################
 
-    default_scope order_by([:updated_at, :desc])
+    default_scope order_by([[:updated_at, :desc], [:created_at, :desc]])
 
     #########################################################
 
@@ -107,13 +107,20 @@ module Media
       s += "#{title} (#{user})"
     end
     
-    # OPTIMIZE
+    #########################################################
+
+   # OPTIMIZE
     def owner
       #mongo# TODO validates presence of the owner's permissions?
       permissions.where(:manage => true).detect {|x| x.subject.is_a? Person}.try(:subject)
     end
     def user # TODO alias ??
       owner
+    end
+
+    def owner=(user)
+      h = {:subject => user, :view => true, :edit => true, :manage => true, :hi_res => true}
+      permissions.build(h)
     end
 
     #########################################################
@@ -123,7 +130,7 @@ module Media
     end
 
 =begin
-#mongo#0409# TODO prevent generate on seed  
+#mongo# TODO prevent generate on seed  
     private
   
     def generate_permissions

@@ -32,13 +32,8 @@ module Media
                         a ||= begin
                           mk = Meta::Key.where(:label => "title").first
                           #mongo# TODO user.media_sets.create(:meta_data_attributes => [{:meta_key_id => mk.id, :value => v}])
-                          ms = Media::Set.create
+                          ms = Media::Set.create(:owner => user)
                           ms.meta_data.create(:meta_key_id => mk.id, :value => v)
-                            
-                          #mongo#0409# TODO move to Media::Entry#generate_permissions ??
-                          h = {:subject => user, :view => true, :edit => true, :manage => true, :hi_res => true}
-                          ms.permissions.create(h)
-                          
                           ms
                         end
                     end
