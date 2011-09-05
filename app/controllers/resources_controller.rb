@@ -7,10 +7,12 @@ class ResourcesController < ApplicationController
   #load_and_authorize_resource :class => "Media::Resource"
 
   def index
-    resources = Media::Resource.accessible_by(current_ability).page(params[:page])
+    can_action = params[:can] ? params[:can].to_sym : :read
+    resources = Media::Resource.accessible_by(current_ability, can_action).page(params[:page])
     resources = resources.where(:_id.in => current_user.favorite_resource_ids) if request.fullpath =~ /favorites/
     resources = resources.csearch(params[:query]) unless params[:query].blank?
 
+    #tmp#
     #resources = Media::Resource.search("zhdk").accessible_by_subject(user)
     #resources = Media::Resource.accessible_by(current_ability).csearch("zhdk")
     #resources.limit(2).offset(3) #resources.count => total_entries #resources.size => total in page

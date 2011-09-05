@@ -4,6 +4,11 @@
       = link_to current_user, root_path
       = image_tag "icons/arrow_user.png", :class => "arrow"
     .sub_menu
+      = link_to _("Readable Resources"), resources_path(:can => :read), :class => "item_line_me" #mongo#tmp
+      = link_to _("Editable Resources"), resources_path(:can => :update), :class => "item_line_me" #mongo#tmp
+      = link_to _("Hi-Res Resources"), resources_path(:can => :hi_res), :class => "item_line_me" #mongo#tmp
+      = link_to _("Manageable Resources"), resources_path(:can => :manage), :class => "item_line_me" #mongo#tmp
+
       =# link_to _("Meine Medieneinträge"), user_media_entries_path(current_user), :class => "item_line_me"
       =# link_to _("Meine Sets"), user_media_sets_path(current_user), :class => "item_line_set"
       =# link_to _("Meine Projekte"), user_media_sets_path(current_user, :type => "projects"), :class => "item_line_project"

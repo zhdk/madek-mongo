@@ -101,9 +101,9 @@ module Meta
 
       query = { :"meta_data.meta_key_id" => "keywords" }
       r = Media::Resource.collection.
-            ## store to collection
+            ## persistent collection
             #map_reduce(map, reduce, { :query => query, :out => "keywords_counter"}).find().first
-            ## directly in RAM
+            ## temporary collection
             map_reduce(map, reduce, { :query => query, :out => { :inline => 1}, :raw => true })["results"].first
       r ? r["value"].to_i : 0
     end

@@ -21,6 +21,14 @@ class Ability
     ####################################
     #!!permissions.detect {|x| x.subject_id == user.id and x.edit }
     can :update, Media::Resource, :permissions.matches => {:subject_id => {"$in" => ids}, :edit => true}
+
+    ####################################
+    # TODO
+    can :hi_res, Media::Resource, :permissions.matches => {:subject_id => {"$in" => ids}, :hi_res => true}
+
+    ####################################
+    # TODO
+    can :manage, Media::Resource, :permissions.matches => {:subject_id => {"$in" => ids}, :manage => true}
     
   end
 

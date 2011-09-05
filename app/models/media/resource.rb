@@ -76,16 +76,12 @@ module Media
 
     def as_json(options={})
       user = options[:user]
+      ability = options[:ability]
       { :id => id,
-        :is_private => begin
-          #p = permissions.where(:view => true)
-          #p.count == 1 and p.where(:subject_id => user.id).count == 1
-          p = permissions.select {|x| x.view }
-          p.size == 1 and !!p.detect {|x| x.subject_id == user.id } 
-        end,
-        :is_public => !!permissions.detect {|x| x.subject_id.nil? and x.view },
-        :is_editable => !!permissions.detect {|x| x.subject_id == user.id and x.edit },
-        :is_manageable => !!permissions.detect {|x| x.subject_id == user.id and x.manage },
+        :is_public => is_public?,
+        :is_private => is_private?(user),
+        :is_editable => ability.can?(:update, self => Media::Resource),
+        :is_manageable => ability.can?(:manage, self => Media::Resource),
         :can_maybe_browse => !meta_data.for_meta_terms.blank?,
         :is_favorite => user.favorite_resources.include?(self),
         :title => meta_data.get_value_for("title"),
@@ -108,7 +104,18 @@ module Media
     
     #########################################################
 
-   # OPTIMIZE
+    def is_public?
+      !!permissions.detect {|x| x.subject_id.nil? and x.view }
+    end 
+
+    def is_private?(user)
+      #p = permissions.where(:view => true)
+      #p.count == 1 and p.where(:subject_id => user.id).count == 1
+      p = permissions.select {|x| x.view }
+      p.size == 1 and !!p.detect {|x| x.subject_id == user.id } 
+    end
+
+    # OPTIMIZE
     def owner
       #mongo# TODO validates presence of the owner's permissions?
       permissions.where(:manage => true).detect {|x| x.subject.is_a? Person}.try(:subject)
