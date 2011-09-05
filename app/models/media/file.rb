@@ -6,8 +6,8 @@ module Media
     DIRECTORY = "#{Rails.root}/db/media_files/#{Rails.env}"
     THUMBNAILS = { :x_large => '1024x768>', :large => '620x500>', :medium => '300x300>', :small_125 => '125x125>', :small => '100x100>' }
     # NB This is sharded. A good candidate for a fast filesystem, since thumbnails will be used regularly.
-    THUMBNAIL_STORAGE_DIR = "#{DIRECTORY}/attachments"
-    FILE_STORAGE_DIR = "#{DIRECTORY}/original"
+    THUMBNAIL_STORAGE_DIR = "#{DIRECTORY}/thumbnails"
+    FILE_STORAGE_DIR = "#{DIRECTORY}/originals"
     # OPTIMIZE
     FileUtils.mkdir_p(THUMBNAIL_STORAGE_DIR)
     FileUtils.mkdir_p(FILE_STORAGE_DIR)
@@ -31,16 +31,38 @@ module Media
 
     #########################################################
 
+    # the cornerstone of identity..
+    # in an ideal world, this is farmed off to something that can crunch through large files _fast_
+    def get_guid
+      # This was the old GUID code in use up to June, 2011. Please leave to code here
+      # so we know why older files have different GUIDs. The new GUID code doesn't take
+      # the file hash into account at all, which is much faster at the expensve of a very
+      # low probability of file duplication.
+      # We can solve the file duplication problem elsewhere, e.g. by nightly hashing over all files
+      # that have identical size and assigning the media entries to the same file if there is a
+      # match on the hash. This would be a lot less expensive than doing it during upload.
+      #     # TODO in background?
+      #     # Hash or object, we should be seeing a pattern here by now.
+      #     if uploaded_data.kind_of? Hash
+      #       g = Digest::SHA256.hexdigest(uploaded_data[:tempfile].read)
+      #       uploaded_data[:tempfile].rewind
+      #     else
+      #       g = Digest::SHA256.hexdigest(uploaded_data.read)
+      #       uploaded_data.rewind
+      #     end
+      #     g
+      return UUIDTools::UUID.random_create.hexdigest
+    end
+
     def shard
       # TODO variable length of sharding?
-      #mongo# TODO self.guid[0..0]
-      ""
+      self.guid[0..0]
     end
   
     def store_file(file)
-      #mongo# TODO shard
       source = file[:tempfile].path #old# ::File.path(file) # uploaded_data[:tempfile].path #tmp# file.tempfile.path
 
+      self.guid = get_guid 
       self.size = ::File.size(source)
       self.filename = file[:filename] #tmp# file.original_filename #tmp# File.basename(file)
       self.content_type = file[:type]
@@ -49,6 +71,8 @@ module Media
       FileUtils.copy(source, target)
       return target
     end
+
+    #########################################################
 
     def get_preview(size = nil)
       unless size.blank?
@@ -125,13 +149,17 @@ module Media
     # basing the shard on (some non-zero) part of the guid gives us a trivial 'storage balancer' which completely ignores
     # any size attributes of the file, and distributes amongst directories pseudorandomly (which in practice averages out in the long-term).
     def file_storage_location
-      #mongo# ::File.join(FILE_STORAGE_DIR, shard, guid)
-      ::File.join(FILE_STORAGE_DIR, filename)
+      # OPTIMIZE
+      dir = ::File.join(FILE_STORAGE_DIR, shard)
+      ::FileUtils.mkdir_p(dir)
+      ::File.join(dir, guid)
     end
   
     def thumbnail_storage_location
-      #mongo# ::File.join(THUMBNAIL_STORAGE_DIR, shard, guid)
-      ::File.join(THUMBNAIL_STORAGE_DIR, filename)
+      # OPTIMIZE
+      dir = ::File.join(THUMBNAIL_STORAGE_DIR, shard)
+      ::FileUtils.mkdir_p(dir)
+      ::File.join(dir, guid)
     end
 
     def make_thumbnails(sizes = nil)

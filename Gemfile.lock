@@ -130,9 +130,13 @@ GEM
       polyglot
       polyglot (>= 0.3.1)
     tzinfo (0.3.29)
-    uglifier (1.0.2)
+    uglifier (1.0.3)
       execjs (>= 0.3.0)
       multi_json (>= 1.0.2)
+    uuidtools (2.1.2)
+    zencoder (2.3.1)
+      activesupport
+      i18n
 
 PLATFORMS
   ruby
@@ -154,4 +158,6 @@ DEPENDENCIES
   ruby-debug19 (~> 0.11.6)
   sass (~> 3.1.7)
   sass-rails
-  uglifier (~> 1.0.2)
+  uglifier (~> 1.0.3)
+  uuidtools (~> 2.1.2)
+  zencoder (~> 2.3.1)
