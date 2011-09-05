@@ -143,6 +143,46 @@ module Media
 
     #########################################################
 
+    # Video thumbnails only come in one size (large) because re-encoding these costs money and they only make sense
+    # in the media_entries/show view anyhow (not in smaller versions).
+    def assign_video_thumbnails_to_preview
+      content_type = "video/webm"
+      if previews.where(:content_type => content_type).empty?
+        paths = retrieve_encoded_files
+        unless paths.empty?
+          paths.each do |path|
+            if File.extname(path) == ".webm"
+              # Must have Exiftool with Image::ExifTool::Matroska to support WebM!
+              w, h = exiftool_obj(path, ["Composite:ImageSize"])[0][0][1].split("x")
+              if previews.create(:content_type => content_type, :filename => File.basename(path), :width => w.to_i, :height => h.to_i, :thumbnail => 'large')
+                return true
+              else
+                return false
+              end
+            end
+          end
+        end
+      end
+    end
+  
+    def assign_audio_previews
+      content_type = "audio/ogg"
+      if previews.where(:content_type => content_type).empty?
+        paths = retrieve_encoded_files
+        unless paths.empty?
+          paths.each do |path|
+            if File.extname(path) == ".ogg"
+              if previews.create(:content_type => content_type, :filename => File.basename(path), :width => 0, :height => 0, :thumbnail => 'large')
+                return true
+              else
+                return false
+              end
+            end
+          end
+        end
+      end
+    end
+
     private
 
     # The final resting place of the media file. consider it permanent storage.
@@ -198,6 +238,28 @@ module Media
       end
     end
 
+    def retrieve_encoded_files
+      require 'lib/encode_job'
+      paths = []
+      
+      unless self.job_id.blank?
+        job = EncodeJob.new(self.job_id)
+        if job.finished?
+          # Get the encoded files via FTP
+          job.encoded_file_urls.each do |f|
+            filename = File.basename(f)
+            prefix = "#{thumbnail_storage_location}_encoded"
+            path = "#{prefix}_#{filename}"
+            `wget #{f} -O #{path}`
+            if $? == 0
+              paths << path
+            end
+          end
+        end
+      end
+      return paths
+    end
+  
   end
 end
 
