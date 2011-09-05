@@ -11,6 +11,7 @@ defaults: &defaults
   # or you will experience querying inconsistencies in dev mode.
   # Note that this will severely decrease performance in dev mode only.
   preload_models: true
+  identity_map_enabled: true
 
 
 development:
