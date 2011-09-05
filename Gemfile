@@ -14,7 +14,7 @@ gem 'coffee-script', '~> 2.2.0'
 gem 'uglifier', '~> 1.0.3'
 gem 'jquery-rails', '~> 1.0.13'
 
-gem 'mongoid_search', '~> 0.2.7' # alternatives: 'mongoid_fulltext' #for elasticsearch# gem 'tire', '~> 0.1.15'
+gem 'mongoid_search', '~> 0.2.7' # alternatives: 'mongoid_fulltext'
 gem 'mongoid-tree', '~> 0.6.1', :require => 'mongoid/tree' # alternatives: 'mongoid_acts_as_tree', 'mongoid_nested_set'
 
 gem 'cancan', '~> 1.6.5'

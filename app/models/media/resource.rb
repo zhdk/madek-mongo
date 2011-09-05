@@ -45,30 +45,6 @@ module Media
 
     #mongo# TODO index "meta_data.meta_key_id", unique: true
 
-=begin #old#
-    include Tire::Model::Search
-    include Tire::Model::Callbacks
-    index_name 'mongo-resources'
-    def to_indexed_json
-      #self.to_json(:include => :meta_data)
-      self.to_json
-    end
-#Media::Resource.elasticsearch_index.delete
-#Media::Resource.elasticsearch_index.import Media::Resource.all
-#Media::Resource.elasticsearch_index.refresh
-## s = Media::Resource.search "*"
-=end    
-  
-=begin #old#
-    def self.search(query)
-      #ok# where(:filename => /testbild_e/)
-      #nok# where(:meta_data.exists => query)
-      #nok# where("meta_data.values" => /Betty/)
-      #Media::Resource.where(:permissions.matches => {:subject_id => self.id, action => true})    
-      #where(:meta_data.any => {:value ~=})
-    end
-=end
-
     include Mongoid::Search
     search_in :meta_data => :to_s #:value #, { :allow_empty_search => true }
 
