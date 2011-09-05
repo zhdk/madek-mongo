@@ -16,7 +16,7 @@ module Media
     field :guid, type: String
     field :content_type, type: String
     field :filename, type: String
-    field :meta_data, type: Hash, default: {} #mongo# TODO 
+    field :meta_data, type: Hash #, default: {} #mongo# TODO 
     field :size, type: Integer
     field :height, type: Integer
     field :width, type: Integer
@@ -113,6 +113,7 @@ module Media
 
     # OPTIMIZE
     def meta_data_without_binary
+      meta_data ||= {}
       meta_data.reject{|k,v| ["!binary |", "Binary data"].any?{|x| v.to_yaml.include?(x)}}
     end
 

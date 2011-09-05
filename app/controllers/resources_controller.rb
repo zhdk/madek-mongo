@@ -20,7 +20,7 @@ class ResourcesController < ApplicationController
                                :per_page => resources.size,
                                :total_entries => resources.total_count,
                                :total_pages => resources.num_pages },
-              :entries => resources.as_json({:user => current_user}) }.to_json
+              :entries => resources.as_json({:user => current_user, :ability => current_ability}) }.to_json
 
     ################################################
 
@@ -44,7 +44,7 @@ class ResourcesController < ApplicationController
                                  :per_page => resources.size,
                                  :total_entries => resources.total_count,
                                  :total_pages => resources.num_pages },
-                :entries => resources.as_json({:user => current_user}) }.to_json
+                :entries => resources.as_json({:user => current_user, :ability => current_ability}) }.to_json
     end
 
     respond_to do |format|

@@ -88,7 +88,6 @@ module Media
         :is_manageable => !!permissions.detect {|x| x.subject_id == user.id and x.manage },
         :can_maybe_browse => !meta_data.for_meta_terms.blank?,
         :is_favorite => user.favorite_resources.include?(self),
-        :thumb_base64 => thumb_base64(:small_125),
         :title => meta_data.get_value_for("title"),
         :author => meta_data.get_value_for("author") }
     end

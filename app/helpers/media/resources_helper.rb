@@ -4,9 +4,7 @@ module Media
 
     def thumb_for(resource, size = :small_125, options = {})
       media_file = if resource.is_a?(Media::Set)
-        # OPTIMIZE
-        ids = resource.media_resource_ids #mongo# TODO & current_user.accessible_resource_ids
-        resource.media_resources.where(:_id => ids.first).first.try(:media_file)
+        resource.media_file(current_ability)
       else
         resource.media_file
       end

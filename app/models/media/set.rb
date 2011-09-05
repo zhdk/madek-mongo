@@ -13,15 +13,15 @@ module Media
     ## super(:only => [:email, :name], :include =>[:addresses])
     #end
     def as_json(options={})
-      h = { :is_set => true }
+      ability = options[:ability]
+      h = { :is_set => true,
+            :thumb_base64 => media_file(ability).try(:thumb_base64, :small_125) }
       super(options).merge(h)
     end
 
-    def thumb_base64(size = :small)
-      # OPTIMIZE permissions
-      media_resources.first.try(:thumb_base64, size)
+    def media_file(ability)
+      media_resources.accessible_by(ability).first.try(:media_file)
     end
-
 
     ########################################################
     

@@ -8,12 +8,9 @@ module Media
     ###############################
 
     def as_json(options={})
-      h = { :is_set => false }
+      h = { :is_set => false,
+            :thumb_base64 => media_file.try(:thumb_base64, :small_125) }
       super(options).merge(h)
-    end
-
-    def thumb_base64(size = :small)
-      media_file.try(:thumb_base64, size)
     end
 
     ###############################
