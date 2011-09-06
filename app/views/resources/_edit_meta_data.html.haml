@@ -3,7 +3,7 @@
 
   :ruby
     # if meta_data are sent in it means that we are editing multiple resources at once
-    meta_data ||= resource.meta_data.for_context(context)
+    meta_data ||= resource.object.meta_data.for_context(context)
 
     labels = {}
     last_label = nil
@@ -20,35 +20,29 @@
     end
     labels.delete_if {|k, v| v.size < 2 }
 
-  - @i ||= Time.now.to_i
-  - meta_data.each do |md| # meta_data.each_with_index do |md, i|	
-    - label = md.meta_key.label
-    - next if md.meta_key.is_dynamic? and not ["copyright usage", "copyright url"].include?(label) # OPTIMIZE
-    =# resource.fields_for :meta_data, md do |meta_datum|
-    - field_name = "resource[meta_data_attributes][#{context.id}-#{@i}]"
-    = fields_for field_name, md do |meta_datum|
-      :ruby
-        definition = context.meta_definitions.where(:meta_key_id => meta_datum.object.meta_key_id).first
-        underscored_label = label.gsub(/\W+/, '_')
-        parent_underscored_label = labels.detect {|x| x.last.include?(label) }.try(:first).try(:gsub, /\W+/, '_')
-        is_parent = (!parent_underscored_label and labels.has_key?(label))
-        classes = [meta_datum.object.meta_key.object_type]
-        classes << "parent" if is_parent
-        classes.compact!
-
-      %ul{:"data-meta_key" => underscored_label, :"data-parent_meta_key" => parent_underscored_label, :class => (classes.blank? ? nil : classes.join(' '))}
-        %li.label{:style => "width: 30%;"}
-          = definition.label
-          - if definition.hint
-            %span.hint
-              = definition.hint
-          - if is_parent
-            .expander
-              = link_to _("+ Weitere Angaben"), "#"
-        %li{:style => "width: 55%;"}
-          = meta_datum.hidden_field :id unless meta_datum.object.new_record?
-          =#mongo# meta_datum.hidden_field :keep_original_value, :class => "keep" if meta_datum.object.keep_original_value
-          = field_tag(meta_datum, context)
-        %li{:style => "width: auto;"}
-          = description_toggler(definition) # TODO unescape html with !=
-    - @i += 1
+  = resource.fields_for :meta_data, meta_data do |meta_datum|
+    :ruby
+      label = meta_datum.object.meta_key.label
+      next if meta_datum.object.meta_key.is_dynamic? and not ["copyright usage", "copyright url"].include?(label) # OPTIMIZE
+      definition = context.meta_definitions.where(:meta_key_id => meta_datum.object.meta_key_id).first
+      underscored_label = label.gsub(/\W+/, '_')
+      parent_underscored_label = labels.detect {|x| x.last.include?(label) }.try(:first).try(:gsub, /\W+/, '_')
+      is_parent = (!parent_underscored_label and labels.has_key?(label))
+      classes = [meta_datum.object.meta_key.object_type]
+      classes << "parent" if is_parent
+      classes.compact!
+    %ul{:"data-meta_key" => underscored_label, :"data-parent_meta_key" => parent_underscored_label, :class => (classes.blank? ? nil : classes.join(' '))}
+      %li.label{:style => "width: 30%;"}
+        = definition.label
+        - if definition.hint
+          %span.hint
+            = definition.hint
+        - if is_parent
+          .expander
+            = link_to _("+ Weitere Angaben"), "#"
+      %li{:style => "width: 55%;"}
+        = meta_datum.hidden_field :id unless meta_datum.object.new_record?
+        =#mongo# meta_datum.hidden_field :keep_original_value, :class => "keep" if meta_datum.object.keep_original_value
+        = field_tag(meta_datum, context)
+      %li{:style => "width: auto;"}
+        = description_toggler(definition) # TODO unescape html with !=
