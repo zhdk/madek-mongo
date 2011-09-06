@@ -8,7 +8,7 @@ module Media
 
     has_and_belongs_to_many :media_sets, class_name: "Media::Set", inverse_of: :media_resources # NOTE need inverse_of
 
-    #field :meta_data, type: Hash, default: {} # {:key_id => :value, ...}
+    #mongo# TODO ?? index "meta_data.meta_key_id", unique: true
     embeds_many :meta_data, :class_name => "Meta::Datum" do # TODO validates_uniqueness :meta_key
       def get(key_id)
         r = where(:_id => key_id).first # OPTIMIZE prevent find if is_dynamic meta_key
@@ -29,9 +29,9 @@ module Media
       end
     end
     #mongo#
-    #accepts_nested_attributes_for :meta_data, :allow_destroy => true,
-    #                              :reject_if => proc { |attributes| attributes['value'].blank? and attributes['_destroy'].blank? }
-    #                              # NOTE the check on _destroy should be automatic, check Rails > 3.0.3
+    accepts_nested_attributes_for :meta_data, :allow_destroy => true,
+                                  :reject_if => proc { |attributes| attributes['value'].blank? and attributes['_destroy'].blank? }
+                                  # NOTE the check on _destroy should be automatic, check Rails > 3.0.3
 
     #mongo# TODO validates_uniqueness :subject
     embeds_many :permissions
@@ -42,8 +42,6 @@ module Media
     default_scope order_by([[:updated_at, :desc], [:created_at, :desc]])
 
     #########################################################
-
-    #mongo# TODO index "meta_data.meta_key_id", unique: true
 
     include Mongoid::Search
     search_in :meta_data => :to_s #:value #, { :allow_empty_search => true }

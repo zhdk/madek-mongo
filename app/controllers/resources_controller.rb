@@ -54,6 +54,28 @@ class ResourcesController < ApplicationController
     #tmp# respond_with @resource
   end
 
+  def update
+    authorize! :update, @resource => Media::Resource
+
+    #mongo# if @resource.update_attributes(params[:resource], current_user)
+    if @resource.update_attributes(params[:resource])
+      flash[:notice] = "Die Änderungen wurden gespeichert."
+    else
+      flash[:error] = "Die Änderungen wurden nicht gespeichert."
+    end
+
+    respond_to do |format|
+      format.html {
+        #mongo#
+        #if @resource.is_a? Snapshot
+        #  redirect_to snapshots_path
+        #else
+          redirect_to :action => :show
+        #end
+      }
+    end
+  end
+
 ############################################################################################
 
   def browse

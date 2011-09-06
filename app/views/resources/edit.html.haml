@@ -19,7 +19,6 @@
             %li= link_to _("Metadaten für MIZ-Archiv editieren"), edit_tms_media_entry_path(@resource), :style => "line-height: 1em; float: none; padding: 5px 0; font-size: 0.8em;"
     .grid_9
       %h3= _("Metadaten editieren")
-      =#mongo# form_for @resource, :as => :resource, :url => [:update_multiple, @resource, :meta_data], :html => {:method => :put} do |resource|
       = form_for @resource, :as => :resource, :url => resource_path(@resource) do |resource|
         - meta_contexts = Meta::Context.default_contexts #mongo# TODO + @resource.individual_contexts
         #detail_specification.tabs
@@ -30,9 +29,9 @@
               - else
                 %li=#mongo# TODO link_to meta_context, polymorphic_path([:edit_multiple, @resource, :meta_data], :context_id => meta_context)
           - meta_contexts[0,1].each do |meta_context|
-            = render :partial => "upload/edit_meta_data", :locals => { :resource => @resource, :context => meta_context, :with_actions => false }
+            = render :partial => "edit_meta_data", :locals => { :resource => resource, :context => meta_context }
           
         %div{:class => "save_buttons"}
           = link_to _("Abbrechen"), resource_path(@resource), :class => "buttons"
-          =#mongo# resource.submit _("Speichern")
+          = resource.submit _("Speichern")
 .clear
