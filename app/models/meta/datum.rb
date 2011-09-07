@@ -24,7 +24,8 @@ module Meta
 
     #########################################################
 
-    before_save do
+    # NOTE before_save is too late!
+    before_validation do
       #return false if @value.nil? #mongo#
       case meta_key.object_type
         when "Meta::Copyright"

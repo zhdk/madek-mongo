@@ -29,9 +29,21 @@ module Media
       end
     end
     #mongo#
-    accepts_nested_attributes_for :meta_data, :allow_destroy => true,
-                                  :reject_if => proc { |attributes| attributes['value'].blank? and attributes['_destroy'].blank? }
+    #accepts_nested_attributes_for :meta_data, :allow_destroy => true #,
+                                  #mongo# :reject_if => proc { |attributes| attributes['value'].blank? and attributes['_destroy'].blank? }
                                   # NOTE the check on _destroy should be automatic, check Rails > 3.0.3
+    # NOTE alternative to accepts_nested_attributes_for
+    def meta_data_attributes=(attributes)
+      attributes.values.each do |h|
+        next if h[:id].blank? and h[:value].blank?
+        if (id = h.delete(:id))
+          meta_data.find(id).update_attributes(h)
+        else
+          meta_data.build(h)
+        end
+      end
+    end    
+
 
     #mongo# TODO validates_uniqueness :subject
     embeds_many :permissions
@@ -46,6 +58,41 @@ module Media
     include Mongoid::Search
     search_in :meta_data => :to_s #:value #, { :allow_empty_search => true }
 
+    #########################################################
+
+=begin
+    def update_attributes_with_pre_validation(new_attributes, current_user = nil)
+      # we need to deep copy the attributes for batch edit (multiple resources)
+      dup_attributes = Marshal.load(Marshal.dump(new_attributes))
+
+      # To avoid overriding at batch update: remove from attribute hash if :keep_original_value and value is blank
+      dup_attributes[:meta_data_attributes].delete_if { |key, attr| attr[:keep_original_value] and attr[:value].blank? }
+
+      dup_attributes[:meta_data_attributes].each_pair do |key, attr|
+        if attr[:value].is_a? Array and attr[:value].all? {|x| x.blank? }
+          attr[:value] = nil
+        end
+
+        # find existing meta_datum, if it exists
+        if attr[:id].blank? and (md = meta_data.where(:meta_key_id => attr[:meta_key_id]).first)
+          attr[:id] = md.id
+        end
+
+        # get rid of meta_datum if value is blank
+        if !attr[:id].blank? and attr[:value].blank?
+          attr[:_destroy] = true
+          #old# attr[:value] = "." # NOTE bypass the validation
+        end
+      end if dup_attributes[:meta_data_attributes]
+
+      #mongo# self.editors << current_user if current_user # OPTIMIZE group by user ??
+      #mongo# still needed ?? or move to before_save or before_update ??
+      self.updated_at = Time.now # used for cache invalidation and sphinx reindex # OPTIMIZE touch or sphinx_touch ??
+
+      update_attributes_without_pre_validation(dup_attributes)
+    end
+    alias_method_chain :update_attributes, :pre_validation
+=end
     #########################################################
 
     def as_json(options={})
