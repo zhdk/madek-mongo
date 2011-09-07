@@ -23,12 +23,9 @@
         - meta_contexts = Meta::Context.default_contexts #mongo# TODO + @resource.individual_contexts
         #detail_specification.tabs
           %ul
-            - meta_contexts.each_with_index do |meta_context, index|
-              - if index == 0
-                %li= link_to meta_context, "##{meta_context.name}"
-              - else
-                %li=#mongo# TODO link_to meta_context, polymorphic_path([:edit_multiple, @resource, :meta_data], :context_id => meta_context)
-          - meta_contexts[0,1].each do |meta_context|
+            - meta_contexts.each do |meta_context|
+              %li= link_to meta_context, "##{meta_context.name}"
+          - meta_contexts.each do |meta_context|
             = render :partial => "edit_meta_data", :locals => { :resource => resource, :context => meta_context }
           
         %div{:class => "save_buttons"}
