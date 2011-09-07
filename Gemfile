@@ -33,4 +33,10 @@ gem 'mini_exiftool', '~> 1.3.1'
 
 group :test, :development do
   gem 'ruby-debug19', '~> 0.11.6', :require => 'ruby-debug'
+  gem 'cucumber'
+  gem 'cucumber-rails'
+  gem 'capybara'
+  gem 'selenium-webdriver'
+  gem 'rspec-rails'
+  gem 'launchy'
 end
