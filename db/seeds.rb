@@ -12,7 +12,8 @@
          "User" => {},
          "User_favorites" => {},
          Person => {},
-         Group => {}
+         Group => {},
+         Meta::Department => {}
        }
 
 #old# parsed_import = JSON.parse(`curl http://localhost:4000/admin/media_entries/export.js`)
@@ -123,8 +124,9 @@ end
 puts "Importing groups..."
 parsed_import["subjects"]["groups"].each do |h|
   person_ids = h.delete("person_ids")
-  group = factory_subject(h, Group)
-  group.people << person_ids.map {|id| @map[Person][id] }
+  type = h.delete("type")
+  group = factory_subject(h, type.constantize)
+  group.people << person_ids.map {|id| @map[Person][id] } unless person_ids.blank?
 end
 
 ##########################################################################
@@ -152,14 +154,8 @@ def factory_meta_data(h, resource)
     value = md.delete("value")
     meta_key = @map[Meta::Key][md["meta_key_id"]]
     v = case meta_key.object_type
-      when "Person"
-        value.map {|x| @map[Person][x] }
-      when "Meta::Copyright"
-        value.map {|x| @map[Meta::Copyright][x] }
-      when "Meta::Department"
-        value.map {|x| @map[Group][x] }
-      when "Meta::Term"
-        value.map {|x| @map[Meta::Term][x] }
+      when "Person", "Meta::Copyright", "Meta::Department", "Meta::Term"
+        value.map {|x| @map[meta_key.object_type.constantize][x] }
       when "Meta::Keyword"
         md["deserialized_value"].map do |dv|
           { :meta_term => @map[Meta::Term][dv["meta_term_id"]],
