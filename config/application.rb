@@ -64,4 +64,4 @@ FILE_UTIL_PATH = "/usr/bin/file " + (`uname -s`.include?("Darwin") ? "-Ib" : "-i
 #mongo#new# FILE_UTIL_PATH = "/usr/bin/file -b --mime-type"
 
 
-RELEASE_VERSION = "0.3.6.1"
+RELEASE_VERSION = "0.4"
