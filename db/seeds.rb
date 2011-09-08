@@ -98,6 +98,17 @@ end
 
 ##########################################################################
 
+puts "Importing usage_terms..."
+
+parsed_import["usage_terms"].each do |h|
+  attr = {}
+  h.each_pair {|k,v| attr[k.to_sym] = v  }
+  klass = UsageTerm
+  klass.create(attr)  
+end
+
+##########################################################################
+
 puts "Importing people..."
 
 def factory_subject(h, klass)
@@ -105,7 +116,10 @@ def factory_subject(h, klass)
   user = h.delete("user")
   attr = {}
   h.each_pair {|k,v| attr[k.to_sym] = v }
-  [:login, :email].each {|k| attr[k] = user[k.to_s] } if user
+  if user
+    [:login, :email].each {|k| attr[k] = user[k.to_s] }
+    attr[:usage_terms_accepted_at] = DateTime.parse(user["usage_terms_accepted_at"]) if user["usage_terms_accepted_at"]
+  end
   subject = klass.create(attr)
   @map[klass][id] = subject
   if user

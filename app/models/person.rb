@@ -60,6 +60,28 @@ class Person < Subject
   end
 
   #########################################################
+  #mongo# TODO embedded user class ??
+
+=begin
+  def login=(value)
+    write_attribute :login, (value ? value.downcase : nil)
+  end
+
+  def email=(value)
+    write_attribute :email, (value ? value.downcase : nil)
+  end
+=end
+
+  # TODO check against usage_terms version ??
+  def usage_terms_accepted?
+    usage_terms_accepted_at.to_i >= UsageTerm.current.updated_at.to_i
+  end
+  
+  def usage_terms_accepted!
+    update_attributes(:usage_terms_accepted_at => DateTime.now)
+  end
+
+  #########################################################
 
   # class method to parse a name out of something that purports 
   # to be a name representing a natural person.

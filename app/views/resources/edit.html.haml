@@ -28,7 +28,7 @@
           - meta_contexts.each do |meta_context|
             = render :partial => "edit_meta_data", :locals => { :resource => resource, :context => meta_context }
           
-        %div{:class => "save_buttons"}
+        .save_buttons
           = link_to _("Abbrechen"), resource_path(@resource), :class => "buttons"
           = resource.submit _("Speichern")
 .clear
