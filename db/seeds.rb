@@ -7,6 +7,7 @@
 @map = { Meta::Copyright => {},
          Meta::Term => {},
          Meta::Key => {},
+         Meta::Context => {},
          Media::Set => {},
          Media::Entry => {},
          "User" => {},
@@ -51,6 +52,7 @@ end
 puts "Importing contexts..."
 
 def factory_meta_context(h)
+  id = h.delete("id")
   field = h.delete("meta_field")
   definitions = h.delete("meta_key_definitions")
   
@@ -58,7 +60,7 @@ def factory_meta_context(h)
   attr = {}
   h.each_pair {|k,v| attr[k.to_sym] = v }
   [:label, :description].each {|x| attr[x] = @map[Meta::Term][field[x.to_s]] if field[x.to_s] }
-  r = klass.create(attr)
+  @map[klass][id] = r = klass.create(attr)
   
   definitions.each do |definition|
     field = definition.delete("meta_field")
@@ -196,7 +198,8 @@ def factory_resource(h, klass)
 end
 
 parsed_import["media_sets"].each do |h|
-  factory_resource(h, Media::Set)
+  media_set = factory_resource(h, Media::Set)
+  media_set.individual_contexts << h["individual_context_ids"].map {|id| @map[Meta::Context][id] }
 end
 
 ##########################################################################
