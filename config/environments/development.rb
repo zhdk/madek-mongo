@@ -26,4 +26,14 @@ MAdeKMongo::Application.configure do
   config.assets.compress = false
   # Expands the lines which load the assets
   config.assets.debug = false
+
+  # Uses Pry as console
+  silence_warnings do
+    begin
+      require 'pry'
+      IRB = Pry
+      rescue LoadError
+    end
+  end
+  
 end

@@ -30,9 +30,10 @@ gem 'rails_autolink', '~> 1.0.2'
 gem 'zencoder', '~> 2.3.1'
 gem 'uuidtools', '~> 2.1.2'
 gem 'mini_exiftool', '~> 1.3.1'
+gem 'mini_magick', '~> 3.3'
 
 group :test, :development do
-  gem 'ruby-debug19', '~> 0.11.6', :require => 'ruby-debug'
+  gem 'pry' #gem 'ruby-debug19', '~> 0.11.6', :require => 'ruby-debug'
   gem 'cucumber'
   gem 'cucumber-rails'
   gem 'capybara'
