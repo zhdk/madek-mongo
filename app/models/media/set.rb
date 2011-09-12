@@ -18,12 +18,13 @@ module Media
     def as_json(options={})
       ability = options[:ability]
       h = { :is_set => true,
-            :thumb_base64 => media_file(ability).try(:thumb_base64, :small_125) }
+            :thumb_base64 => main_media_resource(ability).try(:media_file).try(:thumb_base64, :small_125) }
       super(options).merge(h)
     end
 
-    def media_file(ability)
-      media_resources.accessible_by(ability).first.try(:media_file)
+    # OPTIMIZE
+    def main_media_resource(ability)
+      media_resources.accessible_by(ability).first
     end
 
     ########################################################
