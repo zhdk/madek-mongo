@@ -28,6 +28,8 @@ module Media
     embedded_in :media_parent, polymorphic: true
     embeds_many :previews, class_name: "Media::File", as: :media_parent
   
+    # TODO doesn't work# index "previews.thumbnail", unique: true
+
     # TODO validates_format_of :content_type, :with => /^image/,
 
     #########################################################
@@ -75,29 +77,29 @@ module Media
 
     #########################################################
 
-    def get_preview(size = nil)
-      unless size.blank?
+    def get_preview(size)
+=begin #mongo#old#
         #old# p = previews.detect {|x| x.thumbnail == size.to_s}
         p = previews.where(:thumbnail => size).first
         p ||= begin
-          #mongo#
-          #make_thumbnails([size])
-          ##tmp# previews.where(:thumbnail => size.to_s).first
-          #previews.detect {|x| x.thumbnail == size.to_s}
-          
-          # TODO currently only works for image content_type
+          make_thumbnails([size])
+          #tmp# previews.where(:thumbnail => size.to_s).first
+          previews.detect {|x| x.thumbnail == size.to_s}
+        end
+=end
+        # TODO currently only works for image content_type
+        
+        # FIXME the identity map doesn't work, thus a double previews is created for set main entry
+        #tmp# p = previews.find_or_create_by(:thumbnail => size) do |r|
+        p = previews(true).find_or_create_by(:thumbnail => size) do |r|
           image = MiniMagick::Image.open(file_storage_location)
           image.resize THUMBNAILS[size]
           image.format "jpg"
           base64 = Base64.encode64(image.to_blob) #old# Base64.encode64(::File.read(image.path))
-          previews.create(:content_type => image.mime_type, :base64 => base64, :height => image[:height], :width => image[:width], :thumbnail => size )
+          r.attributes = {:content_type => image.mime_type, :base64 => base64, :height => image[:height], :width => image[:width], :thumbnail => size}
         end
         # OPTIMIZE p could still be nil !!
         return p
-      else
-        # get the original # TODO check permissions
-        return file_storage_location
-      end
     end
 
     def thumb_base64(size = :small)
@@ -120,14 +122,7 @@ module Media
       # OPTIMIZE
       unless preview.is_a? String
         return "data:#{preview.content_type};base64,#{preview.base64}" if preview.base64
-
-        file = ::File.join(THUMBNAIL_STORAGE_DIR, shard, preview.filename)
-        if ::File.exist?(file)
-          preview.update_attributes(:base64 => Base64.encode64(::File.read(file)))
-          return "data:#{preview.content_type};base64,#{preview.base64}"
-        else
-          preview = "Image" # OPTIMIZE
-        end
+        preview = "Image"
       end
   
       # nothing found, we show then a placeholder icon
@@ -140,6 +135,7 @@ module Media
           n = (i % 10) + 1
           return "http://lorempixum.com/#{w}/#{h}/#{cat}/#{n}"
         else
+          #mongo# TODO store default thumbnail images in application.settings collection 
           size = (size == :large ? :medium : :small)
           file = "#{Rails.root}/app/assets/images/#{preview}_#{size}.png"
           base64 = Base64.encode64(::File.read(file))
