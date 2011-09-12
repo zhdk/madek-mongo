@@ -20,8 +20,9 @@ module Media
     field :size, type: Integer
     field :height, type: Integer
     field :width, type: Integer
+    #field :access_hash ??
     field :thumbnail, type: String # OPTIMIZE only for previews
-    #`access_hash` ??
+    field :base64, type: String # OPTIMIZE only for previews
 
     #tmp# embedded_in :media_entry, class_name: "Media::Entry"
     embedded_in :media_parent, polymorphic: true
@@ -76,12 +77,20 @@ module Media
 
     def get_preview(size = nil)
       unless size.blank?
-        #tmp# p = previews.where(:thumbnail => size.to_s).first
-        p = previews.detect {|x| x.thumbnail == size.to_s}
+        #old# p = previews.detect {|x| x.thumbnail == size.to_s}
+        p = previews.where(:thumbnail => size).first
         p ||= begin
-          make_thumbnails([size])
-          #tmp# previews.where(:thumbnail => size.to_s).first
-          previews.detect {|x| x.thumbnail == size.to_s}
+          #mongo#
+          #make_thumbnails([size])
+          ##tmp# previews.where(:thumbnail => size.to_s).first
+          #previews.detect {|x| x.thumbnail == size.to_s}
+          
+          # TODO currently only works for image content_type
+          image = MiniMagick::Image.open(file_storage_location)
+          image.resize THUMBNAILS[size]
+          image.format "jpg"
+          base64 = Base64.encode64(image.to_blob) #old# Base64.encode64(::File.read(image.path))
+          previews.create(:content_type => image.mime_type, :base64 => base64, :height => image[:height], :width => image[:width], :thumbnail => size )
         end
         # OPTIMIZE p could still be nil !!
         return p
@@ -107,13 +116,15 @@ module Media
                   else 
                     "Doc"
                 end
-  
+    
       # OPTIMIZE
       unless preview.is_a? String
+        return "data:#{preview.content_type};base64,#{preview.base64}" if preview.base64
+
         file = ::File.join(THUMBNAIL_STORAGE_DIR, shard, preview.filename)
         if ::File.exist?(file)
-         output = ::File.read(file)
-         return "data:#{preview.content_type};base64,#{Base64.encode64(output)}"
+          preview.update_attributes(:base64 => Base64.encode64(::File.read(file)))
+          return "data:#{preview.content_type};base64,#{preview.base64}"
         else
           preview = "Image" # OPTIMIZE
         end
@@ -130,8 +141,9 @@ module Media
           return "http://lorempixum.com/#{w}/#{h}/#{cat}/#{n}"
         else
           size = (size == :large ? :medium : :small)
-          output = ::File.read("#{Rails.root}/app/assets/images/#{preview}_#{size}.png")
-          return "data:#{content_type};base64,#{Base64.encode64(output)}"
+          file = "#{Rails.root}/app/assets/images/#{preview}_#{size}.png"
+          base64 = Base64.encode64(::File.read(file))
+          return "data:#{content_type};base64,#{base64}"
       end
     end
 
@@ -202,6 +214,7 @@ module Media
       ::File.join(dir, guid)
     end
 
+    #mongo# TODO remove this method ??
     def make_thumbnails(sizes = nil)
       # this should be a background job
       if content_type.include?('image')
@@ -211,6 +224,7 @@ module Media
         covershot = "#{thumbnail_storage_location}_covershot.png"
         # You can use the -ss option to determine the temporal position in the stream you want to grab from (in seconds)
         conversion = `ffmpeg -i #{file_storage_location} -y -vcodec png -vframes 1 -an -f rawvideo #{covershot}`
+        #mongo# TODO get base64 directly
         thumbnail_jpegs_for(covershot, sizes)
         submit_encoding_job
       elsif content_type.include?('audio')
@@ -219,12 +233,12 @@ module Media
       end
     end
 
+    #mongo# TODO remove this method
     def thumbnail_jpegs_for(file, sizes = nil)
       return unless ::File.exist?(file)
       THUMBNAILS.each do |thumb_size,value|
         next if sizes and !sizes.include?(thumb_size)
-        tmparr = "#{thumbnail_storage_location}_#{thumb_size.to_s}"
-        outfile = [tmparr, 'jpg'].join('.')
+        outfile = "#{thumbnail_storage_location}_#{thumb_size.to_s}.jpg"
         `convert -verbose "#{file}" -auto-orient -thumbnail "#{value}" -flatten -unsharp 0x.5 "#{outfile}"`
         if ::File.exists?(outfile)
           x,y = `identify -format "%wx%h" "#{outfile}"`.split('x')
