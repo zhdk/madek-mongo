@@ -54,18 +54,14 @@ class Authenticator::ZhdkController < ApplicationController
                              :lastname => xml["lastname"],
                              :login => xml["local_username"])
     
-    #mongo# TODO
-=begin                                     
     g = xml['memberof']['group'].map {|x| x.gsub("zhdk/", "") }
-    new_groups = Meta::Department.where(:ldap_name => g)
-    to_add = (new_groups - person.groups.departments)
-    to_remove = (person.groups.departments - new_groups)
-    person.groups << to_add
-    person.groups.delete(to_remove)
+    new_groups = Meta::Department.where(:ldap_name.in => g)
+    person.groups -= person.groups.departments
+    person.groups << new_groups
     
     zhdk_group = Group.where(:name => "ZHdK (Zürcher Hochschule der Künste)").first
     person.groups << zhdk_group unless person.groups.include?(zhdk_group) 
-=end
+
     person.id
   end
   
