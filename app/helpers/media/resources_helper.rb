@@ -4,7 +4,7 @@ module Media
 
     def thumb_for(resource, size = :small_125, options = {})
       media_file = if resource.is_a?(Media::Set)
-        resource.media_file(current_ability)
+        resource.main_media_resource(current_ability).try(:media_file)
       else
         resource.media_file
       end

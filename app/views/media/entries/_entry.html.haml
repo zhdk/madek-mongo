@@ -74,6 +74,6 @@
     #detail-excerpt.sidebar-box
       = display_core_meta_data_for(entry)
       - sets = entry.media_sets.accessible_by(current_ability)
-      = media_sets_list(sets) unless sets.empty?
+      = media_sets_list(sets, true) unless sets.empty?
 
 .clear
