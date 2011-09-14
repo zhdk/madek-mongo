@@ -2,11 +2,16 @@ source 'http://rubygems.org'
 
 gem 'rails', '3.1.0'
 
-gem 'mongoid', '~> 2.2.0'
+#old# gem 'mongoid', '~> 2.2.0'
+gem 'mongoid', '~> 2.2.0', :git => "git://github.com/mongoid/mongoid.git", :branch => "2.2.0-stable"
 gem 'bson_ext', '~> 1.3.1'
 
+gem 'mongoid_search', '~> 0.2.7' # alternatives: 'mongoid_fulltext'
+gem 'mongoid-tree', '~> 0.6.1', :require => 'mongoid/tree' # alternatives: 'mongoid_acts_as_tree', 'mongoid_nested_set'
+#old# gem 'mongoid_identity_map', '~> 0.4.0' #tmp# TODO remove when integrated into mongoid
+
 # Asset template engines
-gem 'json', '~> 1.5.4'
+gem 'json', '~> 1.6'
 gem 'haml', '~> 3.1.2'
 gem 'sass', '~> 3.1.7'
 gem 'coffee-script', '~> 2.2.0'
@@ -18,9 +23,6 @@ group :assets do
   gem 'coffee-rails', '~> 3.1.0'
   gem 'uglifier', '~> 1.0.3'
 end
-
-gem 'mongoid_search', '~> 0.2.7' # alternatives: 'mongoid_fulltext'
-gem 'mongoid-tree', '~> 0.6.1', :require => 'mongoid/tree' # alternatives: 'mongoid_acts_as_tree', 'mongoid_nested_set'
 
 gem 'cancan', '~> 1.6.5'
 
