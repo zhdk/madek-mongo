@@ -1,9 +1,8 @@
 source 'http://rubygems.org'
 
-gem 'rails', '3.1.0'
+gem 'rails', '3.1.1.rc1'
 
-#old# gem 'mongoid', '~> 2.2.0'
-gem 'mongoid', '~> 2.2.0', :git => "git://github.com/mongoid/mongoid.git", :branch => "2.2.0-stable"
+gem 'mongoid', '~> 2.2.0' #tmp# , :git => "git://github.com/mongoid/mongoid.git", :branch => "2.2.0-stable"
 gem 'bson_ext', '~> 1.3.1'
 
 gem 'mongoid_search', '~> 0.2.7' # alternatives: 'mongoid_fulltext'
@@ -12,16 +11,16 @@ gem 'mongoid-tree', '~> 0.6.1', :require => 'mongoid/tree' # alternatives: 'mong
 
 # Asset template engines
 gem 'json', '~> 1.6'
-gem 'haml', '~> 3.1.2'
-gem 'sass', '~> 3.1.7'
-gem 'coffee-script', '~> 2.2.0'
-gem 'jquery-rails', '~> 1.0.13'
+gem 'haml', '~> 3.1'
+gem 'sass', '~> 3.1'
+gem 'coffee-script', '~> 2.2'
+gem 'jquery-rails', '~> 1.0'
 
 # Gems used only for assets and not required in production environments by default.
 group :assets do
-  gem 'sass-rails', '~> 3.1.0'
-  gem 'coffee-rails', '~> 3.1.0'
-  gem 'uglifier', '~> 1.0.3'
+  gem 'sass-rails', '~> 3.1'
+  gem 'coffee-rails', '~> 3.1'
+  gem 'uglifier', '~> 1.0'
 end
 
 gem 'cancan', '~> 1.6.5'
