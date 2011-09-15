@@ -1,79 +1,216 @@
-.container_12
-  #detail-main.grid_8.alpha
-    %h2.title{:style => "margin: 0 10px 10px 0;"}
-      = entry.meta_data.get_value_for("title")
-    #detail-image
-      = thumb_for(entry, :large)
+- can_edit = can? :update, entry => Media::Resource
+- is_expert = false #mongo# current_user.groups.is_member?("Expert")
 
+%section#content_head
+  .container_12.clearfix
+    #page_head
+      #detail-main.grid_12
+        /
+          %h2.title{:style => "margin: 0 10px 10px 0;"}
+            = entry.meta_data.get_value_for("title")
 
-
-    #detail-action-bar.clearfix
-      %ul#toggle-panel.clearfix
-        - if can? :update, entry => Media::Resource
-          %li
-            = link_to edit_resource_path(entry), :title => _("Editieren") do
-              .button_edit_active
-        %li
-          %span.favorite_link{:id => "fav_#{entry.id}", :title => _("Favorit")}
-            =#mongo# render :partial => "media_entries/favorite_link", :locals => {:entry => entry}
-        %li
-          = link_to browse_resource_path(entry), :title => _("Erkunden") do
-            .button_explore
-        %li
-          = link_to "#", :panel => "download", :title => _("Exportieren") do
-            .button_download
-        %li
-          = link_to "#", :panel => "media_set", :title => _("Zu Set/Projekt hinzufügen") do
-            .button_addto
-        - if can? :manage, entry => Media::Resource
-          %li
-            = link_to "#", :panel => "delete", :title => _("Löschen") do
-              .button_delete_active
+        .head-tabs
+          #tab-info.clearfix
+            %ul.tab-nav
+              %li.tab-info.ir
+                = _("Information")
+              %li
+                =# link_to _("Zugriffsberechtigungen"), edit_multiple_media_entry_permissions_path(media_entry)
+                = link_to _("Zugriffsberechtigungen"), "#tab-permission", :class => "tab-permission ir"
+              %li= link_to _("Aktivitäten"), "#tab-activity", :class => "tab-activity ir"
+            .tab-content
+              .detail-image.grid_9.alpha.omega
+                = thumb_for(entry, :large)
+              #detail-sidebar.grid_3.omega
+                #detail-excerpt.sidebar-box
+                  = display_core_meta_data_for(entry)
+                  - if is_expert 
+                    - unless entry.snapshots.empty?
+                      .notice_tms
+                        - date = entry.snapshots.first.created_at.to_formatted_s(:date)
+                        - time = entry.snapshots.first.created_at.to_formatted_s(:time)
+                        = "Eine Kopie dieses Medieneintrages wurde am #{date} um #{time} Uhr für das MIZ-Archiv erstellt."
+                    - unless entry.snapshotable?
+                      .notice_tms{:style => "margin-top: 100px;"}
+                        = _("Diese Kopie wird gegenwärtig durch das MIZ-Archiv bearbeitet.")
+                =#mongo# render :partial => "media_entries/browsing"
+                
+          #tab-permission.clearfix.tab-hide
+            %ul.tab-nav
+              %li= link_to _("Information"), "#tab-info", :class => "tab-info ir"
+              %li.tab-permission.ir
+                = _("Zugriffsberechtigungen")
+              %li= link_to _("Aktivitäten"), "#tab-activity", :class => "tab-activity ir"
+            .tab-content
+              .detail-image.grid_3.alpha
+                = thumb_for(entry, :small)
+              .grid_9.omega
+                %h2
+                  = _("Zugriffsberechtigungen")
+                - # TODO #working here#
+                -# @resource = entry
+                -# @permissions_json = @resource.permissions.to_json
+                =# render :partial => "permissions/edit_multiple"
+          #tab-activity.clearfix.tab-hide
+            %ul.tab-nav
+              %li= link_to _("Information"), "#tab-info", :class => "tab-info ir"
+              %li= link_to _("Zugriffsberechtigungen"), "#tab-permission", :class => "tab-permission ir"
+              %li.tab-activity.ir
+                = _("Aktivitäten")
+            .tab-content              
+              .detail-image.grid_3.alpha
+                = thumb_for(entry, :small)
+              %table.metadata-table.grid_9.omega
+                %tr
+                  %td
+                    %h2
+                      = _("Aktivitäten")
+                  %td
+                %tr
+                  %td
+                    = _("Hochgeladen von")
+                  %td
+                    = link_to entry.user, resources_path(:query => entry.user.to_s)
+                %tr
+                  %td
+                    = _("Hochgeladen am") 
+                  %td
+                    = _("%s Uhr") % entry.created_at.to_formatted_s(:date_time)
+                - edit_sessions = [] #mongo# entry.edit_sessions
+                - unless edit_sessions.empty?
+                  %tr
+                    %td
+                      = _("Letzte Aktualisierung")
+                    %td
+                      %ul
+                        - edit_sessions.each do |edit_session|
+                          %li
+                            = link_to edit_session.user, edit_session.user
+                            = " / #{_("%s Uhr") % edit_session.created_at.to_formatted_s(:date_time)}"
+                - description_author_before_import = entry.meta_data.get_value_for("description author before import") 
+                - unless description_author_before_import.blank?
+                  %tr
+                    %td
+                      = _("Beschreibung durch (vor dem Hochladen ins Medienarchiv)")
+                    %td= description_author_before_import
+                  - unless entry.snapshots.empty?
+                    %tr
+                      %td{:style => "text-align: right; font-weight: bold;"}= _("MIZ-Archiv Kopie") 
+                      %td= "#{_("%s Uhr") % entry.snapshots.first.created_at.to_formatted_s(:date_time)}"
+   
+        #detail-set-bar
+          - sets = entry.media_sets.accessible_by(current_ability)
+          = media_sets_list(sets, true) unless sets.empty?
+   
+        #detail-action-bar
+          %ul#toggle-panel
+            - if is_expert and entry.snapshotable?
+              %li= link_to _("Metadaten für MIZ-Archiv editieren"), edit_tms_entry_path(entry)
+              - if can_edit
+                %li= link_to _("Kopie für MIZ-Archiv erstellen"), to_snapshot_entry_path(entry)
+            - if can_edit
+              %li
+                = link_to edit_resource_path(entry), :title => _("Editieren") do
+                  .button_edit_active
+            - else
+              %li
+                .button_edit_active.ghost
+            %li
+              %span.favorite_link{:id => "fav_#{entry.id}", :title => _("Favorit")}
+                =#mongo# render :partial => "media_entries/favorite_link", :locals => {:entry => entry}
+            - unless entry.meta_data.for_meta_terms.blank?
+              %li
+                = link_to browse_resource_path(entry), :title => _("Erkunden") do
+                  .button_explore
+            - else
+              %li
+                .button_explore.ghost
+            %li
+              = link_to "#", :panel => "download", :title => _("Exportieren") do
+                .button_download
+            %li
+              = link_to "#", :panel => "media_set", :title => _("Zu Set/Projekt hinzufügen") do
+                .button_addto
+            - if can? :manage, entry => Media::Resource
+              %li
+                = link_to "#", :panel => "delete", :title => _("Löschen") do
+                  .button_delete_active
+            - else
+              %li
+                .button_delete_active.ghost
+        #delete-panel.actionbar-panel{:style => "display: none"}
+          .actionbar-inner-panel
+            = _("Wollen Sie diesen Medieneintrag und alle zugehörigen Dateien wirklich löschen? Sie können dies nicht rückgängig machen. Die Daten sind unwiederbringlich verloren.")
+            = link_to _("Löschen"), resource_path(entry), :id => "delete_me", :method => :delete, :confirm => _("Sind Sie sicher?"), :"data-id" => entry.id
+        #download-panel.actionbar-panel{:style => "display: none"}
+          .actionbar-inner-panel
+            =#mongo# render :partial => "download", :object => entry, :as => :entry
+        #media_set-panel.actionbar-panel{:style => "display: none"}
+          .actionbar-inner-panel
+            - if logged_in?
+              =#mongo# media_sets_setter(media_sets_entry_path(entry))
+            - else
+              = _("Bitte anmelden.")
         .clear
-        - if false #mongo# is_expert and entry.snapshotable?
-          %li= link_to _("Metadaten für MIZ-Archiv editieren"), edit_tms_entry_path(@entry)
-          - if can_edit
-            %li= link_to _("Kopie für MIZ-Archiv erstellen"), to_snapshot_entry_path(entry)
-    #delete-panel.actionbar-panel{:style => "display: none"}
-      .actionbar-inner-panel
-        = _("Wollen Sie diesen Medieneintrag und alle zugehörigen Dateien wirklich löschen? Sie können dies nicht rückgängig machen. Die Daten sind unwiederbringlich verloren.")
-        = link_to _("Löschen"), resource_path(entry), :id => "delete_me", :method => :delete, :confirm => _("Sind Sie sicher?"), :"data-id" => entry.id
-    #download-panel.actionbar-panel{:style => "display: none"}
-      .actionbar-inner-panel
-        =#mongo# render :partial => "download", :object => entry, :as => :entry
-    #media_set-panel.actionbar-panel{:style => "display: none"}
-      .actionbar-inner-panel
-        - if logged_in?
-          =#mongo# media_sets_setter(media_sets_entry_path(entry))
-        - else
-          = _("Bitte anmelden.")
-
-
-
-
-    .clear
-    #additional-metadata
-      %h3.tab-title= _("Metadaten")
-      #detail_specification
-        %ul
-          - contexts = Meta::Context.default_contexts #mongo# TODO + entry.individual_contexts
-          - contexts.collect do |context|
-            %li
-              = display_meta_data_for(entry, context)
+    
+                  
+%section#content_body_set
+  #additional-metadata
+    #detail_specification
+      %ul
+        - contexts = Meta::Context.default_contexts #mongo# TODO + entry.individual_contexts
+        - contexts.collect do |context|
           %li
-            = display_objective_meta_data_for(entry)
-          - if false # media_entry.media_file.meta_data and media_entry.media_file.meta_data["GPS:GPSLatitude"] and media_entry.media_file.meta_data["GPS:GPSLongitude"]
-            %li
-              =# link_to _("Karte"), [:map, media_entry]
-          - if false #mongo# is_expert
-            - meta_context = Meta::Context.tms
-            %li
-              = display_meta_data_for(media_entry, context)
-            
-  #detail-sidebar.grid_4.omega
-    #detail-excerpt.sidebar-box
-      = display_core_meta_data_for(entry)
-      - sets = entry.media_sets.accessible_by(current_ability)
-      = media_sets_list(sets, true) unless sets.empty?
+            = display_meta_data_for(entry, context)
+        %li
+          = display_objective_meta_data_for(entry)
+         
+        - if false #entry.media_file.meta_data and entry.media_file.meta_data["GPS:GPSLatitude"] and entry.media_file.meta_data["GPS:GPSLongitude"]
+          %li
+            =# link_to _("Karte"), [:map, entry]
+        - if is_expert
+          - meta_context = Meta::Context.tms
+          %li
+            = display_meta_data_for(entry, context)
 
-.clear
+:javascript
+  $(document).ready(function () {
+    $(".scrollable").scrollable({ vertical: true, mousewheel: true });  
+
+    $("ul.tab-nav a").click(function(event) {
+      var that = $(this);
+      that.closest("div").hide();
+      $(that.attr("href")).show();
+      return false;
+    });
+  
+    // OPTIMIZE
+    $('a#delete_me').bind('confirm:complete', function(){
+      var media_entries_json = get_media_entries_json();
+      var i = is_Selected(media_entries_json, $(this).data("id"));
+      if (i > -1) {
+        media_entries_json.splice(i, 1);
+        set_media_entries_json(JSON.stringify(media_entries_json));
+      };
+    })
+    
+    // OPTIMIZE Action Bar
+    $("a[panel]").click(function(){
+      to_open = !$(this).hasClass("active");
+  
+      $("a.active[panel]").each(function () {
+        $(this).removeClass("active");
+        $(this).css("background", "");
+        $("div#"+$(this).attr("panel")+"-panel").slideUp("slow");
+      });
+  
+      if(to_open){
+        $(this).addClass("active");
+        $(this).css("background", "transparent url('/assets/icons/arrow-up-04.png') 50% bottom no-repeat");
+        $("div#"+$(this).attr("panel")+"-panel").slideDown("slow");
+      }
+      
+      return false;
+    });
+  
+  });
