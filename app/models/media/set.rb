@@ -7,6 +7,16 @@ module Media
 
     ########################################################
 
+    def to_s
+      #mongo#
+      #s = "#{title} " 
+      #s += "- %s " % self.class.name.split('::').last # OPTIMIZE get class name without module name
+      #s += (static? ? "(#{media_entries.count})" : "(#{MediaEntry.search_count(query, :match_mode => :extended2)}) [#{query}]")
+      title
+    end
+
+    ########################################################
+
     #def as_json(options={})
     #  options[:methods] ||= []
     #  options[:methods] << :tag_names
@@ -63,7 +73,7 @@ module Media
     # OPTIMIZE get rid of this method
     def self.find_by_id_or_create_by_title(values, user)
       records = Array(values).map do |v|
-                        a = where(:id => v).first
+                        a = where(:_id => v).first
                         a ||= begin
                           mk = Meta::Key.where(:label => "title").first
                           #mongo# TODO user.media_sets.create(:meta_data_attributes => [{:meta_key_id => mk.id, :value => v}])

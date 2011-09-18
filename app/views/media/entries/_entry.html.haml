@@ -1,13 +1,10 @@
 - can_edit = can? :update, entry => Media::Resource
-- is_expert = false #mongo# current_user.groups.is_member?("Expert")
+- is_expert = current_user.groups.is_member?("Expert")
 
 %section#content_head
   .container_12.clearfix
     #page_head
       #detail-main.grid_12
-        /
-          %h2.title{:style => "margin: 0 10px 10px 0;"}
-            = entry.meta_data.get_value_for("title")
 
         .head-tabs
           #tab-info.clearfix
@@ -47,10 +44,8 @@
               .grid_9.omega
                 %h2
                   = _("Zugriffsberechtigungen")
-                - # TODO #working here#
-                -# @resource = entry
-                -# @permissions_json = @resource.permissions.to_json
-                =# render :partial => "permissions/edit_multiple"
+                - @resource = entry
+                = render :partial => "permissions/edit_multiple"
           #tab-activity.clearfix.tab-hide
             %ul.tab-nav
               %li= link_to _("Information"), "#tab-info", :class => "tab-info ir"

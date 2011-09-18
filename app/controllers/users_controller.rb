@@ -1,18 +1,18 @@
 # -*- encoding : utf-8 -*-
 class UsersController < ApplicationController
 
-#mongo#
-=begin
   def index
-    # OPTIMIZE add :user_id to Person#define_index and search :with => :user_id
-    people = Person.search(params[:term]).select {|p| p.user }
-    
+    #mongo# filter only users Person#scope
+    people = Person.search(params[:term]) unless params[:term].blank?
+
     respond_to do |format|
       format.html
-      format.js { render :json => people.map {|x| {:id => x.user.id, :value => x.to_s} } }
+      format.js { render :json => people.map {|x| {:id => x.id, :value => x.to_s} } }
     end
   end
 
+#mongo#
+=begin
   def show
     # TODO refactor from ApplicationController#root
     redirect_to user_media_entries_path(params[:id])

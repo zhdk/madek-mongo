@@ -1,7 +1,17 @@
 # -*- encoding : utf-8 -*-
 class Person < Subject
 
-  has_and_belongs_to_many :groups
+  #mongo# TODO index to_s method directly
+  search_in :firstname, :lastname
+
+  has_and_belongs_to_many :groups do
+    def is_member?(group)
+      # OPTIMIZE
+      group = Group.find_or_create_by(:name => group) if group.is_a? String
+      include?(group)
+    end
+  end
+
   has_many :upload_sessions, class_name: "Upload::Session" do
     def latest
       first
@@ -44,10 +54,6 @@ class Person < Subject
   end
 
   #########################################################
-
-  def to_s
-    name
-  end
   
   def name
     a = []

@@ -27,6 +27,7 @@ class ResourcesController < ApplicationController
   end
 
   def show
+    # FIXME doens't work !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     authorize! :read, @resource => Media::Resource
 
     if @resource.is_a? Media::Set
@@ -74,6 +75,30 @@ class ResourcesController < ApplicationController
         #end
       }
     end
+  end
+
+############################################################################################
+
+  #mongo# merge with update ??
+  # OPTIMIZE
+  def update_permissions
+    authorize! :manage, @resource => Media::Resource
+    @resource.permissions.delete_all
+    if(actions = params[:subject]["nil"])
+      @resource.permissions.build(:subject => nil).set_actions(actions)
+    end
+    # TOOD drop and merge to Subject
+    ["Person", "User", "Group"].each do |key|
+      params[:subject][key].each_pair do |subject_id, actions|
+        subject = Subject.find(subject_id)
+        # OPTIMIZE it's not sure that the current_user is the owner (manager) of the current resource # TODO use Permission.assign_manage_to ?? 
+        actions[:manage] = true if subject == current_user
+        @resource.permissions.build(:subject => subject).set_actions(actions)
+      end if params[:subject][key]
+    end
+
+    flash[:notice] = _("Die Zugriffsberechtigungen wurden erfolgreich gespeichert.")  
+    redirect_to :action => :show
   end
 
 ############################################################################################

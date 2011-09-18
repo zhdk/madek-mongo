@@ -3,8 +3,17 @@ module Media
   class Resource
     include Mongoid::Document
     include Mongoid::Timestamps # TODO ?? #include Mongoid::Versioning #max_versions 5
+
+    #########################################################
+    
+    include Mongoid::Search
+    search_in :meta_data => :to_s #:value #, { :allow_empty_search => true }
+
+    #########################################################
     
     paginates_per 36
+
+    #########################################################
 
     has_and_belongs_to_many :media_sets, class_name: "Media::Set", inverse_of: :media_resources # NOTE need inverse_of
 
@@ -37,7 +46,10 @@ module Media
       attributes.values.each do |h|
         next if h[:id].blank? and h[:value].blank?
         if (id = h.delete(:id))
-          meta_data.find(id).update_attributes(h)
+          #old# meta_data.find(id).update_attributes(h)
+          # OPTIMIZE
+          md = meta_data.where(:_id => id).first
+          md.attributes = h if md
         else
           meta_data.build(h)
         end
@@ -52,11 +64,6 @@ module Media
     #########################################################
 
     default_scope order_by([[:updated_at, :desc], [:created_at, :desc]])
-
-    #########################################################
-
-    include Mongoid::Search
-    search_in :meta_data => :to_s #:value #, { :allow_empty_search => true }
 
     #########################################################
 
