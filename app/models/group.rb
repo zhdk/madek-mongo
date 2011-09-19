@@ -6,5 +6,9 @@ class Group < Subject
   field :name, type: String
 
   scope :departments, where(:_type => "Meta::Department")
+
+  def is_readonly?
+    ["Admin", "Expert", "MIZ-Archiv", "ZHdK (Zürcher Hochschule der Künste)"].include?(name)
+  end
     
 end
