@@ -26,6 +26,7 @@ MAdeKMongo::Application.routes.draw do
   resources :resources do
     member do
       get :browse
+      get :edit_permissions #mongo# TODO
       put :update_permissions #mongo# TODO
     end
     collection do

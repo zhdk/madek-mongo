@@ -7,14 +7,14 @@
       #detail-main.grid_12
 
         .head-tabs
+          %ul.tab-nav
+            %li.tab-info.ir
+              = link_to _("Information"), "#", :class => "tab-info ir", :rel => "tab-info"
+            %li.tab-permission
+              = link_to _("Zugriffsberechtigungen"), edit_permissions_resource_path(entry), :class => "tab-permission ir", :rel => "tab-permission"
+            %li.tab-activity
+              = link_to _("Aktivitäten"), "#", :class => "tab-activity ir", :rel => "tab-activity"
           #tab-info.clearfix
-            %ul.tab-nav
-              %li.tab-info.ir
-                = _("Information")
-              %li
-                =# link_to _("Zugriffsberechtigungen"), edit_multiple_media_entry_permissions_path(media_entry)
-                = link_to _("Zugriffsberechtigungen"), "#tab-permission", :class => "tab-permission ir"
-              %li= link_to _("Aktivitäten"), "#tab-activity", :class => "tab-activity ir"
             .tab-content
               .detail-image.grid_9.alpha.omega
                 = thumb_for(entry, :large)
@@ -33,25 +33,13 @@
                 =#mongo# render :partial => "media_entries/browsing"
                 
           #tab-permission.clearfix.tab-hide
-            %ul.tab-nav
-              %li= link_to _("Information"), "#tab-info", :class => "tab-info ir"
-              %li.tab-permission.ir
-                = _("Zugriffsberechtigungen")
-              %li= link_to _("Aktivitäten"), "#tab-activity", :class => "tab-activity ir"
             .tab-content
               .detail-image.grid_3.alpha
                 = thumb_for(entry, :small)
               .grid_9.omega
                 %h2
                   = _("Zugriffsberechtigungen")
-                - @resource = entry
-                = render :partial => "permissions/edit_multiple"
           #tab-activity.clearfix.tab-hide
-            %ul.tab-nav
-              %li= link_to _("Information"), "#tab-info", :class => "tab-info ir"
-              %li= link_to _("Zugriffsberechtigungen"), "#tab-permission", :class => "tab-permission ir"
-              %li.tab-activity.ir
-                = _("Aktivitäten")
             .tab-content              
               .detail-image.grid_3.alpha
                 = thumb_for(entry, :small)
@@ -174,8 +162,24 @@
 
     $("ul.tab-nav a").click(function(event) {
       var that = $(this);
-      that.closest("div").hide();
-      $(that.attr("href")).show();
+    
+      $("ul.tab-nav li").removeClass("ir");
+      that.closest("li").addClass("ir");
+    
+      var target = $("#" + that.attr("rel"));
+      $(".head-tabs > div").hide();
+      if(that.attr("href") != "#"){
+        var inner_target = target.find(".tab-content h2");
+        if(!inner_target.next().length){
+          $.ajax({
+            url: that.attr("href"),
+            complete: function(response){
+              inner_target.after(response.responseText);
+            }
+          });
+        }
+      }
+      target.show();
       return false;
     });
   

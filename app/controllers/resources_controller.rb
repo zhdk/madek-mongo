@@ -79,10 +79,45 @@ class ResourcesController < ApplicationController
 
 ############################################################################################
 
+  def edit_permissions
+    authorize! :manage, @resource => Media::Resource
+
+    #mongo# TODO move to Permission#as_json
+    permissions = @resource.permissions
+    keys = [:view, :edit, :hi_res, :manage] #Permission::ACTIONS
+    @permissions_json = {}
+    #tmp#
+    @permissions_json["public"] = {:view => false, :edit => false, :hi_res => false, :manage => false, :name => "Öffentlich", :type => 'nil'}
+    permissions.group_by {|p| p.subject.class.name }.collect do |type, type_permissions|
+      # OPTIMIZE
+      if type == "NilClass"
+        p = type_permissions.first
+        @permissions_json["public"] = begin
+          h = {:name => "Öffentlich", :type => 'nil'}
+          keys.each {|key| h[key] = p.send(key) } #1504#
+          h
+        end
+      else
+        @permissions_json[type] = type_permissions.map do |p|
+          h = {:id => p.subject.id, :name => p.subject.to_s, :type => type}
+          keys.each {|key| h[key] = p.send(key) } #1504#
+          h
+        end
+      end
+    end
+    @permissions_json = @permissions_json.to_json
+        
+    respond_to do |format|
+      format.html
+      format.js { render :partial => "permissions/edit_multiple" }
+    end
+  end
+
   #mongo# merge with update ??
   # OPTIMIZE
   def update_permissions
     authorize! :manage, @resource => Media::Resource
+
     @resource.permissions.delete_all
     if(actions = params[:subject]["nil"])
       @resource.permissions.build(:subject => nil).set_actions(actions)
