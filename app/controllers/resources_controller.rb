@@ -7,7 +7,15 @@ class ResourcesController < ApplicationController
 
   def index
     can_action = params[:can] ? params[:can].to_sym : :read
-    resources = Media::Resource.accessible_by(current_ability, can_action).page(params[:page])
+    klass = case params[:type]
+              when "entry"
+                Media::Entry
+              when "set"
+                Media::Set
+              else
+                Media::Resource
+            end
+    resources = klass.accessible_by(current_ability, can_action).page(params[:page])
     resources = resources.where(:_id.in => current_user.favorite_resource_ids) if request.fullpath =~ /favorites/
     resources = resources.csearch(params[:query]) unless params[:query].blank?
 
