@@ -2,15 +2,21 @@
 module Meta
   module DataHelper
 
-    def display_meta_data_helper(title, values)
-      capture_haml do
-        haml_tag :h4, title
-        if values.blank?
-          haml_tag :div, _("Es sind keine Metadaten zu diesem Kontext bereit gestellt."), :class => "meta_data_comment"
-        else
-          haml_tag :div, :class => "meta_data" do
+  def display_meta_data_helper(title, values)
+    capture_haml do
+      haml_tag :h4, title
+      if values.blank?
+        haml_tag :div, _("Es sind keine Metadaten zu diesem Kontext bereit gestellt."), :class => "meta_data_comment"
+      else
+        haml_tag :div, :class => "scrollable_actions" do
+          haml_tag :a, :class => "prev disabled" do 
+            haml_concat "« Back"
+          end
+        end
+        haml_tag :div, :class => "meta_data scrollable vertical" do
+          haml_tag :div, :class => "items" do
             values.each do |value|
-              haml_tag :div do
+              haml_tag :div, :class => "item" do
                 haml_tag :label, value.first
                 haml_tag :br
                 haml_concat value.last
@@ -18,8 +24,14 @@ module Meta
             end
           end
         end
+        haml_tag :div, :class => "scrollable_actions" do
+          haml_tag :a, :class => "next" do
+            haml_concat "More »"
+          end
+        end
       end
     end
+  end
   
     def display_meta_data_for(resource, context)
       h = {}
