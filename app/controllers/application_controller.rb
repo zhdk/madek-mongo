@@ -87,8 +87,8 @@ class ApplicationController < ActionController::Base
   def login_from_session
     user = nil
     if session[:user_id]
-      # TODO use find without exception: self.current_user = User.find(session[:user_id])
       self.current_user = user = Person.where(:_id => session[:user_id]).first
+      return nil if user.nil? # NOTE catch sessions referring to unexisting users
       check_usage_terms_accepted
     end
     user
