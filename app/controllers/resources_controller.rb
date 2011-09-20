@@ -66,8 +66,7 @@ class ResourcesController < ApplicationController
   def update
     authorize! :update, @resource => Media::Resource
 
-    #mongo# if @resource.update_attributes(params[:resource], current_user)
-    if @resource.update_attributes(params[:resource])
+    if @resource.update_attributes(params[:resource], current_user)
       flash[:notice] = "Die Änderungen wurden gespeichert."
     else
       flash[:error] = "Die Änderungen wurden nicht gespeichert."
@@ -152,6 +151,16 @@ class ResourcesController < ApplicationController
 
     #@viewable_resources = Media::Resource.accessible_by(current_ability)
     @viewable_media_entries = Media::Entry.accessible_by(current_ability)
+  end
+
+############################################################################################
+
+  # TODO only for Media::Entry
+  def to_snapshot
+    # TODO authorize! :snapshot, @resource => Media::Resource
+
+    @resource.to_snapshot if current_user.groups.is_member?("Expert")
+    redirect_to :action => :show
   end
 
 ############################################################################################

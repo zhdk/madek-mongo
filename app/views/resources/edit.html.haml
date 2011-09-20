@@ -6,17 +6,17 @@
       width: 10px;
   }
 = prevent_leaving_page
--#mongo# TODO is_expert = current_user.groups.is_member?("Expert")
+- is_expert = current_user.groups.is_member?("Expert")
 
 .container_12
   %section#content_body.clearfix
     #detail-main.grid_2
       #detail-image{:style => "padding: 5px 0 0 0;"}
         = link_to thumb_for(@resource, :small), resource_path(@resource)
-      - if false #mongo# TODO is_expert and @resource.snapshotable?
+      - if is_expert and @resource.snapshotable?
         #detail-action-bar
           %ul
-            %li= link_to _("Metadaten für MIZ-Archiv editieren"), edit_tms_media_entry_path(@resource), :style => "line-height: 1em; float: none; padding: 5px 0; font-size: 0.8em;"
+            %li=#mongo# link_to _("Metadaten für MIZ-Archiv editieren"), edit_tms_resource_path(@resource), :style => "line-height: 1em; float: none; padding: 5px 0; font-size: 0.8em;"
     .grid_9
       %h3= _("Metadaten editieren")
       = form_for @resource, :as => :resource, :url => resource_path(@resource) do |resource|

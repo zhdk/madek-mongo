@@ -7,6 +7,49 @@ module Media
 
     ###############################
 
+    belongs_to :snapshot_media_entry, class_name: "Media::Entry" # TODO has_one ??
+
+    def to_snapshot
+      if snapshotable?
+        snapshot_media_entry.try(:delete) # OPTIMIZE
+        
+        #s = self.create_snapshot_media_entry(:meta_data => meta_data.clone, :media_file => media_file.clone)
+        # FIXME meta_data.clone doesn't work
+        s = Media::Entry.new(:media_file => media_file.clone) do |x| # :meta_data => meta_data.clone, 
+          group = Group.where(:name => "MIZ-Archiv").first
+          x.permissions.build(:subject => group, :view => true, :edit => true, :hi_res => true, :manage => true)
+          # TODO push to Snapshot group ??
+        end
+
+        s.save
+        self.snapshot_media_entry = s 
+        save
+        
+        #self.snapshot_media_entry = clone
+        #save
+        #snapshot_media_entry.save
+        
+        #media_entry.meta_data.each do |md|
+        #  meta_data.create(:meta_key_id => md.meta_key_id, :value => md.value )
+        #end
+        
+        # OPTIMIZE
+        #descr_author = snapshot_media_entry.meta_data.get("description author")
+        #if descr_author.meta_key
+        #  descr_author_value = descr_author.value
+        #  snapshot_media_entry.meta_data.get("description author before snapshot").update_attributes(:value => descr_author_value) if descr_author_value
+        #end
+      end
+    end
+  
+    # return true if there is no snapshot already
+    # or if there is the snapshot is not edited yet
+    def snapshotable?
+      snapshot_media_entry.nil? or not snapshot_media_entry.edited?
+    end
+
+    ###############################
+
     def as_json(options={})
       h = { :is_set => false,
             :thumb_base64 => media_file.try(:thumb_base64, :small_125) }

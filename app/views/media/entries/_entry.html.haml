@@ -22,10 +22,10 @@
                 #detail-excerpt.sidebar-box
                   = display_core_meta_data_for(entry)
                   - if is_expert 
-                    - unless entry.snapshots.empty?
+                    - if entry.snapshot_media_entry
                       .notice_tms
-                        - date = entry.snapshots.first.created_at.to_formatted_s(:date)
-                        - time = entry.snapshots.first.created_at.to_formatted_s(:time)
+                        - date = entry.snapshot_media_entry.created_at.to_formatted_s(:date)
+                        - time = entry.snapshot_media_entry.created_at.to_formatted_s(:time)
                         = "Eine Kopie dieses Medieneintrages wurde am #{date} um #{time} Uhr für das MIZ-Archiv erstellt."
                     - unless entry.snapshotable?
                       .notice_tms{:style => "margin-top: 100px;"}
@@ -59,8 +59,7 @@
                     = _("Hochgeladen am") 
                   %td
                     = _("%s Uhr") % entry.created_at.to_formatted_s(:date_time)
-                - edit_sessions = [] #mongo# entry.edit_sessions
-                - unless edit_sessions.empty?
+                - unless (edit_sessions = entry.edit_sessions).empty?
                   %tr
                     %td
                       = _("Letzte Aktualisierung")
@@ -68,7 +67,7 @@
                       %ul
                         - edit_sessions.each do |edit_session|
                           %li
-                            = link_to edit_session.user, edit_session.user
+                            = link_to edit_session.subject, edit_session.subject
                             = " / #{_("%s Uhr") % edit_session.created_at.to_formatted_s(:date_time)}"
                 - description_author_before_import = entry.meta_data.get_value_for("description author before import") 
                 - unless description_author_before_import.blank?
@@ -76,10 +75,10 @@
                     %td
                       = _("Beschreibung durch (vor dem Hochladen ins Medienarchiv)")
                     %td= description_author_before_import
-                  - unless entry.snapshots.empty?
+                  - if entry.snapshot_media_entry
                     %tr
                       %td{:style => "text-align: right; font-weight: bold;"}= _("MIZ-Archiv Kopie") 
-                      %td= "#{_("%s Uhr") % entry.snapshots.first.created_at.to_formatted_s(:date_time)}"
+                      %td= "#{_("%s Uhr") % entry.snapshot_media_entry.created_at.to_formatted_s(:date_time)}"
    
         #detail-set-bar
           - sets = entry.media_sets.accessible_by(current_ability)
@@ -88,9 +87,9 @@
         #detail-action-bar
           %ul#toggle-panel
             - if is_expert and entry.snapshotable?
-              %li= link_to _("Metadaten für MIZ-Archiv editieren"), edit_tms_entry_path(entry)
+              %li= link_to _("Metadaten für MIZ-Archiv editieren"), "#" #mongo# edit_tms_entry_path(entry)
               - if can_edit
-                %li= link_to _("Kopie für MIZ-Archiv erstellen"), to_snapshot_entry_path(entry)
+                %li= link_to _("Kopie für MIZ-Archiv erstellen"), to_snapshot_resource_path(entry)
             - if can_edit
               %li
                 = link_to edit_resource_path(entry), :title => _("Editieren") do
@@ -152,7 +151,7 @@
           %li
             =# link_to _("Karte"), [:map, entry]
         - if is_expert
-          - meta_context = Meta::Context.tms
+          - context = Meta::Context.tms
           %li
             = display_meta_data_for(entry, context)
 

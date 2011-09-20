@@ -63,12 +63,25 @@ module Media
 
     #########################################################
 
+    embeds_many  :edit_sessions #, :readonly => true #, :limit => 5
+    #has_many  :editors, :through => :edit_sessions, :source => :user do
+    #  def latest
+    #    first
+    #  end
+    #end
+
+    def edited?
+      not edit_sessions.empty?
+    end
+
+    #########################################################
+
     default_scope order_by([[:updated_at, :desc], [:created_at, :desc]])
 
     #########################################################
 
-=begin
     def update_attributes_with_pre_validation(new_attributes, current_user = nil)
+=begin
       # we need to deep copy the attributes for batch edit (multiple resources)
       dup_attributes = Marshal.load(Marshal.dump(new_attributes))
 
@@ -91,15 +104,18 @@ module Media
           #old# attr[:value] = "." # NOTE bypass the validation
         end
       end if dup_attributes[:meta_data_attributes]
+=end
 
       #mongo# self.editors << current_user if current_user # OPTIMIZE group by user ??
-      #mongo# still needed ?? or move to before_save or before_update ??
-      self.updated_at = Time.now # used for cache invalidation and sphinx reindex # OPTIMIZE touch or sphinx_touch ??
+      edit_sessions.create(:subject => current_user) if current_user
 
-      update_attributes_without_pre_validation(dup_attributes)
+      #mongo# still needed ?? or move to before_save or before_update ??
+      #self.updated_at = Time.now # used for cache invalidation and sphinx reindex # OPTIMIZE touch or sphinx_touch ??
+
+      #update_attributes_without_pre_validation(dup_attributes)
+      update_attributes_without_pre_validation(new_attributes)
     end
     alias_method_chain :update_attributes, :pre_validation
-=end
     #########################################################
 
     def as_json(options={})
