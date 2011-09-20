@@ -5,7 +5,7 @@ gem 'rails', '3.1.1.rc1'
 gem 'mongoid', '~> 2.2.0' #tmp# , :git => "git://github.com/mongoid/mongoid.git", :branch => "2.2.0-stable"
 gem 'bson_ext', '~> 1.3.1'
 
-gem 'mongoid_search', '~> 0.2.7' # alternatives: 'mongoid_fulltext'
+gem 'mongoid_search', '~> 0.2.7' # alternatives: 'mongoid_fulltext' (indexing methods), 'mongoid_text_search', 'mongoid-fulltextable'
 gem 'mongoid-tree', '~> 0.6.1', :require => 'mongoid/tree' # alternatives: 'mongoid_acts_as_tree', 'mongoid_nested_set'
 #old# gem 'mongoid_identity_map', '~> 0.4.0' #tmp# TODO remove when integrated into mongoid
 
