@@ -88,7 +88,7 @@ class ApplicationController < ActionController::Base
     user = nil
     if session[:user_id]
       self.current_user = user = Person.where(:_id => session[:user_id]).first
-      return nil if user.nil? # NOTE catch sessions referring to unexisting users
+      return nil if user.nil? # NOTE catch zombie sessions referring to unexisting users
       check_usage_terms_accepted
     end
     user
