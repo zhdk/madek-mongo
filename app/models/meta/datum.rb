@@ -26,6 +26,7 @@ module Meta
 
     # NOTE before_save is too late!
     before_validation do
+      return true unless changed?
       #return false if @value.nil? #mongo#
       case meta_key.object_type
         when "Meta::Copyright"
@@ -35,11 +36,15 @@ module Meta
           elsif @value.class == FalseClass
             @value = klass.public
           end
+          #mongo# OPTIMIZE
+          meta_references.delete_all
           Array(@value).each do |x|
+            if x.is_a? String
+              x = klass.find(x)
+            end
             meta_references.build(:reference => x)
           end
         when "Meta::Department"
-          # TODO Meta::Department as subclass of group ??
           Array(@value).each do |x|
             meta_references.build(:reference => x)
           end

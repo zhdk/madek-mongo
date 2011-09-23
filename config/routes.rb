@@ -29,6 +29,7 @@ MAdeKMongo::Application.routes.draw do
       get :edit_permissions #mongo# TODO
       put :update_permissions #mongo# TODO
       get :to_snapshot # TODO post ??
+      post :media_sets
     end
     collection do
       get :favorites, :to => "resources#index"

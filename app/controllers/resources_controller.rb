@@ -58,7 +58,8 @@ class ResourcesController < ApplicationController
     authorize! :update, @resource => Media::Resource
 
     respond_to do |format|
-      format.html
+      format.html {}
+      format.js { render :partial => "edit_context" }
     end
     #tmp# respond_with @resource
   end
@@ -81,6 +82,20 @@ class ResourcesController < ApplicationController
           redirect_to :action => :show
         #end
       }
+    end
+  end
+
+  def destroy
+    authorize! :update, @resource => Media::Resource
+
+    @resource.destroy
+
+    respond_to do |format|
+      format.html { 
+        flash[:notice] = _("Der Medieneintrag wurde gelöscht.")
+        redirect_back_or_default(resources_path)
+      }
+      format.js { render :json => {:id => @resource.id} }
     end
   end
 
@@ -161,6 +176,27 @@ class ResourcesController < ApplicationController
 
     @resource.to_snapshot if current_user.groups.is_member?("Expert")
     redirect_to :action => :show
+  end
+
+############################################################################################
+
+  def media_sets
+    if request.post?
+      Media::Set.find_by_id_or_create_by_title(params[:media_set_ids], current_user).each do |media_set|
+        next unless can?(:update, media_set => Media::Resource)
+        media_set.media_resources << @resource #mongo# TODO media_set.media_resources.push_uniq @media_entry
+      end
+      redirect_to :action => :show
+    elsif request.delete?
+      @media_set = Media::Set.find(params[:media_set_id]) unless params[:media_set_id].blank?
+      if can?(:update, @media_set => Media::Resource)
+        @media_set.media_resources.delete(@resource)
+        render :nothing => true # TODO redirect_to @media_set
+      else
+        # OPTIMIZE
+        render :nothing => true, :status => 403
+      end 
+    end
   end
 
 ############################################################################################

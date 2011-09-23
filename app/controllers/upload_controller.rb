@@ -86,8 +86,7 @@ class UploadController < ApplicationController
 
       media_sets = Media::Set.find_by_id_or_create_by_title(params[:media_set_ids], current_user)
       media_sets.each do |media_set|
-        #mongo# TODO media_set.media_resources.push_uniq @media_entries
-        media_set.media_resources << @media_entries
+        media_set.media_resources << @media_entries #mongo# TODO media_set.media_resources.push_uniq @media_entries
       end
     
       redirect_to root_path
