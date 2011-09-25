@@ -185,7 +185,14 @@ def factory_meta_data(h, resource)
       else
         value 
     end
-    resource.meta_data.create(:meta_key => meta_key, :value => v)
+    resource.meta_data.build(:meta_key => meta_key, :value => v)
+  end
+end
+
+def factory_edit_sessions(h, resource)
+  h.each do |x|
+    subject = @map["User"][x["user_id"]]
+    resource.edit_sessions.build({:subject => subject, :created_at => x["created_at"]})
   end
 end
 
@@ -193,6 +200,7 @@ def factory_resource(h, klass)
   resource = klass.new
   factory_permissions(h["permissions"], resource)
   factory_meta_data(h["meta_data"], resource)
+  factory_edit_sessions(h["edit_sessions"], resource)
   resource.save
   @map[klass][h["id"]] = resource
 end
