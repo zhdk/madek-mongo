@@ -8,11 +8,12 @@ module Upload
     #old# belongs_to :person, class_name: "Person"
     embedded_in :person, class_name: "Person"
     
-    field :is_complete, type: Boolean #mongo# TODO
+    field :is_complete, type: Boolean #mongo# TODO refactor to each single media_entry ??
     
     #old# validates_presence_of :person_id
   
-    default_scope order_by([:created_at, :desc])
+    # FIXME doesn't work for embedded documents ??
+    # default_scope order_by([:created_at, :desc])
 
     #########################################################
   

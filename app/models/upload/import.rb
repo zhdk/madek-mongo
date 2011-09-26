@@ -18,7 +18,7 @@ module Upload
   
         unless files.blank?
           # OPTIMIZE append if already exists (multiple grouped posts)
-          #temp# upload_session = current_user.upload_sessions.latest
+          #temp# upload_session = current_user.upload_sessions.most_recent
           upload_session = current_user.upload_sessions.create
   
           files.each do |f|

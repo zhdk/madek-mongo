@@ -113,7 +113,7 @@ class UploadController < ApplicationController
     @upload_session = if params[:upload_session_id]
                         current_user.upload_sessions.find(params[:upload_session_id])
                       else
-                        current_user.upload_sessions.latest
+                        current_user.upload_sessions.most_recent
                       end
     @media_entries = @upload_session.media_entries
   end

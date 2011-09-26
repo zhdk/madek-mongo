@@ -14,11 +14,11 @@ class Person < Subject
 
   #old# has_many :upload_sessions, class_name: "Upload::Session" do
   embeds_many :upload_sessions, class_name: "Upload::Session" do
-    def latest
-      first
+    def most_recent
+      order_by([:created_at, :desc]).first
     end
     def most_recents(limit = 3)
-      all(:limit => limit)
+      order_by([:created_at, :desc]).limit(limit)
     end
   end
   #mongo# TODO ?? has_many :uploaded_media_entries, class_name: "Media::Entry", through: :upload_sessions
