@@ -24,16 +24,6 @@
               #detail-sidebar.grid_3.omega
                 #detail-excerpt.sidebar-box
                   = display_core_meta_data_for(entry)
-                  - if is_expert 
-                    - if entry.snapshot_media_entry
-                      .notice_tms
-                        - date = entry.snapshot_media_entry.created_at.to_formatted_s(:date)
-                        - time = entry.snapshot_media_entry.created_at.to_formatted_s(:time)
-                        = "Eine Kopie dieses Medieneintrages wurde am #{date} um #{time} Uhr für das MIZ-Archiv erstellt."
-                    - unless entry.snapshotable?
-                      .notice_tms{:style => "margin-top: 100px;"}
-                        = _("Diese Kopie wird gegenwärtig durch das MIZ-Archiv bearbeitet.")
-                =#mongo# render :partial => "media_entries/browsing"
                 
           #tab-permission.clearfix.tab-hide
             .tab-content
@@ -62,7 +52,7 @@
                     = _("Hochgeladen am") 
                   %td
                     = _("%s Uhr") % entry.created_at.to_formatted_s(:date_time)
-                - unless (edit_sessions = entry.edit_sessions).empty?
+                - unless (edit_sessions = entry.edit_sessions.limit(5)).empty?
                   %tr
                     %td
                       = _("Letzte Aktualisierung")
@@ -82,7 +72,19 @@
                     %tr
                       %td{:style => "text-align: right; font-weight: bold;"}= _("MIZ-Archiv Kopie") 
                       %td= "#{_("%s Uhr") % entry.snapshot_media_entry.created_at.to_formatted_s(:date_time)}"
-   
+
+                - if is_expert
+                  %tr
+                    %td{:colspan => 2} 
+                      - if entry.snapshot_media_entry
+                        .notice_tms
+                          - date = entry.snapshot_media_entry.created_at.to_formatted_s(:date)
+                          - time = entry.snapshot_media_entry.created_at.to_formatted_s(:time)
+                          = "Eine Kopie dieses Medieneintrages wurde am #{date} um #{time} Uhr für das MIZ-Archiv erstellt."
+                      - unless entry.snapshotable?
+                        .notice_tms
+                          = _("Diese Kopie wird gegenwärtig durch das MIZ-Archiv bearbeitet.")
+
         #detail-set-bar
           - sets = entry.media_sets.accessible_by(current_ability)
           = media_sets_list(sets, true) unless sets.empty?
@@ -143,9 +145,12 @@
   #additional-metadata
     #detail_specification
       %ul
-        - contexts = Meta::Context.default_contexts #mongo# TODO + entry.individual_contexts
+        - contexts = Meta::Context.default_contexts + entry.individual_contexts
         - contexts.collect do |context|
           %li
+            - if can_edit #working here#
+              = link_to edit_resource_path(entry, :meta_context_id => context), :title => _("Editieren"), :remote => true do
+                .button_edit_active
             = display_meta_data_for(entry, context)
         %li
           = display_objective_meta_data_for(entry)
@@ -212,6 +217,10 @@
       }
       
       return false;
+    });
+
+    $("section#content_body_set a[data-remote='true']").bind("ajax:complete", function(xhr, response, status){
+      $(this).closest("li").html(response.responseText);
     });
   
   });

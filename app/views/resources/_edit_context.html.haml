@@ -1,0 +1,9 @@
+= form_for @resource, :as => :resource, :url => resource_path(@resource) do |resource|
+  - meta_context = Meta::Context.find(params[:meta_context_id]) #working here#
+  #detail_specification.tabs
+    = meta_context
+    = render :partial => "edit_meta_data", :locals => { :resource => resource, :context => meta_context }
+    
+  .save_buttons
+    = link_to _("Abbrechen"), resource_path(@resource), :class => "buttons"
+    = resource.submit _("Speichern")

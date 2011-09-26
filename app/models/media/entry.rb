@@ -5,7 +5,7 @@ module Media
     embeds_one :media_file, class_name: "Media::File", as: :media_parent #mongo# TODO belongs_to ??
     belongs_to :upload_session, class_name: "Upload::Session"
 
-    ###############################
+    ########################################################
 
     belongs_to :snapshot_media_entry, class_name: "Media::Entry" # TODO has_one ??
 
@@ -36,7 +36,7 @@ module Media
       snapshot_media_entry.nil? or not snapshot_media_entry.edited?
     end
 
-    ###############################
+    ########################################################
 
     def as_json(options={})
       h = { :is_set => false,
@@ -44,7 +44,14 @@ module Media
       super(options).merge(h)
     end
 
-    ###############################
+    ########################################################
+    
+    # OPTIMIZE
+    def individual_contexts
+      media_sets.collect {|project| project.individual_contexts }.flatten.uniq
+    end
+
+    ########################################################
     #
     before_create :process_file #mongo# TODO ?? :set_copyright
     
@@ -110,7 +117,7 @@ module Media
       end
     end
     #
-    ###############################
+    ########################################################
 
 =begin 
     # see mapping table on http://code.zhdk.ch/projects/madek/wiki/Copyright
