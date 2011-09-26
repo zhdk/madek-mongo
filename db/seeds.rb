@@ -221,18 +221,32 @@ puts "Importing media_entries..."
 parsed_import["media_entries"].each do |h|
   media_file = h.delete("media_file")
   media_entry = factory_resource(h, Media::Entry)
-  #media_entry.media_sets << h["media_set_ids"].map {|id| Media::Set.find(@map[Media::Set][id]) }
   media_entry.media_sets << h["media_set_ids"].map {|id| @map[Media::Set][id] }
 
   @map["Upload_sessions"][h["upload_session_id"]].media_entries << media_entry
   
-  previews = media_file.delete("previews")
+  #old# previews = media_file.delete("previews")
   attr = {}
   media_file.each_pair {|k,v| attr[k.to_sym] = v }
   mf = media_entry.create_media_file(attr)
-  previews.each do |p|
-    mf.previews.create(p)
+  #old# previews.each {|p| mf.previews.create(p)}
+end
+
+##########################################################################
+
+puts "Importing snapshots..."
+parsed_import["snapshots"].each do |h|
+  media_file = h.delete("media_file")
+  snapshot_media_entry = factory_resource(h, Media::Entry)
+
+  if(media_entry = @map[Media::Entry][h["media_entry_id"]])
+    media_entry.snapshot_media_entry = snapshot_media_entry
+    media_entry.save
   end
+
+  attr = {}
+  media_file.each_pair {|k,v| attr[k.to_sym] = v }
+  mf = snapshot_media_entry.create_media_file(attr)
 end
 
 ##########################################################################
