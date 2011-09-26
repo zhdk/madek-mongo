@@ -12,6 +12,7 @@
          Media::Entry => {},
          "User" => {},
          "User_favorites" => {},
+         "Upload_sessions" => {},
          Person => {},
          Group => {},
          Meta::Department => {}
@@ -127,6 +128,10 @@ def factory_subject(h, klass)
   if user
     @map["User"][user["id"]] = subject
     @map["User_favorites"][user["id"]] = user["favorite_ids"]
+    
+    user["upload_sessions"].each do |x|
+      @map["Upload_sessions"][x["id"]] = subject.upload_sessions.create(:created_at => x["created_at"], :is_complete => x["is_complete"])
+    end
   end
   subject
 end
@@ -218,6 +223,8 @@ parsed_import["media_entries"].each do |h|
   media_entry = factory_resource(h, Media::Entry)
   #media_entry.media_sets << h["media_set_ids"].map {|id| Media::Set.find(@map[Media::Set][id]) }
   media_entry.media_sets << h["media_set_ids"].map {|id| @map[Media::Set][id] }
+
+  @map["Upload_sessions"][h["upload_session_id"]].media_entries << media_entry
   
   previews = media_file.delete("previews")
   attr = {}

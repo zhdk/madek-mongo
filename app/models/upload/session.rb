@@ -5,9 +5,12 @@ module Upload
     include Mongoid::Timestamps::Created
   
     has_many :media_entries, class_name: "Media::Entry", dependent: :destroy, inverse_of: :upload_session # NOTE need inverse_of
-    belongs_to :person, class_name: "Person"
+    #old# belongs_to :person, class_name: "Person"
+    embedded_in :person, class_name: "Person"
     
-    validates_presence_of :person_id
+    field :is_complete, type: Boolean #mongo# TODO
+    
+    #old# validates_presence_of :person_id
   
     default_scope order_by([:created_at, :desc])
 

@@ -12,7 +12,8 @@ class Person < Subject
     end
   end
 
-  has_many :upload_sessions, class_name: "Upload::Session" do
+  #old# has_many :upload_sessions, class_name: "Upload::Session" do
+  embeds_many :upload_sessions, class_name: "Upload::Session" do
     def latest
       first
     end
