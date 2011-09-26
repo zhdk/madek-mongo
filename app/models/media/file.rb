@@ -92,7 +92,10 @@ module Media
         # FIXME the identity map doesn't work, thus a double previews is created for set main entry
         #tmp# p = previews.find_or_create_by(:thumbnail => size) do |r|
         p = previews(true).find_or_create_by(:thumbnail => size) do |r|
-          image = MiniMagick::Image.open(file_storage_location)
+          file = file_storage_location
+          return false unless ::File.exist?(file)
+
+          image = MiniMagick::Image.open(file)
           image.resize THUMBNAILS[size]
           image.format "jpg"
           base64 = Base64.encode64(image.to_blob) #old# Base64.encode64(::File.read(image.path))
