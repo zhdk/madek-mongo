@@ -124,6 +124,24 @@ function append_to_table(file){
 									<td><ul id='icons' class='upload_step_1'><li class='ui-state-default ui-corner-all'><a href='#'><span class='ui-icon ui-icon-trash'/></a></li></ul></td>\
 						    </tr>";
 	$(new_tr).data("file", file).insertBefore("#upload-table #totals");
+
+	/*
+	// Thumbnail start
+	// var new_tr = "<tr media_entry_id='' id='"+kb_size+"'>\ 
+    var max_kb = 3000;
+    if (file.type.match(/image\/(jpeg|gif|png)/) && kb_size < max_kb) {
+            var reader = new FileReader();
+            reader.onloadstart = function(){ $("tr#"+kb_size+" td:first").html("<img src='/images/spinner.gif'>"); };
+            reader.onloadend = function(e){ $("tr#"+kb_size+" td:first").html("<img src='"+e.target.result+"'>"); };
+            // OPTIMIZE for tiff: reader.onloadend = function(e){ $("#file_"+index+" td:first").html("<object type='"+file.type+"' data='"+e.target.result+"' style='max-width: 100px; max-height: 100px'></object>"); };
+            reader.readAsDataURL(file);
+    }else{
+     	    var msg = (kb_size < max_kb ? file.type : "> "+max_kb+" KB");
+            $("#file_"+index+" td:first").html("No thumbnail available for <b>"+msg+"</b>");
+    }
+	// Thumbnail end
+	*/
+
 	return;
 }
 
