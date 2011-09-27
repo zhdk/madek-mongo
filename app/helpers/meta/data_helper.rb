@@ -416,14 +416,14 @@ module Meta
                   var copyrights = {};
                   var custom_copyright_id;
                   $.each(#{@copyright_all.to_json}, function(i,item){
-                    copyrights[item.id] = item;
-                    if(item.is_custom) custom_copyright_id = item.id; 
+                    copyrights[item._id] = item;
+                    if(item.is_custom) custom_copyright_id = item._id; 
                   });
                   
                   $("select.nested_options, select.options_root").change(function(event){
                     selected = copyrights[$(this).val()];
                     block = $(this).closest(".meta_data_block");
-                    block.find(".copyright_value").val(selected.id);
+                    block.find(".copyright_value").val(selected._id);
                     if(!selected.is_custom){
                       block.find("[data-meta_key='copyright_usage'] textarea").val(selected.usage);
                       block.find("[data-meta_key='copyright_url'] textarea").val(selected.url);
@@ -433,7 +433,7 @@ module Meta
                   $("select.options_root").change(function(event){
                     block = $(this).closest(".meta_data_block");
                     block.find(".nested_options").hide();
-                    block.find(".options_" + selected.id).show().change();
+                    block.find(".options_" + selected._id).show().change();
   
                     usage = block.find("[data-meta_key='copyright_usage']");
                     if(selected.usage == null){

@@ -13,12 +13,6 @@ module Meta
     validates_presence_of :label
 
     ###############################
-    #mongo# TODO patch Mongoid::Document ?? it's now used for the data_helpder#to_json OR change the javascript using directly _id
-    def as_json(options={})
-      h = { :id => id }
-      super(options).merge(h)
-    end
-    ###############################
 
     def to_s
       label
