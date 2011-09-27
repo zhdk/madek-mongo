@@ -58,7 +58,8 @@ module Media
                 $(".set-box[title]").qtip({
                   position: {
                     my: 'bottom center',
-                    at: 'top center'
+                    at: 'top center',
+                    viewport: $(window)
                   },
                   style: {
                      classes: 'ui-tooltip-jtools ui-tooltip-shadow'
