@@ -152,7 +152,7 @@ module Media
   
     def display_project_abstract_slider(project, total_entries)
       capture_haml do
-        haml_tag :p, :style => "padding: 1em;" do
+        haml_tag :p, :style => "padding: 1.8em;" do
           haml_tag :span, :id => "amount", :style => "color: #444444; font-weight: bold; position: absolute;"
         end
         haml_tag :div, :id =>"slider", :style => "border: 1px solid #DDDDDD;"
