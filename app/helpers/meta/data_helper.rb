@@ -384,7 +384,8 @@ module Meta
   
           when "Meta::Copyright"
             #old# h += meta_datum.hidden_field :value, :class => "copyright_value"
-            h += hidden_field_tag "#{meta_datum.object_name}[value]", meta_datum.object.value.try(:first), :class => "copyright_value"
+            #tmp# h += hidden_field_tag "#{meta_datum.object_name}[value]", meta_datum.object.value.try(:first), :class => "copyright_value"
+            h += hidden_field_tag "#{meta_datum.object_name}[value]", meta_datum.object.meta_references.try(:first).try(:reference_id), :class => "copyright_value"
 
             @copyright_all ||= Meta::Copyright.all # OPTIMIZE
             @copyright_roots ||= Meta::Copyright.roots

@@ -66,7 +66,7 @@ class UploadController < ApplicationController
 
     params[:resources]["media/entry"].each_pair do |key, value|
       media_entry = @media_entries.detect{|me| me.id.to_s == key } #old# .find(key)
-      media_entry.update_attributes(value)
+      media_entry.update_attributes(value) # TODO , current_user ??
     end
 
     # TODO delta index if new Person 

@@ -26,10 +26,11 @@ module Meta
 
     # NOTE before_save is too late!
     before_validation do
-      return true unless changed?
+      return true if @value == value #tmp# unless changed?
       #return false if @value.nil? #mongo#
       case meta_key.object_type
         when "Meta::Copyright"
+          return true if @value.blank? #mongo# OPTIMIZE false
           klass = meta_key.object_type.constantize
           if @value.class == TrueClass
             @value = klass.custom
