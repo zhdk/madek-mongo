@@ -51,6 +51,9 @@ module Media
               haml_tag :a, thumb_for(media_set, :small_125), :href => resource_path(media_set), :class => thumb_class
             end
           end
+          haml_tag :style do
+            haml_concat ".ui-tooltip { font-size: 1.1em; line-height: normal; }"
+          end
           script = javascript_tag do
             begin
             <<-HERECODE
