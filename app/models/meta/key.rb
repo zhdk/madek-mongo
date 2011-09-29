@@ -17,26 +17,40 @@ module Meta
     has_many :media_resources, class_name: "Media::Resource", foreign_key: "meta_data.meta_key_id"
     #mongo# OPTIMIZE
     def meta_data
-      media_resources.collect(&:meta_data).flatten.select{|md| md.meta_key_id == id}
-      #tmp# media_resources.fields(:meta_data => 1).collect(&:meta_data).flatten.select{|md| md.meta_key_id == id}
+      #tmp# media_resources.collect(&:meta_data).flatten.select{|md| md.meta_key_id == id}
+      media_resources.fields(:meta_data => 1).collect{|mr| mr.meta_data.where(:meta_key_id => id) }.flatten
+    end
+
+    has_many :meta_contexts, class_name: "Meta::Context", foreign_key: "meta_definitions.meta_key_id"
+    #mongo# OPTIMIZE
+    def meta_definitions
+      meta_contexts.fields(:meta_definitions => 1).collect{|mc| mc.meta_definitions.where(:meta_key_id => id) }.flatten
     end
 
   ########################################################
-  
-  # Return a meta_key matching the provided key-map
-  #
-  # args: a keymap (fully namespaced)
-  # returns: a meta_key
-  #
-  # NB: If no meta_key matching the key-map is found, it is created 
-  # along with a new meta_key_definition (albeit with minimal label and description data)
+
+    def all_context_labels
+      #meta_key_definitions.collect {|d| "#{d.meta_context}: #{d.meta_field.label}" if d.key_map.blank? }.compact.join(', ')
+      meta_definitions.collect {|d| d.label if d.key_map.blank? }.compact.uniq.join(', ')
+    end
+
+    ########################################################
+    
+    # Return a meta_key matching the provided key-map
+    #
+    # args: a keymap (fully namespaced)
+    # returns: a meta_key
+    #
+    # NB: If no meta_key matching the key-map is found, it is created 
+    # along with a new meta_key_definition (albeit with minimal label and description data)
     def self.meta_key_for(key_map) # TODO, context = nil)
       # do we really need to find by context here?
-  #    mk =  if context.nil?
-  #            MetaKeyDefinition.find_by_key_map(key_map).try(:meta_key)
-  #          else
-  #            context.meta_key_definitions.find_by_key_map(key_map).try(:meta_key)
-  #          end
+      
+      #mk = if context.nil?
+      #       MetaKeyDefinition.find_by_key_map(key_map).try(:meta_key)
+      #     else
+      #       context.meta_key_definitions.find_by_key_map(key_map).try(:meta_key)
+      #     end
   
       #old# mk = MetaKeyDefinition.where("key_map LIKE ?", "%#{key_map}%").first.try(:meta_key)
       mk = Meta::Context.io_interface.meta_definitions.where(:key_map => key_map).first.try(:meta_key)

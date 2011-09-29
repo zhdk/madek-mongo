@@ -35,15 +35,14 @@
     - nothing_found = true 
     - @resource.meta_data.for_meta_terms.each do |meta_datum|
       %ul.browse
-        - meta_datum.meta_keywords.each do |meta_term|
+        - meta_datum.meta_keywords.map(&:meta_term).each do |meta_term|
           :ruby
-            media_entry_ids = [] #mongo# TODO meta_term.meta_data(meta_datum.meta_key).select{|md| md.resource_type == "MediaEntry"}.collect(&:resource_id)
-            media_entry_ids.delete(@resource.id)
-            media_entries = @viewable_media_entries.find(media_entry_ids)
+            media_entries = meta_term.media_resources.accessible_by(current_ability).where(:_type => "Media::Entry", :_id.ne => @resource.id)
             c = media_entries.count
             next if c.zero?
             nothing_found = false
-            media_entries_data = Logic.data_for(media_entries, current_user)
+            #mongo# media_entries_data = Logic.data_for(media_entries, current_user)
+            media_entries_data = media_entries.as_json({:user => current_user, :ability => current_ability})
           %li
             %a.toggler{:href => "#"}
               .browse_key
@@ -58,18 +57,21 @@
             .browse_thumbs
               - media_entries_data.each do |me|
                 .thumb_mini{:"data-media_entry" => me.to_json}
-                  %img{:src => me["thumb_base64"]}
+                  %img{:src => me[:thumb_base64]}
           %clear
       %clear
     - if nothing_found
-      = _("Mit diesem Medieneintrag ist das erkunden des Medienarchivs nicht möglich, da er zu wenig Metadaten enthält.")
-
-= render :partial => "resources/templates"
+      =# _("Mit diesem Medieneintrag ist das erkunden des Medienarchivs nicht möglich, da er zu wenig Metadaten enthält.")
+      = _("Es gibt keine vergleichbaren Medieneinträge im Medienarchiv.")
 
 #positionable{:style => "position: absolute; display: none;"}
+
+=#mongo# render :partial => "media_entries/batch_bar"
     
 :javascript
   $(document).ready(function () {
+    //#mongo#// setupBatch();    
+
     $("ul.browse a.toggler").click(function(event) {
       var that = $(this);
       var next_div = that.next(); 

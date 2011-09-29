@@ -15,8 +15,8 @@ module Meta
     field :length_min, type: Integer
     field :length_max, type: Integer
 #mongo# TODO ??    
-#    field :key_map
-#    field :key_map_type
+    field :key_map
+    field :key_map_type
 #    field :position
 
     validates_presence_of :meta_key_id    
