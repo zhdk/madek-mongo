@@ -60,6 +60,8 @@
           Download volle Auflösung
   %tbody#anyone_permissions
     //
-%div{:class => "save_buttons"}   
-  =#mongo# link_to _("Abbrechen"), cancel_path
-  = submit_tag _("Speichern")
+
+- if can? :manage, @resource => Media::Resource # FIXME
+  %div{:class => "save_buttons"}   
+    =#mongo# link_to _("Abbrechen"), cancel_path
+    = submit_tag _("Speichern")

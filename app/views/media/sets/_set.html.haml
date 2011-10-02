@@ -33,7 +33,7 @@
             %li
               = link_to tab_title, "#info_tab"
             %li
-              =#mongo# TODO link_to _("Zugriffsberechtigungen"), edit_multiple_media_set_permissions_path(set)
+              = link_to _("Zugriffsberechtigungen"), edit_permissions_resource_path(set)
             - if set.is_a?(Media::Project)
               %li
                 = link_to _("Auszug"), "#abstract_tab"
