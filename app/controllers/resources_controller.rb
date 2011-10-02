@@ -105,24 +105,22 @@ class ResourcesController < ApplicationController
     authorize! :manage, @resource => Media::Resource
 
     #mongo# TODO move to Permission#as_json
-    permissions = @resource.permissions
+    permission = @resource.permission
     keys = [:view, :edit, :hi_res, :manage] #Permission::ACTIONS
-    @permissions_json = {}
-    #tmp#
-    @permissions_json["public"] = {:view => false, :edit => false, :hi_res => false, :manage => false, :name => "Öffentlich", :type => 'nil'}
-    permissions.group_by {|p| p.subject.class.name }.collect do |type, type_permissions|
-      # OPTIMIZE
-      if type == "NilClass"
-        p = type_permissions.first
-        @permissions_json["public"] = begin
-          h = {:name => "Öffentlich", :type => 'nil'}
-          keys.each {|key| h[key] = p.send(key) } #1504#
-          h
-        end
+    # OPTIMIZE
+    @permissions_json = { "public" => {:view => false, :edit => false, :hi_res => false, :manage => false, :name => "Öffentlich", :type => 'nil'},
+                          "Person" => [],
+                          "Group" => [] }
+
+    all_subjects = keys.map{|key| permission.send(key)["true"] + permission.send(key)["false"] }.flatten.uniq
+    all_subjects.each do |subject_id|
+      if subject_id == :public
+        keys.each {|key| @permissions_json["public"][key] = permission.send(key)["true"].include?(:public) }
       else
-        @permissions_json[type] = type_permissions.map do |p|
-          h = {:id => p.subject.id, :name => p.subject.to_s, :type => type}
-          keys.each {|key| h[key] = p.send(key) } #1504#
+        subject = Subject.find(subject_id)
+        @permissions_json[subject._type] << begin
+          h = {:id => subject.id, :name => subject.to_s, :type => subject._type}
+          keys.each {|key| h[key] = permission.send(key)["true"].include?(subject.id) }
           h
         end
       end
@@ -140,9 +138,10 @@ class ResourcesController < ApplicationController
   def update_permissions
     authorize! :manage, @resource => Media::Resource
 
-    @resource.permissions.delete_all
     if(actions = params[:subject]["nil"])
-      @resource.permissions.build(:subject => nil).set_actions(actions)
+      actions.each_pair do |action, boolean|
+        @resource.permission.send((boolean.to_s == "true" ? :grant : :deny), {action => :public}) 
+      end
     end
     # TOOD drop and merge to Subject
     ["Person", "User", "Group"].each do |key|
@@ -150,9 +149,12 @@ class ResourcesController < ApplicationController
         subject = Subject.find(subject_id)
         # OPTIMIZE it's not sure that the current_user is the owner (manager) of the current resource # TODO use Permission.assign_manage_to ?? 
         actions[:manage] = true if subject == current_user
-        @resource.permissions.build(:subject => subject).set_actions(actions)
+        actions.each_pair do |action, boolean|
+          @resource.permission.send((boolean.to_s == "true" ? :grant : :deny), {action => subject}) 
+        end
       end if params[:subject][key]
     end
+    @resource.save
 
     flash[:notice] = _("Die Zugriffsberechtigungen wurden erfolgreich gespeichert.")  
     redirect_to :action => :show

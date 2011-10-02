@@ -161,13 +161,12 @@ def factory_permissions(h, resource)
         @map["User"][p["subject_id"]]
       when "Group"
         @map[Group][p["subject_id"]]
+      else
+        :public if p["subject_id"].nil?
     end
-    
-    attr = {:subject => subject}
-    p["actions"].each_pair {|k,v| attr[k.to_sym] = v }
-    resource.permissions.build(attr)
+    next unless subject
+    p["actions"].each_pair {|k,v| resource.permission.send((v ? :grant : :deny), {k => subject}) }
   end
-  resource.permissions.delete_if {|x| not x.valid? }
 end
 
 def factory_meta_data(h, resource)

@@ -36,7 +36,9 @@ module Upload
             # if uploaded_data['filename'].include?
             # uploaded_data['current_user'] = current_user.login # for the use of media_file, if we get a zipfile
 
-            media_entry = upload_session.media_entries.create(:file => uploaded_data, :owner => current_user)
+            media_entry = upload_session.media_entries.create(:file => uploaded_data) do |x|
+                            x.owner = current_user
+                          end
 
             # If this is a path-based upload for e.g. video files, it's almost impossible that we've imported the title
             # correctly because some file formats don't give us that metadata. Let's overwrite with an auto-import default then.

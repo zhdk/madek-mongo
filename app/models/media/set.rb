@@ -77,7 +77,9 @@ module Media
                         a ||= begin
                           mk = Meta::Key.where(:label => "title").first
                           #mongo# TODO user.media_sets.create(:meta_data_attributes => [{:meta_key_id => mk.id, :value => v}])
-                          ms = Media::Set.create(:owner => user)
+                          ms = Media::Set.create do |x|
+                            x.owner = user
+                          end
                           ms.meta_data.create(:meta_key_id => mk.id, :value => v)
                           ms
                         end

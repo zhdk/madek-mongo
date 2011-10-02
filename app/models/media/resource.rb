@@ -65,10 +65,15 @@ module Media
     end    
 =end
 
+    #########################################################
 
-    #mongo# TODO validates_uniqueness :subject
-    embeds_many :permissions
-    #field :permissions, type: Hash, default: {} # {:subject_id => [:action_bits, :action_mask], ...}
+    #old# field :permissions, type: Hash, default: {} # {:subject_id => [:action_bits, :action_mask], ...}
+    embeds_one :permission
+
+    validates_presence_of :permission
+    after_initialize do
+      build_permission unless permission
+    end
 
     #########################################################
 
@@ -158,34 +163,36 @@ module Media
     #########################################################
 
     def is_public?
-      !!permissions.detect {|x| x.subject_id.nil? and x.view }
+      permission.view.include?(nil)
     end 
 
     def is_private?(user)
-      #p = permissions.where(:view => true)
-      #p.count == 1 and p.where(:subject_id => user.id).count == 1
-      p = permissions.select {|x| x.view }
-      p.size == 1 and !!p.detect {|x| x.subject_id == user.id } 
+      permission.view.size == 1 and permission.view.include?(user.id) 
     end
 
     # OPTIMIZE
     def owner
       #mongo# TODO validates presence of the owner's permissions?
-      permissions.where(:manage => true).detect {|x| x.subject.is_a? Person}.try(:subject)
+      # OPTIMIZE
+      Person.where(:_id.in => permission.manage).first
     end
     def user # TODO alias ??
       owner
     end
 
     def owner=(user)
-      h = {:subject => user, :view => true, :edit => true, :manage => true, :hi_res => true}
-      permissions.build(h)
+      actions = {:view => true, :edit => true, :manage => true, :hi_res => true}
+      actions.each_pair do |action, boolean|
+        permission.send((boolean.to_s == "true" ? :grant : :deny), {action => user}) 
+      end
     end
 
     #########################################################
 
-    def default_permission
-      permissions.find_or_initialize_by(:subject_id => nil)
+    def default_permission=(actions)
+      actions.each_pair do |action, boolean|
+        permission.send((boolean.to_s == "true" ? :grant : :deny), {action => :public}) 
+      end
     end
 
 =begin

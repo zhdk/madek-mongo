@@ -14,8 +14,11 @@ module Media
         snapshot_media_entry.try(:delete) # OPTIMIZE
         
         self.snapshot_media_entry = Media::Entry.create(:meta_data => meta_data.clone, :media_file => media_file.clone) do |x| 
-          group = Group.where(:name => "MIZ-Archiv").first
-          x.permissions.build(:subject => group, :view => true, :edit => true, :hi_res => true, :manage => true)
+          subject = Group.where(:name => "MIZ-Archiv").first
+          actions = {:view => true, :edit => true, :hi_res => true, :manage => true}
+          actions.each_pair do |action, boolean|
+            x.permission.send((boolean.to_s == "true" ? :grant : :deny), {action => subject}) 
+          end
           # TODO push to Snapshot group ??
         end
 
@@ -103,14 +106,14 @@ module Media
               # TODO dry
               next if entry_value.blank? or entry_value == "-" #mongo# or meta_data.detect {|md| md.meta_key == meta_key } # we do sometimes receive a blank value in metadata, hence the check.
               entry_value.gsub!(/\\n/,"\n") if entry_value.is_a?(String) # OPTIMIZE line breaks in text are broken somehow
-              meta_data.create(:meta_key => meta_key, :value => entry_value )
+              meta_data.build(:meta_key => meta_key, :value => entry_value )
             end
           else
             meta_key = Meta::Key.meta_key_for(entry_key) #10 TODO ?? , Meta::Context.file_embedded)
 
             next if entry_value.blank? #mongo# or meta_data.detect {|md| md.meta_key == meta_key } # we do sometimes receive a blank value in metadata, hence the check.
             entry_value.gsub!(/\\n/,"\n") if entry_value.is_a?(String) # OPTIMIZE line breaks in text are broken somehow
-            meta_data.create(:meta_key => meta_key, :value => entry_value )
+            meta_data.build(:meta_key => meta_key, :value => entry_value )
           end
   
         end
