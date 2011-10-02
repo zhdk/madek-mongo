@@ -1,9 +1,9 @@
 source 'http://rubygems.org'
 
-gem 'rails', '3.1.1.rc1'
+gem 'rails', '3.1.1.rc2'
 
-gem 'mongoid', '~> 2.2.0' #tmp# , :git => "git://github.com/mongoid/mongoid.git", :branch => "2.2.0-stable"
-gem 'bson_ext', '~> 1.3.1'
+gem 'mongoid', '~> 2.2' #tmp# , :git => "git://github.com/mongoid/mongoid.git", :branch => "2.2.0-stable"
+gem 'bson_ext', '~> 1.4'
 
 gem 'mongoid_search', '~> 0.2.7' # alternatives: 'mongoid_fulltext' (indexing methods), 'mongoid_text_search', 'mongoid-fulltextable'
 gem 'mongoid-tree', '~> 0.6.1', :require => 'mongoid/tree' # alternatives: 'mongoid_acts_as_tree', 'mongoid_nested_set'
@@ -23,7 +23,7 @@ group :assets do
   gem 'uglifier', '~> 1.0'
 end
 
-gem 'cancan', '~> 1.6.5'
+gem 'cancan', '~> 1.6'
 
 gem 'kaminari', '~> 0.12.4'
 gem 'rails_autolink', '~> 1.0.2'
