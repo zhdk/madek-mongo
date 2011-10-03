@@ -2,13 +2,12 @@
 module Media
   module SetsHelper
 
-    def media_set_title(media_set, with_link = false, with_main_thumb = false, total_thumbs = 0, accessible_resource_ids = nil)
+    def media_set_title(media_set, with_link = false, with_main_thumb = false, total_thumbs = 0)
       content = capture_haml do
         div_class, thumb_class = media_set.is_a?(Media::Project) ? ["set-box project-box", "thumb_box_project"] : ["set-box", "thumb_box_set"]
         haml_tag :div, :class => div_class do
           haml_tag :div, thumb_for(media_set, :small_125), :class => thumb_class if with_main_thumb
           haml_tag :span, media_set.title, :style => "font-weight: bold; font-size: 1.1em;"
-          #2001# " (%d/%d Medieneinträge)" % [visible_media_entries.count, media_set.media_entries.count]
           haml_tag :br
           haml_concat "von #{media_set.user}"
           haml_tag :br
@@ -17,16 +16,14 @@ module Media
           haml_tag :br
           if total_thumbs > 0
             haml_tag :br
-            #mongo# TODO ids = (media_set.media_entry_ids & accessible_resource_ids)[0, total_thumbs]
-            ids = media_set.media_resource_ids[0, total_thumbs]
-            media_entries = media_set.media_resources.find(ids).paginate
+            media_entries = media_set.media_resources.accessible_by(current_ability).page(1).per(total_thumbs)
             if media_entries.empty?
               haml_tag :small, _("Noch keine Medieneinträge enthalten")
             else
               media_entries.each do |media_entry|
                 haml_tag :div, thumb_for(media_entry, :small), :class => "thumb_mini" 
               end
-              haml_concat "..." if media_entries.total_pages > media_entries.current_page
+              haml_concat "..." if media_entries.num_pages > media_entries.current_page
             end
           end
         end
@@ -76,8 +73,6 @@ module Media
         else
           haml_tag :h4, _("Enthalten in")
           media_sets.each do |media_set|
-            #2001# media_entries = media_set.media_entries.select {|media_entry| Permission.authorized?(current_user, :view, media_entry)}
-            #2001# media_set_title(media_set, media_entries, true)
             haml_concat media_set_title(media_set, true, true)
           end
         end

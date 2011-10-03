@@ -163,18 +163,16 @@ module Media
     #########################################################
 
     def is_public?
-      permission.view.include?(nil)
+      permission.view["true"].include?(:public)
     end 
 
     def is_private?(user)
-      permission.view.size == 1 and permission.view.include?(user.id) 
+      permission.view["true"].size == 1 and permission.view["true"].include?(user.id) 
     end
 
-    # OPTIMIZE
+    #mongo# TODO validates presence of the owner's permissions?
     def owner
-      #mongo# TODO validates presence of the owner's permissions?
-      # OPTIMIZE
-      Person.where(:_id.in => permission.manage).first
+      Person.where(:_id.in => permission.manage["true"]).first
     end
     def user # TODO alias ??
       owner
@@ -194,24 +192,6 @@ module Media
         permission.send((boolean.to_s == "true" ? :grant : :deny), {action => :public}) 
       end
     end
-
-=begin
-#mongo# TODO prevent generate on seed  
-    private
-  
-    def generate_permissions
-      #mongo# TODO Snapshot
-      subject = self.user
-  
-      #mongo# TODO validates presence of the owner's permissions?
-      if subject
-       user_default_permissions = {:view => true, :edit => true, :manage => true}
-       user_default_permissions[:hi_res] = true if self.class == MediaEntry
-       permissions.build(:subject => subject).set_actions(user_default_permissions)  
-      end # OPTIMIZE
-    end
-=end
-
 
   end
 end
