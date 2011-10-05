@@ -41,4 +41,6 @@ group :test, :development do
   gem 'selenium-webdriver'
   gem 'rspec-rails'
   gem 'launchy'
+  gem "factory_girl_rails", "~> 1.2"
+  gem "factory_girl", "~> 2.1.0"
 end
