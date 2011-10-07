@@ -390,7 +390,7 @@ module Meta
             @copyright_all ||= Meta::Copyright.all # OPTIMIZE
             @copyright_roots ||= Meta::Copyright.roots
 
-            value = meta_datum.object.value.try(:first) #mongo# TODO # meta_datum.object.deserialized_value.try(:first) # OPTIMIZE
+            value = meta_datum.object.value.try(:first)
             selected = value ? @copyright_roots.detect{|s| s.eql?(value) or s.ancestor_of?(value) }.try(:id) : nil
             h += select_tag "options_root", options_from_collection_for_select(@copyright_roots, :id, :to_s, selected), :class => "options_root" 
   
