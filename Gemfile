@@ -34,14 +34,15 @@ gem 'mini_exiftool', '~> 1.3.1'
 gem 'mini_magick', '~> 3.3'
 
 group :test, :development do
-  gem 'pry' #gem 'ruby-debug19', '~> 0.11.6', :require => 'ruby-debug'
+  gem 'autotest'
+  gem 'capybara'
   gem 'cucumber'
   gem 'cucumber-rails'
-  gem 'capybara'
-  gem 'selenium-webdriver'
-  gem 'rspec-rails'
-  gem 'launchy'
-  gem "factory_girl_rails", "~> 1.2"
-  gem "factory_girl", "~> 2.1.0"
+  gem 'factory_girl', "~> 2.1.0"
+  gem 'factory_girl_rails', "~> 1.2"
   gem 'faker'
+  gem 'launchy'
+  gem 'pry' #gem 'ruby-debug19', '~> 0.11.6', :require => 'ruby-debug'
+  gem 'rspec-rails'
+  gem 'selenium-webdriver'
 end
