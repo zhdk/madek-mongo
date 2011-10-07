@@ -9,3 +9,4 @@ tmp/
 db/media_files
 db/full_export.json
 .project
+.rvmrc

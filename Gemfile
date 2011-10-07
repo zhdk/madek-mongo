@@ -23,7 +23,7 @@ group :assets do
   gem 'uglifier', '~> 1.0'
 end
 
-gem 'cancan', '~> 1.6'
+gem 'cancan', '~> 1.6.7'
 
 gem 'kaminari', '~> 0.12.4'
 gem 'rails_autolink', '~> 1.0.2'
@@ -41,4 +41,7 @@ group :test, :development do
   gem 'selenium-webdriver'
   gem 'rspec-rails'
   gem 'launchy'
+  gem "factory_girl_rails", "~> 1.2"
+  gem "factory_girl", "~> 2.1.0"
+  gem 'faker'
 end
