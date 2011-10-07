@@ -15,7 +15,7 @@ module Media
         
         self.snapshot_media_entry = Media::Entry.create(:meta_data => meta_data.clone, :media_file => media_file.clone) do |x| 
           subject = Group.where(:name => "MIZ-Archiv").first
-          actions = {:view => true, :edit => true, :hi_res => true, :manage => true}
+          actions = {:view => true, :edit => true, :hi_res => true, :manage_permissions => true}
           actions.each_pair do |action, boolean|
             x.permission.send((boolean.to_s == "true" ? :grant : :deny), {action => subject}) 
           end

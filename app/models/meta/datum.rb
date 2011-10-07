@@ -5,7 +5,6 @@ module Meta
 
     key :meta_key_id
     field :text, type: String #, type: Array, default: [] #mongo# TODO embeds_many :meta_strings ??
-    attr_accessor :value #mongo#
 
     embedded_in :media_resource, class_name: "Media::Resource"
     embeds_many :meta_keywords, class_name: "Meta::Keyword"
@@ -26,16 +25,19 @@ module Meta
 
     # NOTE before_save is too late!
     before_validation do
-      return true if @value == value #tmp# unless changed?
+      # NOTE first condition on normal edit, second condition on snapshot create 
+      return true if @value == value or (@value.nil? and !changed?)
+
       #return false if @value.nil? #mongo#
       case meta_key.object_type
         when "Meta::Copyright"
           return true if @value.blank? #mongo# OPTIMIZE false
           klass = meta_key.object_type.constantize
-          if @value.class == TrueClass
-            @value = klass.custom
-          elsif @value.class == FalseClass
-            @value = klass.public
+          @value = case @value.class
+            when TrueClass
+              @value = klass.custom
+            when FalseClass
+              @value = klass.public
           end
           #mongo# OPTIMIZE
           meta_references.delete_all
@@ -88,6 +90,12 @@ module Meta
       end
     end
 
+    #mongo#
+    attr_accessor :value
+    #def value=(new_value)
+    #  self.text = new_value
+    #end
+
     #mongo# TODO merge to_s
     def value
       case meta_key.object_type
@@ -103,7 +111,7 @@ module Meta
           text
       end
     end
-
+    
     #########################################################
 
     def to_s

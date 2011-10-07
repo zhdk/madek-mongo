@@ -16,7 +16,7 @@ module Media
     field :guid, type: String
     field :content_type, type: String
     field :filename, type: String
-    field :meta_data, type: Hash #, default: {} #mongo# TODO 
+    field :meta_data, type: Hash #, default: {} 
     field :size, type: Integer
     field :height, type: Integer
     field :width, type: Integer

@@ -118,7 +118,7 @@
             %li
               = link_to "#", :panel => "media_set", :title => _("Zu Set/Projekt hinzufügen") do
                 .button_addto
-            - if can? :manage, entry => Media::Resource
+            - if can? :manage_permissions, entry => Media::Resource
               %li
                 = link_to "#", :panel => "delete", :title => _("Löschen") do
                   .button_delete_active
