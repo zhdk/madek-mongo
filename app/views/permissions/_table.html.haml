@@ -61,7 +61,7 @@
   %tbody#anyone_permissions
     //
 
-- if can? :manage, @resource => Media::Resource # FIXME
+- if can? :manage_permissions, @resource => Media::Resource # FIXME
   %div{:class => "save_buttons"}   
     =#mongo# link_to _("Abbrechen"), cancel_path
     = submit_tag _("Speichern")

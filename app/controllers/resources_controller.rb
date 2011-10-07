@@ -102,13 +102,13 @@ class ResourcesController < ApplicationController
 ############################################################################################
 
   def edit_permissions
-    authorize! :manage, @resource => Media::Resource
+    authorize! :manage_permissions, @resource => Media::Resource
 
     #mongo# TODO move to Permission#as_json
     permission = @resource.permission
-    keys = [:view, :edit, :hi_res, :manage] #Permission::ACTIONS
+    keys = [:view, :edit, :hi_res, :manage_permissions] #Permission::ACTIONS
     # OPTIMIZE
-    @permissions_json = { "public" => {:view => false, :edit => false, :hi_res => false, :manage => false, :name => "Öffentlich", :type => 'nil'},
+    @permissions_json = { "public" => {:view => false, :edit => false, :hi_res => false, :manage_permissions => false, :name => "Öffentlich", :type => 'nil'},
                           "Person" => [],
                           "Group" => [] }
 
@@ -136,7 +136,7 @@ class ResourcesController < ApplicationController
   #mongo# merge with update ??
   # OPTIMIZE
   def update_permissions
-    authorize! :manage, @resource => Media::Resource
+    authorize! :manage_permissions, @resource => Media::Resource
 
     if(actions = params[:subject]["nil"])
       actions.each_pair do |action, boolean|
@@ -148,7 +148,7 @@ class ResourcesController < ApplicationController
       params[:subject][key].each_pair do |subject_id, actions|
         subject = Subject.find(subject_id)
         # OPTIMIZE it's not sure that the current_user is the owner (manager) of the current resource # TODO use Permission.assign_manage_to ?? 
-        actions[:manage] = true if subject == current_user
+        actions[:manage_permissions] = true if subject == current_user
         actions.each_pair do |action, boolean|
           @resource.permission.send((boolean.to_s == "true" ? :grant : :deny), {action => subject}) 
         end

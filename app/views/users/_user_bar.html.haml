@@ -7,7 +7,7 @@
       = link_to _("Readable Res."), resources_path(:can => :read), :class => "item_line_me" #mongo#tmp
       = link_to _("Editable Res."), resources_path(:can => :update), :class => "item_line_me" #mongo#tmp
       = link_to _("Hi-Res Res."), resources_path(:can => :hi_res), :class => "item_line_me" #mongo#tmp
-      = link_to _("Manageable Res."), resources_path(:can => :manage), :class => "item_line_me" #mongo#tmp
+      = link_to _("Manageable Res."), resources_path(:can => :manage_permissions), :class => "item_line_me" #mongo#tmp
 
       = link_to _("Meine Medieneinträge"), resources_path(:can => :read, :type => "entry"), :class => "item_line_me"
       = link_to _("Meine Sets"), resources_path(:can => :read, :type => "set"), :class => "item_line_set"
