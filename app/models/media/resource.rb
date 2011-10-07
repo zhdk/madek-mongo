@@ -139,7 +139,7 @@ module Media
         :is_public => is_public?,
         :is_private => is_private?(user),
         :is_editable => ability.can?(:update, self => Media::Resource),
-        :is_manageable => ability.can?(:manage, self => Media::Resource),
+        :is_manageable => ability.can?(:manage_permissions, self => Media::Resource),
         :can_maybe_browse => !meta_data.for_meta_terms.blank?,
         :is_favorite => user.favorite_resources.include?(self),
         :title => meta_data.get_value_for("title"),
@@ -163,23 +163,26 @@ module Media
     #########################################################
 
     def is_public?
-      permission.view["true"].include?(:public)
+      #tmp# permission.view["true"].include?(:public)
+      permission.attributes["public"].try(:include?, :view)
     end 
 
     def is_private?(user)
-      permission.view["true"].size == 1 and permission.view["true"].include?(user.id) 
+      #tmp# permission.view["true"].size == 1 and permission.view["true"].include?(user.id)
+      permission.subject_ids.size == 1 and permission.attributes[user.id].try(:include?, :view) 
     end
 
     #mongo# TODO validates presence of the owner's permissions?
     def owner
-      Person.where(:_id.in => permission.manage["true"]).first
+      #tmp# Person.where(:_id.in => permission.manage_permissions["true"]).first
+      Person.where(:_id.in => permission.subject_ids).first
     end
     def user # TODO alias ??
       owner
     end
 
     def owner=(user)
-      actions = {:view => true, :edit => true, :manage => true, :hi_res => true}
+      actions = {:view => true, :edit => true, :manage_permissions => true, :hi_res => true}
       actions.each_pair do |action, boolean|
         permission.send((boolean.to_s == "true" ? :grant : :deny), {action => user}) 
       end

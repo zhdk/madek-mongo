@@ -6,21 +6,42 @@ class Ability
     
     ids = [:public, user.try(:group_ids), user.try(:id)].flatten.uniq
     
-    ####################################
-    can :read, Media::Resource, :"permission.view.true".in => ids
     # TODO prioriy check, see below
+    # TODO map_reduce ??
+
+    ####################################
+    #old# can :read, Media::Resource, :"permission.view.true".in => ids
     # cannot :read, Media::Resource, :"permission.view.false".in => ids
+    
+    #can :read, Media::Resource, "$where" => "this.permission.public & #{2 ** Permission::ACTIONS.index(:view)}" # OPTIMIZE $where queries are slow!
+    conditions = ids.map do |id|
+      #{:"permission.#{id}" => 1}
+      {:"permission.#{id}" => :view}
+    end
+    can :read, Media::Resource, "$or" => conditions
 
     ####################################
-    can :update, Media::Resource, :"permission.edit.true".in => ids
+    #can :update, Media::Resource, :"permission.edit.true".in => ids
+    conditions = ids.map do |id|
+      {:"permission.#{id}" => :edit}
+    end
+    can :update, Media::Resource, "$or" => conditions
 
     ####################################
     # TODO
-    can :hi_res, Media::Resource, :"permission.hi_res.true".in => ids
+    #can :hi_res, Media::Resource, :"permission.hi_res.true".in => ids
+    conditions = ids.map do |id|
+      {:"permission.#{id}" => :hi_res}
+    end
+    can :hi_res, Media::Resource, "$or" => conditions
 
     ####################################
     # TODO
-    can :manage, Media::Resource, :"permission.manage.true".in => ids
+    #can :manage_permissions, Media::Resource, :"permission.manage_permissions.true".in => ids
+    conditions = ids.map do |id|
+      {:"permission.#{id}" => :manage_permissions}
+    end
+    can :manage_permissions, Media::Resource, "$or" => conditions
     
   end
 
@@ -36,6 +57,25 @@ class Ability
   ([1,2,3,5,6] - [2,5]) + ([1,2,3,4,6] - [2,5,6])
   [1,3,6] + [1,3,4]
   [1,3,4,6]
+  
+  ======
+  Can the current_user view the current a media_entry?
+  1. get permission for public on current media_entry 
+    1.1. if doesn't exist, go to 2
+    1.2. if exists
+      1.2.1. if view action is true, return true (current_user has access) (exclusion are not possible)
+      1.2.2. else if view action is false or not defined, go to 2
+  2. get permission for current_user on current media_entry
+    2.1. if doesn't exist, go to 3
+    2.2. if exists
+      2.2.1. if view action is true, return true (current_user has access)
+      2.2.2. else if view action is false, return false (current_user doesn't have access)
+      2.2.3. else if view action is not defined, go to 3
+  3. get permissions on current_media for all groups which current_user is member of 
+    3.1. if don't exist, return false (current_user doesn't have access)
+    3.2. if exist get the union of the view action among all found permissions
+      3.2.1. if there is at least one view action set to true, return true (current_user has access)
+      3.2.2. else if all view actions are false or not defined, return false (current_user doesn't have access)
 =end
   
 end

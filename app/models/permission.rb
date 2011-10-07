@@ -6,36 +6,15 @@ class Permission
   #GUEST = :guest #or# PUBLIC = :public
   #LOGGED_IN = :logged_in
 
+  ACTIONS = [:view, :edit, :hi_res, :manage_permissions] # view = 2^0 = 1; edit = 2^1 = 2; hi_res = 2^2 = 4; manage = 2^3 = 8
+
   # OPTIMIZE refactor and include as module directly to media_resource ?? {permission: {view: [], view: [], ...}}
   embedded_in :resource
 
-  # TODO dynamic fields ?? {subject_id => action_bits, "4e8793e9c264f8e0c6000001" => 11, ... }
-  
-  field :view, type: Hash #, default: {:true => [], :false => []} # [] # proc { @view || [] } #mongo# TODO rename to :read
-  field :edit, type: Hash #, default: {:true => [], :false => []} # [] # proc { @edit || [] } #mongo# TODO rename to :update
-  field :hi_res, type: Hash #, default: {:true => [], :false => []} # [] # proc { @hi_res || [] } # TODO only for media_entry
-  field :manage, type: Hash #, default: {:true => [], :false => []} # [] # TODO 1 subject # proc { @manage || [] } #mongo# TODO rename to :admin ?? or :owner ??
-
-=begin
-  after_initialize do
-    # NOTE set default preventing same references
-    fields.values.select{|f| f.options[:type] == Hash }.map(&:name).each do |field_name|
-      attributes[field_name] = {:true => [], :false => []} if attributes[field_name].blank?
-    end
+  # NOTE using dynamic fields {subject_id => action_bits, "4e8793e9c264f8e0c6000001" => 11, ... }
+  def subject_ids
+    attributes.select{|x| not fields.keys.include?(x)}.keys
   end
-=end
-
-  #mongo# TODO validates_uniqueness :subject
-  # before_validation fields...uniq!
-
-=begin #tmp# doesn't work
-  # NOTE set default just on request
-  fields.values.select{|f| f.options[:type] == Array }.map(&:name).each do |field_name|
-    define_method(field_name) do |*args|
-      attributes[field_name] ||= []
-    end
-  end
-=end
 
   ##########################################
   
@@ -48,10 +27,14 @@ class Permission
         subject.id
       end
       next unless subject_id
+      
+      action_sym = action.to_sym
+      action_sym = :manage_permissions if action_sym == :manage
 
-      send("#{action}=", {"true" => [], "false" => []}) unless send(action)
-      send(action)["false"].delete(subject_id)
-      send(action)["true"].push(subject_id).uniq!
+      #i = ACTIONS.index(action_sym)
+      #next unless i
+      attributes[subject_id.to_s] ||= [] # 0
+      attributes[subject_id.to_s] << action_sym unless attributes[subject_id.to_s].include?(action_sym) # |= 2 ** i
     end
   end
 
@@ -65,9 +48,13 @@ class Permission
       end
       next unless subject_id
 
-      send("#{action}=", {"true" => [], "false" => []}) unless send(action)
-      send(action)["true"].delete(subject_id)
-      send(action)["false"].push(subject_id).uniq!
+      action_sym = action.to_sym
+      action_sym = :manage_permissions if action_sym == :manage
+
+      #i = ACTIONS.index(action_sym)
+      #next unless i
+      attributes[subject_id.to_s] ||= [] # 0
+      attributes[subject_id.to_s].delete(action_sym) # &= ~(2 ** i)
     end
   end
 

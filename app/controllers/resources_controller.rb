@@ -112,15 +112,15 @@ class ResourcesController < ApplicationController
                           "Person" => [],
                           "Group" => [] }
 
-    all_subjects = keys.map{|key| permission.send(key)["true"] + permission.send(key)["false"] }.flatten.uniq
+    all_subjects = permission.subject_ids
     all_subjects.each do |subject_id|
-      if subject_id == :public
-        keys.each {|key| @permissions_json["public"][key] = permission.send(key)["true"].include?(:public) }
+      if subject_id == "public"
+        keys.each {|key| @permissions_json["public"][key] = permission.attributes[subject_id].include?(key) }
       else
         subject = Subject.find(subject_id)
         @permissions_json[subject._type] << begin
           h = {:id => subject.id, :name => subject.to_s, :type => subject._type}
-          keys.each {|key| h[key] = permission.send(key)["true"].include?(subject.id) }
+          keys.each {|key| h[key] = permission.attributes[subject_id].include?(key) }
           h
         end
       end
@@ -154,7 +154,7 @@ class ResourcesController < ApplicationController
         end
       end if params[:subject][key]
     end
-    @resource.save
+    @resource.save # FIXME doesn't save !!!!!!!!
 
     flash[:notice] = _("Die Zugriffsberechtigungen wurden erfolgreich gespeichert.")  
     redirect_to :action => :show
