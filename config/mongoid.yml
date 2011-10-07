@@ -11,8 +11,12 @@ defaults: &defaults
   # or you will experience querying inconsistencies in dev mode.
   # Note that this will severely decrease performance in dev mode only.
   preload_models: true
-  identity_map_enabled: true
-
+  identity_map_enabled: true #not working yet# http://mongoid.org/docs/identity_map.html Access as Mongoid::IdentityMap.get(Person, id)
+                             #but using the mongoid_identity_map gem for now
+  #allow_dynamic_fields: false
+  parameterize_keys: false
+  # configuration options:
+  # http://mongoid.org/docs/installation/configuration.html
 
 development:
   <<: *defaults
@@ -24,6 +28,8 @@ test:
 
 # set these environment variables on your prod server
 production:
+  #<<: *defaults
+  #database: madek_production
   host: <%= ENV['MONGOID_HOST'] %>
   port: <%= ENV['MONGOID_PORT'] %>
   username: <%= ENV['MONGOID_USERNAME'] %>
