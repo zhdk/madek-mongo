@@ -20,8 +20,13 @@ class ApplicationController < ActionController::Base
     @current_user ||= login_from_session
   end
 
+  # provides ability for current logged in user or for guest user (in future we open for public navigation)
   def current_ability
-    @current_ability ||= Ability.new(current_user)
+    @current_ability ||= if logged_in?
+      current_user.ability
+    else
+      Ability.new(nil)
+    end
   end
   
 ##############################################  
