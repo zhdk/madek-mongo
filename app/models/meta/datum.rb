@@ -19,7 +19,7 @@ module Meta
     #########################################################
 
     # OPTIMIZE
-    scope :for_meta_terms, where(:meta_key_id.in => Meta::Key.where(:object_type => "Meta::Term").collect(&:id)) 
+    scope :for_meta_terms, lambda { where(:meta_key_id.in => Meta::Key.where(:object_type => "Meta::Term").collect(&:id)) }
 
     #########################################################
 
