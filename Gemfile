@@ -1,6 +1,6 @@
 source 'http://rubygems.org'
 
-gem 'rails', '3.1.1.rc3'
+gem 'rails', '3.1.1'
 
 gem 'mongoid', '~> 2.2' #tmp# , :git => "git://github.com/mongoid/mongoid.git", :branch => "2.2.0-stable"
 gem 'bson_ext', '~> 1.4'
@@ -24,6 +24,7 @@ group :assets do
 end
 
 gem 'cancan', '~> 1.6.7'
+#tmp# gem 'cancan', :git => "git://github.com/ryanb/cancan.git", :branch => "2.0"
 
 gem 'kaminari', '~> 0.12.4'
 gem 'rails_autolink', '~> 1.0.2'
