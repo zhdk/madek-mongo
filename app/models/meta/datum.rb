@@ -10,7 +10,7 @@ module Meta
     embeds_many :meta_keywords, class_name: "Meta::Keyword"
     embeds_many :meta_references, class_name: "Meta::Reference" #mongo# TODO merge meta_keywords into meta_references
     embeds_many :meta_dates, class_name: "Meta::Date"
-    belongs_to :meta_key, class_name: "Meta::Key" #mongo# , index: true #mongo# index :meta_key_id, unique: true
+    belongs_to :meta_key, class_name: "Meta::Key" # indexed on parent
 
     #########################################################
 

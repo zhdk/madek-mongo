@@ -17,7 +17,8 @@ module Media
 
     has_and_belongs_to_many :media_sets, class_name: "Media::Set", inverse_of: :media_resources # NOTE need inverse_of
 
-    #mongo# TODO ?? index "meta_data.meta_key_id", unique: true
+    #########################################################
+
     embeds_many :meta_data, :class_name => "Meta::Datum" do # TODO validates_uniqueness :meta_key
       def get(key_id)
         r = where(:_id => key_id).first # OPTIMIZE prevent find if is_dynamic meta_key
@@ -37,6 +38,9 @@ module Media
         end
       end
     end
+
+    index "meta_data.meta_key_id" # TODO , unique: true
+
     #mongo#
     accepts_nested_attributes_for :meta_data, :allow_destroy => true,
                                               :reject_if => proc { |attributes| attributes['value'].blank? }
@@ -69,6 +73,7 @@ module Media
 
     #old# field :permissions, type: Hash, default: {} # {:subject_id => [:action_bits, :action_mask], ...}
     embeds_one :permission
+    # TODO index "permission. ..."
 
     validates_presence_of :permission
     after_initialize do

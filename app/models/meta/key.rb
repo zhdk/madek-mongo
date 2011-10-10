@@ -8,6 +8,8 @@ module Meta
     field :object_type, type: String #mongo# TODO
     field :is_dynamic, type: Boolean #, default: false #mongo# TODO
     field :is_extensible_list, type: Boolean #, default: false #mongo# TODO
+    
+    index :object_type
 
     has_and_belongs_to_many :meta_terms, class_name: "Meta::Term", inverse_of: :meta_keys # NOTE need inverse_of
     
@@ -76,50 +78,6 @@ module Meta
                                         :position => mc.meta_key_definitions.maximum("position") + 1 )
       end
       mk
-    end
-    
-    #tmp#
-    def self.count_keywords
-      #mongo# TODO this is counting the resources, we want instead the nested total keywords
-      #Meta::Key.find("keywords").meta_data.count
-      
-      #mongo# TODO virtual-collection and index
-      #Media::Resource.where(:"meta_data.meta_key_id" => "keywords").fields(:meta_data => 1).collect do |r|
-      #  r.meta_data.where(:meta_key_id => "keywords").first.meta_keywords.count
-      #end.sum
-
-      map = <<-HERECODE
-        function() {
-          //this.meta_data.filter
-          if(this.meta_data && this.meta_data.length){
-            this.meta_data.forEach(function(md) {
-              if(md.meta_key_id == "keywords" && md.meta_keywords)
-                //emit("keywords", {size: md.meta_keywords.length});
-                emit("keywords", md.meta_keywords.length);
-            });
-            //emit(this._id, {cc:this.meta_data.length});
-          }
-        }
-      HERECODE
-      
-      reduce = <<-HERECODE
-        function(key, values) {
-          var sum = 0;
-          //values.forEach(function(v) { sum += v; });
-          //for(var v in values){ sum += values[v].size; }
-          for(var v in values){ sum += values[v]; }
-          //return {size: sum};
-          return sum;
-        }
-      HERECODE
-
-      query = { :"meta_data.meta_key_id" => "keywords" }
-      r = Media::Resource.collection.
-            ## persistent collection
-            #map_reduce(map, reduce, { :query => query, :out => "keywords_counter"}).find().first
-            ## temporary collection
-            map_reduce(map, reduce, { :query => query, :out => { :inline => 1}, :raw => true })["results"].first
-      r ? r["value"].to_i : 0
     end
     
   end
