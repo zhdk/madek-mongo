@@ -47,3 +47,9 @@ group :test, :development do
   gem 'rspec-rails'
   gem 'selenium-webdriver'
 end
+
+group :test do
+  gem 'turn', :require => false # Pretty printed test output
+  gem 'minitest'
+  #tmp# gem 'autotest-rails'
+end

@@ -5,6 +5,8 @@ class Group < Subject
 
   field :name, type: String
 
+  validates_presence_of :name
+
   scope :departments, where(:_type => "Meta::Department")
 
   def is_readonly?
