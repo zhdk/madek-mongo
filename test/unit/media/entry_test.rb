@@ -1,25 +1,13 @@
 require 'minitest_helper'
 require 'minitest/autorun'
 
-class TestMediaSet < MiniTest::Unit::TestCase
+class TestMediaEntry < MiniTest::Unit::TestCase
   def setup
-    @media_resource = @media_set = Media::Set.new
+    @media_resource = @media_entry = Media::Entry.new
   end
 
   def test_that_is_a_new_record
-    assert_equal true, @media_set.new_record?
-  end
-
-  def test_that_has_a_nested_resources_collection
-    assert_equal false, @media_set.media_resources.nil?
-  end
-
-  def test_that_does_not_have_nested_resources_yet
-    assert_equal true, @media_set.media_resources.empty?
-  end
-
-  def test_that_could_have_individual_contexts
-    assert_equal true, @media_set.individual_contexts.empty?
+    assert_equal true, @media_entry.new_record?
   end
 
   ################################################

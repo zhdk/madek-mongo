@@ -4,7 +4,7 @@ require 'rails/test_help'
 
 # TODO run as:
 # $ rake test:units => doesn't work now 
-# use instead => $ ruby -Itest test/unit/*
+# use instead => $ find test/unit/ -name "*.rb" -exec ruby -Itest {} \;
 
 # TODO running autotest
 

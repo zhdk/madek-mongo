@@ -3,7 +3,7 @@ require 'minitest/autorun'
 
 class TestGroup < MiniTest::Unit::TestCase
   def setup
-    @group = Group.new
+    @subject = @group = Group.new
   end
 
   def test_that_is_a_new_record
