@@ -10,38 +10,17 @@ class Ability
     # TODO map_reduce ??
 
     ####################################
-    #old# can :read, Media::Resource, :"permission.view.true".in => ids
+    can :read, Media::Resource, :"permission.view.true".in => ids
     # cannot :read, Media::Resource, :"permission.view.false".in => ids
-    
-    #can :read, Media::Resource, "$where" => "this.permission.public & #{2 ** Permission::ACTIONS.index(:view)}" # OPTIMIZE $where queries are slow!
-    conditions = ids.map do |id|
-      #{:"permission.#{id}" => 1}
-      {:"permission.#{id}" => :view}
-    end
-    can :read, Media::Resource, "$or" => conditions
 
     ####################################
-    #can :update, Media::Resource, :"permission.edit.true".in => ids
-    conditions = ids.map do |id|
-      {:"permission.#{id}" => :edit}
-    end
-    can :update, Media::Resource, "$or" => conditions
+    can :update, Media::Resource, :"permission.edit.true".in => ids
 
     ####################################
-    # TODO
-    #can :hi_res, Media::Resource, :"permission.hi_res.true".in => ids
-    conditions = ids.map do |id|
-      {:"permission.#{id}" => :hi_res}
-    end
-    can :hi_res, Media::Resource, "$or" => conditions
+    can :hi_res, Media::Resource, :"permission.hi_res.true".in => ids
 
     ####################################
-    # TODO
-    #can :manage_permissions, Media::Resource, :"permission.manage_permissions.true".in => ids
-    conditions = ids.map do |id|
-      {:"permission.#{id}" => :manage_permissions}
-    end
-    can :manage_permissions, Media::Resource, "$or" => conditions
+    can :manage_permissions, Media::Resource, :"permission.manage_permissions.true".in => ids
     
   end
 

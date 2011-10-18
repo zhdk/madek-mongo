@@ -106,7 +106,7 @@ class ResourcesController < ApplicationController
 
     #mongo# TODO move to Permission#as_json
     permission = @resource.permission
-    keys = [:view, :edit, :hi_res, :manage_permissions] #Permission::ACTIONS
+    keys = Permission::ACTIONS
     # OPTIMIZE
     @permissions_json = { "public" => {:view => false, :edit => false, :hi_res => false, :manage_permissions => false, :name => "Öffentlich", :type => 'nil'},
                           "Person" => [],
@@ -114,13 +114,13 @@ class ResourcesController < ApplicationController
 
     all_subjects = permission.subject_ids
     all_subjects.each do |subject_id|
-      if subject_id == "public"
-        keys.each {|key| @permissions_json["public"][key] = permission.attributes[subject_id].include?(key) }
+      if subject_id == :public
+        keys.each {|key| @permissions_json["public"][key] = permission.send(key)["true"].include?(:public) }
       else
         subject = Subject.find(subject_id)
         @permissions_json[subject._type] << begin
           h = {:id => subject.id, :name => subject.to_s, :type => subject._type}
-          keys.each {|key| h[key] = permission.attributes[subject_id].include?(key) }
+          keys.each {|key| h[key] = permission.send(key)["true"].include?(subject.id) }
           h
         end
       end

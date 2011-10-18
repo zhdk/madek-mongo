@@ -73,9 +73,11 @@ module Media
 
     #########################################################
 
-    #old# field :permissions, type: Hash, default: {} # {:subject_id => [:action_bits, :action_mask], ...}
     embeds_one :permission
-    # TODO index "permission. ..."
+    Permission::ACTIONS.each do |action|
+      index "permission.#{action}.true"
+      index "permission.#{action}.false"
+    end
 
     validates_presence_of :permission
     after_initialize do
@@ -170,26 +172,24 @@ module Media
     #########################################################
 
     def is_public?
-      #tmp# permission.view["true"].include?(:public)
-      permission.attributes["public"].try(:include?, :view)
+      permission.view["true"].include?(:public)
     end 
 
     def is_private?(user)
-      #tmp# permission.view["true"].size == 1 and permission.view["true"].include?(user.id)
-      permission.subject_ids.size == 1 and permission.attributes[user.id].try(:include?, :view) 
+      permission.view["true"].size == 1 and permission.view["true"].include?(user.id)
     end
 
     #mongo# TODO validates presence of the owner's permissions?
     def owner
-      #tmp# Person.where(:_id.in => permission.manage_permissions["true"]).first
-      Person.where(:_id.in => permission.subject_ids).first
+      Person.where(:_id.in => permission.manage_permissions["true"]).first
     end
     def user # TODO alias ??
       owner
     end
 
     def owner=(user)
-      actions = {:view => true, :edit => true, :manage_permissions => true, :hi_res => true}
+      actions = {}
+      Permission::ACTIONS.each {|action| actions[action] = true }
       actions.each_pair do |action, boolean|
         permission.send((boolean.to_s == "true" ? :grant : :deny), {action => user}) 
       end

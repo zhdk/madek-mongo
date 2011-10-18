@@ -6,14 +6,20 @@ class Permission
   #GUEST = :guest #or# PUBLIC = :public
   #LOGGED_IN = :logged_in
 
-  ACTIONS = [:view, :edit, :hi_res, :manage_permissions] # view = 2^0 = 1; edit = 2^1 = 2; hi_res = 2^2 = 4; manage = 2^3 = 8
+  ACTIONS = [:view, :edit, :hi_res, :manage_permissions]
 
   # OPTIMIZE refactor and include as module directly to media_resource ?? {permission: {view: [], view: [], ...}}
   embedded_in :resource
 
-  # NOTE using dynamic fields {subject_id => action_bits, "4e8793e9c264f8e0c6000001" => 11, ... }
+  ACTIONS.each do |action|
+    field action, type: Hash #, default: {:true => [], :false => []}
+  end
+
   def subject_ids
-    attributes.select{|x| not fields.keys.include?(x)}.keys
+    ACTIONS.map do |key|
+      send("#{key}=", {"true" => [], "false" => []}) unless send(key)
+      send(key)["true"] + send(key)["false"]
+    end.flatten.uniq
   end
 
   ##########################################
@@ -27,14 +33,13 @@ class Permission
         subject.id
       end
       next unless subject_id
-      
+
       action_sym = action.to_sym
       action_sym = :manage_permissions if action_sym == :manage
 
-      #i = ACTIONS.index(action_sym)
-      #next unless i
-      attributes[subject_id.to_s] ||= [] # 0
-      attributes[subject_id.to_s] << action_sym unless attributes[subject_id.to_s].include?(action_sym) # |= 2 ** i
+      send("#{action_sym}=", {"true" => [], "false" => []}) unless send(action_sym)
+      send(action_sym)["false"].delete(subject_id)
+      send(action_sym)["true"].push(subject_id).uniq!
     end
   end
 
@@ -51,10 +56,9 @@ class Permission
       action_sym = action.to_sym
       action_sym = :manage_permissions if action_sym == :manage
 
-      #i = ACTIONS.index(action_sym)
-      #next unless i
-      attributes[subject_id.to_s] ||= [] # 0
-      attributes[subject_id.to_s].delete(action_sym) # &= ~(2 ** i)
+      send("#{action_sym}=", {"true" => [], "false" => []}) unless send(action_sym)
+      send(action_sym)["true"].delete(subject_id)
+      send(action_sym)["false"].push(subject_id).uniq!
     end
   end
 
