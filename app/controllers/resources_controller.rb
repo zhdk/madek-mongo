@@ -154,7 +154,6 @@ class ResourcesController < ApplicationController
         end
       end if params[:subject][key]
     end
-    @resource.save # FIXME doesn't save !!!!!!!!
 
     flash[:notice] = _("Die Zugriffsberechtigungen wurden erfolgreich gespeichert.")  
     redirect_to :action => :show

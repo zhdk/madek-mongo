@@ -6,6 +6,8 @@ class Permission
   #GUEST = :guest #or# PUBLIC = :public
   #LOGGED_IN = :logged_in
 
+  # TODO move to _parent::ACTIONS ??
+  # for Media::Set => [:view, :edit(_meta_data), :manage_permissions, :add_resource, :remove_resource]
   ACTIONS = [:view, :edit, :hi_res, :manage_permissions]
 
   # OPTIMIZE refactor and include as module directly to media_resource ?? {permission: {view: [], view: [], ...}}
@@ -40,6 +42,8 @@ class Permission
       send("#{action_sym}=", {"true" => [], "false" => []}) unless send(action_sym)
       send(action_sym)["false"].delete(subject_id)
       send(action_sym)["true"].push(subject_id).uniq!
+      # OPTIMIZE
+      set(action_sym, send(action_sym))
     end
   end
 
@@ -59,6 +63,8 @@ class Permission
       send("#{action_sym}=", {"true" => [], "false" => []}) unless send(action_sym)
       send(action_sym)["true"].delete(subject_id)
       send(action_sym)["false"].push(subject_id).uniq!
+      # OPTIMIZE
+      set(action_sym, send(action_sym))
     end
   end
 
