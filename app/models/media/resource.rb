@@ -19,8 +19,6 @@ module Media
 
     #########################################################
 
-    #working here#
-    # index "meta_data.meta_key_id" # TODO , unique: true
     index "meta_data._id" # TODO , unique: true
 
     embeds_many :meta_data, :class_name => "Meta::Datum" do # TODO validates_uniqueness :meta_key
@@ -35,10 +33,10 @@ module Media
       def for_context(context, build_if_not_exists = true)
         if build_if_not_exists
           context.meta_key_ids.collect do |key_id|
-            find_or_initialize_by(:meta_key_id => key_id)
+            find_or_initialize_by(:_id => key_id)
           end
         else
-          where(:meta_key_id.in => context.meta_key_ids)
+          where(:_id.in => context.meta_key_ids)
         end
       end
     end

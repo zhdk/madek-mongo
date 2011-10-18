@@ -24,7 +24,7 @@
     :ruby
       label = meta_datum.object.meta_key.label
       next if meta_datum.object.meta_key.is_dynamic? and not ["copyright usage", "copyright url"].include?(label) # OPTIMIZE
-      definition = context.meta_definitions.where(:meta_key_id => meta_datum.object.meta_key_id).first
+      definition = context.meta_definitions.where(:meta_key_id => meta_datum.object._id).first
       underscored_label = label.gsub(/\W+/, '_')
       parent_underscored_label = labels.detect {|x| x.last.include?(label) }.try(:first).try(:gsub, /\W+/, '_')
       is_parent = (!parent_underscored_label and labels.has_key?(label))

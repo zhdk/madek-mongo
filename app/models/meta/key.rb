@@ -16,11 +16,11 @@ module Meta
     # Mongoid::Errors::MixedRelations: Referencing a(n) Meta::Datum document from the Meta::Key
     # document via a relational association is not allowed since the Meta::Datum is embedded.  
     # has_many :meta_data, :class_name => "Meta::Datum"
-    has_many :media_resources, class_name: "Media::Resource", foreign_key: "meta_data.meta_key_id"
+    has_many :media_resources, class_name: "Media::Resource", foreign_key: "meta_data._id"
     #mongo# OPTIMIZE
     def meta_data
       #tmp# media_resources.collect(&:meta_data).flatten.select{|md| md.meta_key_id == id}
-      media_resources.fields(:meta_data => 1).collect{|mr| mr.meta_data.where(:meta_key_id => id) }.flatten
+      media_resources.fields(:meta_data => 1).collect{|mr| mr.meta_data.where(:_id => id) }.flatten
     end
 
     has_many :meta_contexts, class_name: "Meta::Context", foreign_key: "meta_definitions.meta_key_id"

@@ -38,7 +38,7 @@ module Meta
       meta_data = resource.meta_data.for_context(context, false)
       meta_data.each do |meta_datum|
         next if meta_datum.to_s.blank? #tmp# OPTIMIZE 2007
-        definition = context.meta_definitions.where(:meta_key_id => meta_datum.meta_key_id).first
+        definition = context.meta_definitions.where(:meta_key_id => meta_datum._id).first
         h[definition.label] = formatted_value(meta_datum) 
       end
       display_meta_data_helper(context, h)
@@ -56,9 +56,9 @@ module Meta
       meta_data = resource.meta_data.for_context(context)
       capture_haml do
         meta_data.each do |meta_datum|
-          definition = context.meta_definitions.where(:meta_key_id => meta_datum.meta_key_id).first
+          definition = context.meta_definitions.where(:meta_key_id => meta_datum._id).first
           haml_tag :h4, definition.label, :style => "margin-top: 10px;"
-          haml_tag :div, :meta_key_id => meta_datum.meta_key_id do
+          haml_tag :div, :meta_key_id => meta_datum._id do
             haml_tag :span, formatted_value(meta_datum), :content => "value"
           end
         end
@@ -72,7 +72,7 @@ module Meta
       capture_haml do
         unless meta_datum.meta_keywords.blank?
           s = meta_datum.meta_keywords.map do |v|
-            #mongo# TODO link_to dv, filter_search_path(:meta_key_id => meta_datum.meta_key, :meta_term_id => dv.id), :method => :post, :remote => true, :"data-meta_term_id" => dv.id
+            #mongo# TODO link_to dv, filter_search_path(:meta_key_id => meta_datum._id, :meta_term_id => dv.id), :method => :post, :remote => true, :"data-meta_term_id" => dv.id
             link_to v, resources_path(:query => v.to_s)
           end
           haml_concat s.join(', ')
@@ -251,13 +251,13 @@ module Meta
     end
   
     def field_tag(meta_datum, context, autofocus = false, with_actions = false)
-      h = meta_datum.hidden_field :meta_key_id
+      h = meta_datum.hidden_field :_id
   
       meta_key = meta_datum.object.meta_key
       field_id = "#{sanitize_to_id(meta_datum.object_name)}_value"
-      definition = context.meta_definitions.where(:meta_key_id => meta_datum.object.meta_key_id).first
+      definition = context.meta_definitions.where(:meta_key_id => meta_datum.object._id).first
       is_required = (definition.is_required ? true : nil)
-      key_id = meta_datum.object.meta_key_id
+      key_id = meta_datum.object._id
   
       if meta_key.object_type == "Meta::Country"
         h += widget_meta_countries(meta_datum, meta_key)
