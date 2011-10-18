@@ -46,9 +46,9 @@ module Upload
             unless params['uploaded_data']
               # TODO: Extract metadata from separate YAML file here, along with refactoring MediaEntry#process_metadata_blob and friends
               mandatory_key_ids = Meta::Key.where(:label => ['title', 'copyright notice']).collect(&:id)
-              if media_entry.meta_data.where(:meta_key_id => mandatory_key_ids).empty?
+              if media_entry.meta_data.where(:_id => mandatory_key_ids).empty?
                 mandatory_key_ids.each do |key_id|
-                  media_entry.meta_data.create(:meta_key_id => key_id, :value => 'Auto-created default during import')
+                  media_entry.meta_data.create(:_id => key_id, :value => 'Auto-created default during import')
                 end
               end
             end
