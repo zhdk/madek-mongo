@@ -31,5 +31,31 @@ module Media
       end
     end
 
+    def select_dimensions_header_for_entry(entry)
+      media_file = entry.media_file
+      unless media_file.nil?
+        case media_file.content_type
+          when /audio/ then
+            header = "Dauer"
+          # when /video/ then
+          #   
+          # when /image/ then
+          else
+            header = "Dimensionen (Format)"
+        end
+      end
+      return header
+    end
+
+    def file_format_for(media_file)
+      case media_file.content_type
+        when /image/ then
+          format = media_file.content_type.gsub(/image\//, '')
+        # other media formats ....
+      else
+        media_file.content_type
+      end
+    end
+
   end
 end

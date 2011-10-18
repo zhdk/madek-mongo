@@ -131,7 +131,7 @@
             = link_to _("Löschen"), resource_path(entry), :id => "delete_me", :method => :delete, :confirm => _("Sind Sie sicher?"), :"data-id" => entry.id
         #download-panel.actionbar-panel{:style => "display: none"}
           .actionbar-inner-panel
-            =#mongo# render :partial => "download", :object => entry, :as => :entry
+            = render :partial => "media/entries/download", :object => entry, :as => :entry
         #media_set-panel.actionbar-panel{:style => "display: none"}
           .actionbar-inner-panel
             - if logged_in?
