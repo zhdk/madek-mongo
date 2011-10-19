@@ -149,7 +149,7 @@ module Media
         :is_manageable => ability.can?(:manage_permissions, self => Media::Resource),
         :can_maybe_browse => !meta_data.for_meta_terms.blank?,
         :is_favorite => user.favorite_resources.include?(self),
-        :title => meta_data.get_value_for("title"),
+        :title => title,
         :author => meta_data.get_value_for("author") }
     end
 
