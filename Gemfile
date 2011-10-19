@@ -39,8 +39,8 @@ group :test, :development do
   gem 'capybara'
   gem 'cucumber'
   gem 'cucumber-rails'
-  gem 'factory_girl', "~> 2.1.0"
-  gem 'factory_girl_rails', "~> 1.2"
+  gem 'factory_girl', "~> 2.1"
+  gem 'factory_girl_rails', "~> 1.3"
   gem 'faker'
   gem 'launchy'
   gem 'pry' #gem 'ruby-debug19', '~> 0.11.6', :require => 'ruby-debug'
