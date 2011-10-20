@@ -75,11 +75,10 @@ module Meta
             #mongo# TODO link_to dv, filter_search_path(:meta_key_id => meta_datum._id, :meta_term_id => dv.id), :method => :post, :remote => true, :"data-meta_term_id" => dv.id
             link_to v, resources_path(:query => v.to_s)
           end
-          haml_concat s.join(', ')
+          haml_concat raw s.join(', ')
         else
           s = meta_datum.to_s
-          #mongo# TODO haml_concat auto_link(s, :all, :target => "_blank")
-          haml_concat s
+          haml_concat auto_link(s, :all, :target => "_blank")
         end
       end
     end
