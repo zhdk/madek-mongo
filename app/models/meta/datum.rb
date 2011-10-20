@@ -112,7 +112,7 @@ module Meta
         when "Meta::Term", "Meta::Keyword"
           meta_keywords.map(&:meta_term) #.map(&:to_s)
         when "Meta::Date"
-          meta_dates.map(&:to_s)
+          meta_dates.map(&:to_s).join(' - ')
         when "Meta::Country"
           text
         else
