@@ -19,6 +19,33 @@ module Media
 
     #########################################################
 
+=begin #working here#
+    field :data, type: Hash, default: {}
+    def set_data(meta_key, new_value)
+      return if new_value.nil?
+      #data[meta_key.id] = new_value.respond_to?(:id) ? new_value.id : new_value
+      data[meta_key.id] = if new_value.is_a? String
+        new_value
+      elsif new_value.is_a? Array
+        new_value.map do |x|
+          if x.is_a? Hash
+            #keywords
+          elsif x.nil?
+            #do nothing
+          elsif x.respond_to?(:id)
+            BSON::DBRef.new(x.collection.name, x.id)
+          else
+            x
+          end
+        end
+      elsif new_value.respond_to?(:id)
+        BSON::DBRef.new(new_value.collection.name, new_value.id)
+      end
+      #binding.pry
+      puts data.inspect
+    end
+=end
+
     index "meta_data._id" # TODO , unique: true
 
     embeds_many :meta_data, :class_name => "Meta::Datum" do # TODO validates_uniqueness :meta_key
@@ -157,6 +184,7 @@ module Media
 
     def title
       t = meta_data.get_value_for("title")
+      #working here# t = data["title"]
       t = "Ohne Titel" if t.blank?
       t
     end

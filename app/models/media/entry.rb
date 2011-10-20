@@ -107,6 +107,7 @@ module Media
               next if entry_value.blank? or entry_value == "-" #mongo# or meta_data.detect {|md| md.meta_key == meta_key } # we do sometimes receive a blank value in metadata, hence the check.
               entry_value.gsub!(/\\n/,"\n") if entry_value.is_a?(String) # OPTIMIZE line breaks in text are broken somehow
               meta_data.build(:meta_key => meta_key, :value => entry_value )
+              #working here# set_data(meta_key, entry_value)
             end
           else
             meta_key = Meta::Key.meta_key_for(entry_key) #10 TODO ?? , Meta::Context.file_embedded)
@@ -114,6 +115,7 @@ module Media
             next if entry_value.blank? #mongo# or meta_data.detect {|md| md.meta_key == meta_key } # we do sometimes receive a blank value in metadata, hence the check.
             entry_value.gsub!(/\\n/,"\n") if entry_value.is_a?(String) # OPTIMIZE line breaks in text are broken somehow
             meta_data.build(:meta_key => meta_key, :value => entry_value )
+            #working here# set_data(meta_key, entry_value)
           end
   
         end
