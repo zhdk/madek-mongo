@@ -17,19 +17,25 @@ class ResourcesController < ApplicationController
             end
     resources = klass.accessible_by(current_ability, can_action).page(params[:page])
     resources = resources.where(:_id.in => current_user.favorite_resource_ids) if request.fullpath =~ /favorites/
-    resources = resources.csearch(params[:query]) unless params[:query].blank?
+    unless params[:query].blank?
+      resources = resources.csearch(params[:query])
+      #mongo#dirty# OPTIMIZE filter
+      @_resource_ids = resources.only(:_id).limit(nil).map(&:_id)
+    end
+    
+    if params[:filter]
+      ids = params[:filter][:ids].split(',')
+      resources = resources.where(:_id.in => ids)
+    end
 
-    @json = { :pagination => { :current_page => resources.current_page,
-                               :per_page => resources.size,
+    @results = { :pagination => { :current_page => resources.current_page,
                                :total_entries => resources.total_count,
                                :total_pages => resources.num_pages },
-              :entries => resources.as_json({:user => current_user, :ability => current_ability}) }.to_json
-
-    ################################################
+              :entries => resources.as_json({:user => current_user, :ability => current_ability}) }
 
     respond_to do |format|
       format.html
-      format.js { render :json => @json }
+      format.js { render :json => @results }
     end
     #tmp# respond_with @resources
   end
@@ -41,11 +47,10 @@ class ResourcesController < ApplicationController
     if @resource.is_a? Media::Set
       resources = @resource.media_resources.accessible_by(current_ability).page(params[:page])
       #resources = resources.csearch(params[:query]) unless params[:query].blank?
-      @json = { :pagination => { :current_page => resources.current_page,
-                                 :per_page => resources.size,
+      @results = { :pagination => { :current_page => resources.current_page,
                                  :total_entries => resources.total_count,
                                  :total_pages => resources.num_pages },
-                :entries => resources.as_json({:user => current_user, :ability => current_ability}) }.to_json
+                :entries => resources.as_json({:user => current_user, :ability => current_ability}) }
     end
 
     respond_to do |format|

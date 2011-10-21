@@ -1,14 +1,20 @@
-%section#content_body
-  - if params[:query]
+-# OPTIMIZE merge content_body_result css to content_body
+%section{:id => params[:query].blank? ? "content_body" : "content_body_result"}
+  
+  - unless params[:query].blank?
     .page_title_left
       =_("Suchergebnisse")
       #term
         = "für “#{params[:query]}”"
-    .clear 
+    .clear
+    - unless @_resource_ids.blank?
+      .filter_area
+        = render :partial => 'filter_form', :locals => {:resource_ids => @_resource_ids, :type => "Media::Resource" }
+
   = render :partial => "templates"
   #results
 
 :javascript
   $(document).ready(function () {
-    display_results(#{@json});
+    display_results(#{@results.to_json});
   });

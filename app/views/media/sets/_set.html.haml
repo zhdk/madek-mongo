@@ -68,6 +68,6 @@
 
 :javascript
   $(document).ready(function () {
-    display_results(#{@json});
-    //#mongo# TODO setupBatch(#{@json}, #{set.id}, #{set.media_resource_ids.to_json});
+    display_results(#{@results.to_json});
+    //#mongo# TODO setupBatch(#{@results.to_json}, #{set.id}, #{set.media_resource_ids.to_json});
   });
