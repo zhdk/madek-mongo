@@ -104,7 +104,7 @@
                 .button_edit_active.ghost
             %li
               %span.favorite_link{:id => "fav_#{entry.id}", :title => _("Favorit")}
-                =#mongo# render :partial => "media_entries/favorite_link", :locals => {:entry => entry}
+                = render :partial => "favorite_link", :locals => {:resource => entry}
             - unless entry.meta_data.for_meta_terms.blank?
               %li
                 = link_to browse_resource_path(entry), :title => _("Erkunden") do

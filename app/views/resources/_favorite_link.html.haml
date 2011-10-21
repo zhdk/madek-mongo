@@ -1,0 +1,3 @@
+= link_to toggle_favorites_resource_path(resource), :remote => true, :"data-type" => "html", :method => :post do
+  - s = (current_user.favorite_resource_ids.include?(resource.id) ? "on" : "off")
+  %div{:class => "button_favorit_#{s}" }

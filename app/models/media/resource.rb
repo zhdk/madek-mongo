@@ -175,7 +175,7 @@ module Media
         :is_editable => ability.can?(:update, self => Media::Resource),
         :is_manageable => ability.can?(:manage_permissions, self => Media::Resource),
         :can_maybe_browse => !meta_data.for_meta_terms.blank?,
-        :is_favorite => user.favorite_resources.include?(self),
+        :is_favorite => user.favorite_resource_ids.include?(self.id),
         :title => title,
         :author => meta_data.get_value_for("author") }
     end

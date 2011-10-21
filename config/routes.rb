@@ -24,27 +24,28 @@ MAdeKMongo::Application.routes.draw do
 ###############################################
 
   resources :resources do
+    collection do
+      get :favorites, :to => "resources#index"
+      get :keywords #mongo# TODO
+      post :filter, :to => "resources#index"
+    end
     member do
       get :browse
       get :edit_permissions #mongo# TODO
       put :update_permissions #mongo# TODO
       get :to_snapshot # TODO post ??
       post :media_sets
-    end
-    collection do
-      get :favorites, :to => "resources#index"
-      get :keywords #mongo# TODO
-      post :filter, :to => "resources#index"
+      post :toggle_favorites
     end
   end
 
   resources :users do
+    collection do
+      get :usage_terms
+    end
     member do
       get :usage_terms
       post :usage_terms
-    end
-    collection do
-      get :usage_terms
     end
   end
 

@@ -214,4 +214,13 @@ class ResourcesController < ApplicationController
     end
   end
 
+############################################################################################
+
+  def toggle_favorites
+    current_user.favorite_resources.toggle(@resource)
+    respond_to do |format|
+      format.js { render :partial => "favorite_link", :locals => {:resource => @resource} }
+    end
+  end
+
 end

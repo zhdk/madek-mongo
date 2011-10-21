@@ -22,8 +22,16 @@ class Person < Subject
     end
   end
   #mongo# TODO ?? has_many :uploaded_media_entries, class_name: "Media::Entry", through: :upload_sessions
-  has_and_belongs_to_many :favorite_resources, class_name: "Media::Resource", inverse_of: :subjects # NOTE need inverse_of #mongo# TODO has_many stored_as: Array
-
+  has_and_belongs_to_many :favorite_resources, class_name: "Media::Resource", inverse_of: :subjects do # NOTE need inverse_of #mongo# TODO has_many stored_as: Array
+    def toggle(resource)
+      if include?(resource)
+        self.delete(resource)
+      else
+        self << resource
+      end
+    end
+  end
+  
   #########################################################
 
   field :firstname, type: String
