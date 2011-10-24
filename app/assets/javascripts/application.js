@@ -145,11 +145,11 @@ function set_media_entries_json(data){
 
 function get_selected_media_entry_ids() {
 	var media_entries_json = get_media_entries_json();
-	return $.map(media_entries_json, function(elem, i){ if (elem != null) return parseInt(elem.id); });
+	return $.map(media_entries_json, function(elem, i){ if (elem != null) return elem.id; });
 }
 
 function is_Selected(media_entries_json, id) {
-    var media_entry_ids = $.map(media_entries_json, function(elem, i){ if (elem != null) return parseInt(elem.id); });
+    var media_entry_ids = $.map(media_entries_json, function(elem, i){ if (elem != null) return elem.id; });
     return media_entry_ids.indexOf(id);
 }
 

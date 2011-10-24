@@ -28,6 +28,10 @@ MAdeKMongo::Application.routes.draw do
       get :favorites, :to => "resources#index"
       get :keywords #mongo# TODO
       post :filter, :to => "resources#index"
+      #working here#
+      post :edit_multiple
+      put :update_multiple
+      post :edit_multiple_permissions
     end
     member do
       get :browse
@@ -36,6 +40,8 @@ MAdeKMongo::Application.routes.draw do
       get :to_snapshot # TODO post ??
       post :media_sets
       post :toggle_favorites
+      #working here#
+      post :add_member
     end
   end
 

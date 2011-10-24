@@ -11,10 +11,12 @@
       .filter_area
         = render :partial => 'filter_form', :locals => {:resource_ids => @_resource_ids, :type => "Media::Resource" }
 
-  = render :partial => "templates"
+  =#working here# render :partial => "templates"
+  = render :partial => "batch_bar"
   #results
 
 :javascript
   $(document).ready(function () {
-    display_results(#{@results.to_json});
+    //#working here# display_results(#{@results.to_json});
+    setupBatch(#{@results.to_json});
   });
