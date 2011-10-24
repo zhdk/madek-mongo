@@ -73,8 +73,7 @@ module Media
       ignore_fields = [/^XMP-photoshop:ICCProfileName$/,/^XMP-photoshop:LegacyIPTCDigest$/, /^XMP-expressionmedia:(?!UserFields)/, /^XMP-mediapro:(?!UserFields)/]
       
       blob = []
-      #mongo# parse_hash = JSON.parse(`#{EXIFTOOL_PATH} -s "#{file_path}" -a -u -G1 -D -j`).first
-      parse_hash = JSON.parse(`exiftool -s "#{file_path}" -a -u -G1 -D -j`).first
+      parse_hash = JSON.parse(`#{EXIFTOOL_PATH} -s "#{file_path}" -a -u -G1 -D -j`).first
       group_tags.each do |tag_group|
         blob << parse_hash.select {|k,v| k.include?(tag_group)}.sort
       end

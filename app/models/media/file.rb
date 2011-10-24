@@ -8,9 +8,17 @@ module Media
     # NB This is sharded. A good candidate for a fast filesystem, since thumbnails will be used regularly.
     THUMBNAIL_STORAGE_DIR = "#{DIRECTORY}/thumbnails"
     FILE_STORAGE_DIR = "#{DIRECTORY}/originals"
+    
+    # We have a variety of different storage location constants defined here because we *might* at some point want to optimise
+    # our storage (e.g. placing temp files on a fast filesystem, and permanent files in a 'slower' filesystem).
+    #mongo# TEMP_STORAGE_DIR = "#{Rails.root}/tmp/uploads" # TODO this constant is currently badly named.
+    #mongo# ZIP_STORAGE_DIR = "#{Rails.root}/tmp/zipfiles" # NB This should be regularly cleaned
+    DOWNLOAD_STORAGE_DIR = "#{Rails.root}/tmp/downloads" # this all needs rationalising, which will happen soon.
+
     # OPTIMIZE
     FileUtils.mkdir_p(THUMBNAIL_STORAGE_DIR)
     FileUtils.mkdir_p(FILE_STORAGE_DIR)
+    FileUtils.mkdir_p(DOWNLOAD_STORAGE_DIR)
 
 
     field :guid, type: String
@@ -202,14 +210,14 @@ module Media
     def file_storage_location
       # OPTIMIZE
       dir = ::File.join(FILE_STORAGE_DIR, shard)
-      ::FileUtils.mkdir_p(dir)
+      FileUtils.mkdir_p(dir) # OPTIMIZE
       ::File.join(dir, guid)
     end
   
     def thumbnail_storage_location
       # OPTIMIZE
       dir = ::File.join(THUMBNAIL_STORAGE_DIR, shard)
-      ::FileUtils.mkdir_p(dir)
+      FileUtils.mkdir_p(dir) # OPTIMIZE
       ::File.join(dir, guid)
     end
 

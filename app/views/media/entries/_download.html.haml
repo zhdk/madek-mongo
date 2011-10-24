@@ -3,7 +3,7 @@
   x_large_file = entry.media_file.get_preview(:x_large)
   format_original_file = file_format_for(original_file)
   can_download_hi_res = can? :hi_res, entry => Media::Resource
-  x_large_file_available = x_large_file && File.exist?(x_large_file.full_path)
+  x_large_file_available = !x_large_file.base64.blank?
 
 %table#download-table
   %tr

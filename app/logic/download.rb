@@ -1,17 +1,18 @@
 # -*- encoding : utf-8 -*-
 
+# TODO move to app/models, like upload/import
 class Download
   def self.call(env)
       request = Rack::Request.new(env)
       params = request.params
       session = env['rack.session']
       
-      current_user = User.find_by_id(session[:user_id]) if session[:user_id]
+      current_user = Person.find(session[:user_id]) if session[:user_id]
       # TODO permission check
 
 # e.g.
 # 'zip' param present means original file + xml sidecar of meta-data all zipped as one file
-# 'update' param present means original file updated by exiftool with current state of madek meta-data for that mediaentry
+# 'update' param present means original file updated by exiftool with current state of madek meta-data for that media_entry
 # (update and zip should be treated as mutally exclusive in the context of one download call)
 # neither zip nor update present? just give the original file, as it was uploaded.
 # WE SHOULD NEVER UPDATE AN UPLOADED FILE WITH MADEK METADATA.
@@ -22,7 +23,7 @@ class Download
       
       unless params['id'].blank? 
 
-        @media_entry = MediaEntry.where(:id => params['id']).first
+        @media_entry = Media::Entry.where(:_id => params['id']).first
 
         unless @media_entry.nil?
 
@@ -33,12 +34,12 @@ class Download
           size = params['size'].try(:to_sym)
           if size
             preview = @media_entry.media_file.get_preview(size)
-            filename = [filename.split('.', 2).first, preview.filename.gsub(@media_entry.media_file.guid, '')].join
+            filename = [filename.split('.', 2).first, preview.thumbnail].join('_')
             content_type = preview.content_type
-            return [500, {"Content-Type" => "text/html"}, ["Sie haben nicht die notwendige Zugriffsberechtigung."]] unless Permission.authorized?(current_user, :view, @media_entry) 
+            return [500, {"Content-Type" => "text/html"}, ["Sie haben nicht die notwendige Zugriffsberechtigung."]] unless current_user.ability.can?(:read, @media_entry => Media::Resource) 
           else
             content_type = @media_entry.media_file.content_type
-            return [500, {"Content-Type" => "text/html"}, ["Sie haben nicht die notwendige Zugriffsberechtigung."]] unless Permission.authorized?(current_user, :hi_res, @media_entry) 
+            return [500, {"Content-Type" => "text/html"}, ["Sie haben nicht die notwendige Zugriffsberechtigung."]] unless current_user.ability.can?(:hi_res, @media_entry => Media::Resource) 
           end
 
 
@@ -144,7 +145,7 @@ class Download
 
           path = @media_entry.media_file.file_storage_location
           if size
-            outfile = File.join(DOWNLOAD_STORAGE_DIR, filename)
+            outfile = File.join(Media::File::DOWNLOAD_STORAGE_DIR, filename)
             `convert "#{path}" -resize "#{THUMBNAILS[size]}" "#{outfile}"`
             path = outfile
           end
