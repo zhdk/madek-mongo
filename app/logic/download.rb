@@ -8,7 +8,6 @@ class Download
       session = env['rack.session']
       
       current_user = Person.find(session[:user_id]) if session[:user_id]
-      # TODO permission check
 
 # e.g.
 # 'zip' param present means original file + xml sidecar of meta-data all zipped as one file
@@ -20,10 +19,9 @@ class Download
 #####################################################################################################################
 #####################################################################################################################
 
-      
       unless params['id'].blank? 
 
-        @media_entry = Media::Entry.where(:_id => params['id']).first
+        @media_entry = Media::Entry.accessible_by(current_user.ability, :read).where(:_id => params['id']).first
 
         unless @media_entry.nil?
 
@@ -36,10 +34,11 @@ class Download
             preview = @media_entry.media_file.get_preview(size)
             filename = [filename.split('.', 2).first, preview.thumbnail].join('_')
             content_type = preview.content_type
-            return [500, {"Content-Type" => "text/html"}, ["Sie haben nicht die notwendige Zugriffsberechtigung."]] unless current_user.ability.can?(:read, @media_entry => Media::Resource) 
-          else
-            content_type = @media_entry.media_file.content_type
             return [500, {"Content-Type" => "text/html"}, ["Sie haben nicht die notwendige Zugriffsberechtigung."]] unless current_user.ability.can?(:hi_res, @media_entry => Media::Resource) 
+          else
+            # TODO check permissions for original file ??
+            content_type = @media_entry.media_file.content_type
+            return [500, {"Content-Type" => "text/html"}, ["Sie haben nicht die notwendige Zugriffsberechtigung."]] unless current_user.ability.can?(:read, @media_entry => Media::Resource) 
           end
 
 
@@ -116,6 +115,7 @@ class Download
           # A transcoded, smaller-than-original version of the video
           unless params['video_thumbnail'].blank?
             content_type = "video/webm"
+            # TODO permission check
             preview = @media_entry.media_file.previews.where(:content_type => content_type).last
             if preview.nil?
               return [404, {"Content-Type" => "text/html"}, ["Not found."]]
@@ -128,6 +128,7 @@ class Download
           # TODO: Merge with above
           unless params['audio_preview'].blank?
             content_type = "audio/ogg"
+            # TODO permission check
             preview = @media_entry.media_file.previews.where(:content_type => content_type).last
             if preview.nil?
               return [404, {"Content-Type" => "text/html"}, ["Not found."]]

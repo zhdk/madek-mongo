@@ -21,6 +21,12 @@ module Meta
     end
 
     #########################################################
+    
+    after_save do
+      generate_exiftool_config if name == "io_interface"
+    end
+    
+    #########################################################
 
     def to_s
       "#{label}"
@@ -36,6 +42,29 @@ module Meta
       r = where(:name => args.first.to_s).first #mongo# TODO use find on :_id
       r || super
     end
+
+    #########################################################
+
+    private
+    
+    # ad-hoc method that generates a new exiftool config file, when it is sensed that there are new keys/key_defs that should be saved in a file
+    # using the XMP-madek metadata namespace.
+    def generate_exiftool_config
+      return if name != "io_interface"
+      
+      exiftool_keys = meta_definitions.collect {|e| "#{e.key_map.split(":").last} => {#{e.key_map_type == "Array" ? " List => 'Bag'" : nil} },"}
+  
+      skels = Dir.glob("#{Media::Resource::METADATA_CONFIG_DIR}/ExifTool_config.skeleton.*")
+  
+      exif_conf = ::File.open(Media::Resource::EXIFTOOL_CONFIG, 'w')
+      exif_conf.puts IO.read(skels.first)
+      exiftool_keys.sort.each do |k|
+        exif_conf.puts "\t#{k}\n"
+      end
+      exif_conf.puts IO.read(skels.last)
+      exif_conf.close
+    end
+
 
   end
 end
