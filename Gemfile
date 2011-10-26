@@ -29,6 +29,8 @@ gem 'cancan', '~> 1.6.7'
 gem 'kaminari', '~> 0.12.4'
 gem 'rails_autolink', '~> 1.0.2'
 
+gem 'zip', '~> 2.0.2' # alternatives: 'rubyzip', 'zipruby', 'zippy'
+
 gem 'zencoder', '~> 2.3.1'
 gem 'uuidtools', '~> 2.1.2'
 gem 'mini_exiftool', '~> 1.3.1'

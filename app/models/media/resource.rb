@@ -208,9 +208,7 @@ module Media
     def owner
       Person.where(:_id.in => permission.manage_permissions["true"]).first
     end
-    def user # TODO alias ??
-      owner
-    end
+    alias :user :owner
 
     def owner=(user)
       actions = {}
@@ -238,35 +236,6 @@ module Media
     # $ sudo ln -s /usr/bin/lib /usr/local/bin/lib
     EXIFTOOL_CONFIG = "#{METADATA_CONFIG_DIR}/ExifTool_config.pl"
     EXIFTOOL_PATH = "exiftool -config #{EXIFTOOL_CONFIG}"
-
-
-    # returns the meta_data for a particular resource, so that it can written into a media file that is to be exported.
-    # NB: this is exiftool specific at present, but can be refactored to take account of other tools if necessary.
-    # NB: In this case the 'export' in 'get_data_for_export' also means 'download' 
-    #     (since we write meta-data to the file anyway regardless of if we do a download or an export)
-    def to_metadata_tags
-      MetaContext.io_interface.meta_key_definitions.collect do |definition|
-        # OPTIMIZE
-        value = if definition.meta_key.object_type == "Meta::Date"
-                  meta_data.get(definition.meta_key_id).to_s
-                else
-                  meta_data.get(definition.meta_key_id).deserialized_value
-                end
-        
-        definition.key_map.split(',').collect do |km|
-          km.strip!
-          case definition.key_map_type
-            when "Array"
-              vo = ["-#{km}= "]
-              vo += value.collect {|m| "-#{km}='#{(m.respond_to?(:strip) ? m.strip : m)}'" } if value
-              vo
-            else
-              "-#{km}='#{value}'"          
-          end
-        end
-        
-      end.join(" ")
-    end
 
     # Instance method to update a copy (referenced by path) of a media file with the meta_data tags provided
     # args: blank_all_tags = flag indicating whether we clean all the tags from the file, or update the tags in the file
@@ -299,6 +268,32 @@ module Media
        logger.error "copy failed with #{$!}"
        return nil
       end
+    end
+
+    private
+
+    # returns the meta_data for a particular resource, so that it can written into a media file that is to be exported.
+    # NB: this is exiftool specific at present, but can be refactored to take account of other tools if necessary.
+    # NB: In this case the 'export' in 'get_data_for_export' also means 'download' 
+    #     (since we write meta-data to the file anyway regardless of if we do a download or an export)
+    def to_metadata_tags
+      Meta::Context.io_interface.meta_definitions.collect do |definition|
+        # OPTIMIZE
+        value = meta_data.get(definition.meta_key_id).value
+        
+        definition.key_map.split(',').collect do |km|
+          km.strip!
+          case definition.key_map_type
+            when "Array"
+              vo = ["-#{km}= "]
+              vo += value.collect {|m| "-#{km}='#{(m.respond_to?(:strip) ? m.strip : m)}'" } if value
+              vo
+            else
+              "-#{km}='#{value}'"          
+          end
+        end
+        
+      end.join(" ")
     end
 
     #########################################################

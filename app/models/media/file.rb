@@ -12,7 +12,6 @@ module Media
     # We have a variety of different storage location constants defined here because we *might* at some point want to optimise
     # our storage (e.g. placing temp files on a fast filesystem, and permanent files in a 'slower' filesystem).
     #mongo# TEMP_STORAGE_DIR = "#{Rails.root}/tmp/uploads" # TODO this constant is currently badly named.
-    #mongo# ZIP_STORAGE_DIR = "#{Rails.root}/tmp/zipfiles" # NB This should be regularly cleaned
     DOWNLOAD_STORAGE_DIR = "#{Rails.root}/tmp/downloads" # this all needs rationalising, which will happen soon.
 
     # OPTIMIZE
