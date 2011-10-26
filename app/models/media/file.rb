@@ -103,10 +103,19 @@ module Media
           return false unless ::File.exist?(file)
 
           image = MiniMagick::Image.open(file)
+          
+          self.height, self.width = [image[:height], image[:width]] if self.height.nil? or self.width.nil?
+          
           image.resize THUMBNAILS[size]
           image.format "jpg"
-          base64 = Base64.encode64(image.to_blob) #old# Base64.encode64(::File.read(image.path))
-          r.attributes = {:content_type => image.mime_type, :base64 => base64, :height => image[:height], :width => image[:width], :thumbnail => size}
+          blob = image.to_blob
+          base64 = Base64.encode64(blob)
+          r.attributes = {:content_type => image.mime_type, 
+                          :base64 => base64,
+                          :height => image[:height],
+                          :width => image[:width],
+                          :size => blob.size,
+                          :thumbnail => size}
         end
         # OPTIMIZE p could still be nil !!
         return p
