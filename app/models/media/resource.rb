@@ -68,32 +68,28 @@ module Media
     end
 
     #mongo#
-    accepts_nested_attributes_for :meta_data, :allow_destroy => true,
-                                              :reject_if => proc { |attributes| attributes['value'].blank? }
+    #old# accepts_nested_attributes_for :meta_data, :allow_destroy => true,
+    #old#                                           :reject_if => proc { |attributes| attributes['value'].blank? }
                                   #mongo# :reject_if => proc { |attributes| attributes['value'].blank? and attributes['_destroy'].blank? }
                                   # NOTE the check on _destroy should be automatic, check Rails > 3.0.3
-=begin
     # NOTE alternative to accepts_nested_attributes_for
     def meta_data_attributes=(attributes)
       attributes.values.each do |h|
-        next if h[:id].blank? and h[:value].blank?
-        if (id = h.delete(:id))
-          #old# meta_data.find(id).update_attributes(h)
-          # OPTIMIZE
-          md = meta_data.where(:_id => id).first
-          if md
-            if h[:value].blank?
-              md.delete
-            else
-              md.attributes = h
-            end
+        #old# id = h.delete(:_id)
+        #old# md = meta_data.find_or_initialize_by(:_id => id) {}
+        md = meta_data.where(:_id => h[:_id]).first
+        if md
+          if h[:value].blank?
+            md.delete
+          else
+            #old# md.attributes = h
+            md.update_attributes(h)
           end
         else
-          meta_data.build(h)
+          meta_data.create(h) unless h[:value].blank?
         end
       end
     end    
-=end
 
     #########################################################
 

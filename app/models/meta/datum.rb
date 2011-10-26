@@ -17,11 +17,7 @@ module Meta
     #key :meta_key_id
     #validates_presence_of :meta_key_id
     validates_presence_of :meta_key
-    
-    # TODO alias
-    def meta_key_id
-      id
-    end
+    alias :meta_key_id :id
 
     #########################################################
 
@@ -106,23 +102,45 @@ module Meta
 
     #mongo# TODO merge to_s
     def value
-      case meta_key.object_type
-        when "Meta::Copyright", "Meta::Department", "Person"
-          meta_references.map(&:reference) #.map(&:to_s)
-        when "Meta::Term", "Meta::Keyword"
-          meta_keywords.map(&:meta_term) #.map(&:to_s)
-        when "Meta::Date"
-          meta_dates.map(&:to_s).join(' - ')
-        when "Meta::Country"
-          text
-        else
-          text
+      if meta_key.is_dynamic?
+        case meta_key.label
+          when "uploaded by"
+            return media_resource.user
+          when "uploaded at"
+            return media_resource.created_at #old# .to_formatted_s(:date_time) # TODO media_resource.upload_session.created_at ??
+          when "copyright usage"
+            copyright = media_resource.meta_data.get("copyright status").value.first || Meta::Copyright.default # OPTIMIZE array or single element
+            return copyright.usage(read_attribute(:value))
+          when "copyright url"
+            copyright = media_resource.meta_data.get("copyright status").value.first  || Meta::Copyright.default # OPTIMIZE array or single element
+            return copyright.url(read_attribute(:value))
+          when "public access"
+            return media_resource.acl?(:view, :all)
+          when "media type"
+            return media_resource.media_type
+          #when "gps"
+          #  return media_resource.media_file.meta_data["GPS"]
+        end
+      else
+        case meta_key.object_type
+          when "Meta::Copyright", "Meta::Department", "Person"
+            meta_references.map(&:reference) #.map(&:to_s)
+          when "Meta::Term", "Meta::Keyword"
+            meta_keywords.map(&:meta_term) #.map(&:to_s)
+          when "Meta::Date"
+            meta_dates.map(&:to_s).join(' - ')
+          when "Meta::Country"
+            text
+          else
+            text
+        end
       end
     end
     
     #########################################################
 
     def to_s
+=begin #old#working here#
       if not meta_keywords.blank?
         meta_keywords.collect(&:to_s).join(', ')
       elsif not meta_references.blank?
@@ -131,6 +149,29 @@ module Meta
         meta_dates.collect(&:to_s).join(', ')
       else
         "#{text}"
+      end
+=end            
+      return value #wnew#
+    end
+
+    ##########################################################
+  
+    def same_value?(other_value)
+      case value
+        when String
+          value == other_value
+        when Array
+          return false unless other_value.is_a?(Array)
+          if value.first.is_a?(Meta::Date) 
+            other_value.first.is_a?(Meta::Date) && (other_value.first.free_text == value.first.free_text)
+          elsif meta_key.object_type == "Keyword"
+            referenced_meta_term_ids = Keyword.where(:id => other_value).all.map(&:meta_term_id)
+            deserialized_value.map(&:meta_term_id).uniq.sort.eql?(referenced_meta_term_ids.uniq.sort)
+          else
+            value.uniq.sort.eql?(other_value.uniq.sort)
+          end
+        when NilClass
+          other_value.blank?
       end
     end
 

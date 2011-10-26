@@ -78,7 +78,7 @@ module Meta
           haml_concat raw s.join(', ')
         else
           s = meta_datum.to_s
-          haml_concat auto_link(s, :all, :target => "_blank")
+          haml_concat s #mongo# auto_link(s, :all, :target => "_blank")
         end
       end
     end

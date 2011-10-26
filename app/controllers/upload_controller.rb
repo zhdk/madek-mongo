@@ -101,7 +101,7 @@ class UploadController < ApplicationController
 
   def import_summary
     pre_load
-    @context = MetaContext.upload
+    @context = Meta::Context.upload
     @all_valid = @media_entries.all? {|me| me.context_valid?(@context) }
     @upload_session.update_attributes(:is_complete => true) if @all_valid
   end

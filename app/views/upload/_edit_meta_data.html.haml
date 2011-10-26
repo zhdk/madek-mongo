@@ -43,7 +43,7 @@
           .expander
             = link_to _("+ Weitere Angaben"), "#"
       %li{:style => "width: 62%;"}
-        = meta_datum.hidden_field :id if meta_datum.object.id
+        =#working here# meta_datum.hidden_field :id if meta_datum.object.id
         = field_tag(meta_datum, context, false, with_actions)
         - if false # TODO see meta_data_helper
           %span.with_actions
