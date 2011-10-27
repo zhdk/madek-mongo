@@ -2,7 +2,7 @@ MAdeKMongo::Application.routes.draw do
 
   root :to => "application#root"
 
-###############################################
+##############################################################################################
   
   match '/help', :to => "application#help"
   match '/feedback', :to => "application#feedback"
@@ -13,7 +13,7 @@ MAdeKMongo::Application.routes.draw do
   match '/db/logout', :to => "authenticator/database_authentication#logout"
   match '/authenticator/zhdk/login_successful/:id', :to => "authenticator/zhdk#login_successful"
 
-###############################################
+##############################################################################################
 
   match '/import', :to => Upload::Import
   match '/upload.js', :to => Upload::Import
@@ -21,7 +21,7 @@ MAdeKMongo::Application.routes.draw do
   match '/download', :to => Download
   match '/nagiosstat', :to => Nagiosstat
   
-###############################################
+##############################################################################################
 
   resources :resources do
     collection do
@@ -71,6 +71,68 @@ MAdeKMongo::Application.routes.draw do
       post :set_media_sets
       get :set_media_sets # TODO :get as well ??
       get :import_summary
+    end
+  end
+
+##############################################################################################
+
+  namespace :admin do
+    root :to => "keys#index"
+    
+    resource :meta, :controller => 'meta' do
+      member do
+        get :export
+        get :import
+        post :import
+      end
+    end
+
+    resources :keys do
+      collection do
+        get :mapping
+      end
+    end
+
+    resources :contexts do
+      resources :definitions do
+        collection do
+          put :reorder
+        end
+      end
+    end
+
+    resources :terms
+    
+    resources :users do
+      member do
+        get :switch_to
+      end
+    end
+
+    resources :people
+
+    resources :groups do
+      resources :users do
+        member do
+          post :membership
+          delete :membership
+        end
+      end
+    end
+
+    resource :usage_term
+
+    resources :media_entries do
+      collection do
+        get :import
+      end
+    end
+
+    resources :media_sets do
+      collection do
+        get :featured
+        post :featured
+      end
     end
   end
   

@@ -1,0 +1,11 @@
+%table.datatable
+  %thead
+    %tr
+      - [_("Firstname"), _("Lastname"), ""].each do |s|
+        %th= s
+  %tbody
+    - @people.each do |person|
+      %tr
+        - [person.firstname, person.lastname,
+          link_to(_("Edit"), edit_admin_person_path(person), :class => "buttons", :remote => true, :"data-type" => "html")].each do |s|
+          %td= s
