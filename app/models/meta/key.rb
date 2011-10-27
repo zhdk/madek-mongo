@@ -29,7 +29,11 @@ module Meta
       meta_contexts.fields(:meta_definitions => 1).collect{|mc| mc.meta_definitions.where(:meta_key_id => id) }.flatten
     end
 
-  ########################################################
+    ########################################################
+
+    def to_s
+      label #.capitalize
+    end
 
     def all_context_labels
       #meta_key_definitions.collect {|d| "#{d.meta_context}: #{d.meta_field.label}" if d.key_map.blank? }.compact.join(', ')
@@ -71,13 +75,130 @@ module Meta
                        :description => {:en_GB => "", :de_CH => ""}
                      }
 
-        mk.meta_key_definitions.create( :meta_context => mc,
-                                        :meta_field => meta_field,
-                                        :key_map => key_map,
-                                        :key_map_type => nil,
-                                        :position => mc.meta_key_definitions.maximum("position") + 1 )
+        mc.meta_definitions.create( :meta_key => mk,
+                                    :meta_field => meta_field,
+                                    :key_map => key_map,
+                                    :key_map_type => nil,
+                                    :position => mc.meta_definitions.map(&:position).max + 1 )
       end
       mk
+    end
+
+    ###################################################
+  
+    # NOTE config.gem "rgl", :lib => "rgl/adjacency"
+    # http://rgl.rubyforge.org/ - http://www.graphviz.org/
+    # require 'rgl/adjacency'
+    require 'rgl/dot'
+    # TODO use ruby-graphviz gem instead ??
+    def self.keymapping_graph
+        g = RGL::DOT::Digraph.new({ 'name' => 'MAdeK keymapping',
+                                    'style' => "filled",
+                                    'nodesep' => ".075",
+                                    'label' => "Key Mapping Graph\n#{DateTime.now.to_formatted_s(:date_time)}",
+                                    'labelloc' => 't',
+                                    'labeljust' => 'l',
+                                    'ranksep' => "4.0",
+                                    'rankdir' => "LR" })
+                                  #  node [shape=box,width=.1,height=.1]
+  
+        ####### Internal cluster
+        sg_keys = RGL::DOT::Subgraph.new({ 'name' => "cluster_internal",
+                                      'label' => "Internal",
+                                      'color' => '#A1D4F1'})
+  
+          Meta::Key.all.each do |meta_key|
+            sg_keys << RGL::DOT::Node.new({'name' => meta_key.label,
+                                            'shape' => "box",
+                                            'style' => meta_key.is_dynamic? ? "filled" : "",
+                                            'width' => "2.7", 'height' => "0" })
+          end
+    
+          ####### for_interface
+          Meta::Context.for_interface.each do |context|
+            sg = RGL::DOT::Node.new({'name' => context,
+                                      'shape' => "box",
+                                      'style' => "filled",
+                                      'width' => "1.5", 'height' => "1.5" })
+            sg_keys << sg
+            color = "#"
+            3.times { c = rand(8); color << "#{c}"*2 }
+            context.meta_definitions.all.each do |definition|
+              sg_keys << RGL::DOT::DirectedEdge.new({'from' => definition.meta_key.label,
+                                                      'to' => context,
+                                                      'arrowhead' => 'none',
+                                                      'arrowtail' => 'none',
+                                                      'headport' => 'w',
+                                                      'tailport' => 'e',
+                                                      'color' => color })
+            end
+          end
+        g << sg_keys
+        
+  
+        ####### External cluster
+        sg_keys = RGL::DOT::Subgraph.new({ 'name' => "cluster_external",
+                                      'label' => "External",
+                                      'color' => '#A1D4F1'})
+  
+          colors = {}
+          ####### for_import_export
+          Meta::Context.for_import_export.each do |context|
+            sg = RGL::DOT::Node.new({ 'name' => context,
+                                      'shape' => "box",
+                                      'style' => "filled",
+                                      'width' => "1.5", 'height' => "1.5" })
+            sg_keys << sg
+  
+            color = "#"
+            3.times { c = rand(8); color << "#{c}"*2 }
+            colors[context] = color
+          end
+  
+          Meta::Context.all.each do |context|
+            context.meta_definitions.where(:key_map.exists => true).each do |definition|
+              definition.key_map.split(',').collect do |km|
+                km.strip!
+    
+                sg_keys << RGL::DOT::Node.new({ 'name' => km,
+                                                'shape' => "box",
+                                                'width' => "3.6", 'height' => "0" })
+      
+                sg_keys << RGL::DOT::DirectedEdge.new({'from' => context, #working here#10 crashes if many meta_key_definitions are found!!!
+                                                        'to' => km,
+                                                        'arrowhead' => 'none',
+                                                        'arrowtail' => 'none',
+                                                        'headport' => 'w',
+                                                        'tailport' => 'e',
+                                                        #'dir' => 'back',
+                                                        'color' => colors[context] })
+                sg_keys << RGL::DOT::DirectedEdge.new({'from' => km,
+                                                      'to' => definition.meta_key.label,
+                                                      'arrowhead' => 'none',
+                                                      'arrowtail' => 'none',
+                                                      'headport' => 'w',
+                                                      'tailport' => 'e',
+                                                      #'dir' => 'back',
+                                                      'color' => colors[context] })
+              end
+            end
+          end
+        g << sg_keys
+  
+  
+        fmt = 'svg' # 'png'
+        dotfile = "app/assets/images/graphs/meta"
+        src = dotfile + ".dot"
+        dot = dotfile + "." + fmt
+  
+        ::File.open(src, 'w') do |f|
+          f << g.to_s << "\n"
+        end
+        #mongo# system( "#{DOT_PATH} -T#{fmt} #{src} -o #{dot}" ) # dot # neato # twopi # circo # fdp # sfdp 
+        system( "dot -T#{fmt} #{src} -o #{dot}" ) # dot # neato # twopi # circo # fdp # sfdp 
+        dot.gsub('app/assets/images/', '/assets/')
+  
+      ############ end graph
     end
     
   end

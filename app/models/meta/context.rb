@@ -25,6 +25,11 @@ module Meta
     after_save do
       generate_exiftool_config if name == "io_interface"
     end
+
+    #########################################################
+    
+    scope :for_interface, where(:is_user_interface => true)
+    scope :for_import_export, where(:is_user_interface => false)
     
     #########################################################
 

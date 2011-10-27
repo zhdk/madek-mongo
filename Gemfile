@@ -30,6 +30,7 @@ gem 'kaminari', '~> 0.12.4'
 gem 'rails_autolink', '~> 1.0.2'
 
 gem 'zip', '~> 2.0.2' # alternatives: 'rubyzip', 'zipruby', 'zippy'
+gem 'rgl', '~> 0.4.0', :require => 'rgl/adjacency'
 
 gem 'zencoder', '~> 2.3.1'
 gem 'uuidtools', '~> 2.1.2'
