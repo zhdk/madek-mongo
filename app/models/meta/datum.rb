@@ -114,10 +114,10 @@ module Meta
           when "copyright url"
             copyright = media_resource.meta_data.get("copyright status").value.first  || Meta::Copyright.default # OPTIMIZE array or single element
             return copyright.url(read_attribute(:value))
-          when "public access"
-            return media_resource.acl?(:view, :all)
-          when "media type"
-            return media_resource.media_type
+          #when "public access"
+          #  return media_resource.acl?(:view, :all)
+          #when "media type"
+          #  return media_resource.media_type
           #when "gps"
           #  return media_resource.media_file.meta_data["GPS"]
         end
@@ -150,8 +150,16 @@ module Meta
       else
         "#{text}"
       end
-=end            
-      return value #wnew#
+=end  
+      v = value          
+      case v.class.name
+        when "Array"
+          v.join
+        when "Time"
+          v.to_formatted_s(:date_time)
+        else
+          v.to_s
+      end
     end
 
     ##########################################################
