@@ -1,16 +1,8 @@
 :ruby
-  case set.class.name
-    when "Media::Project"
-      thumb_class = "thumb_box_project"
-      tab_title = _("Projekt")
-      content_title = _("Projekt")
-      icon_class = "icon_project"
-    else
-      thumb_class = "thumb_box_set"
-      tab_title = _("Set")
-      content_title = _("Set")
-      icon_class = "icon_set"
-  end
+  thumb_class = "thumb_box_set"
+  tab_title = _("Set")
+  content_title = _("Set")
+  icon_class = "icon_set"
 
 %section#content_head
   .container_12.clearfix
@@ -34,10 +26,10 @@
               = link_to tab_title, "#info_tab"
             %li
               = link_to _("Zugriffsberechtigungen"), edit_permissions_resource_path(set)
-            - if set.is_a?(Media::Project)
+            - if false #mongo# TODO set.is_a?(Media::Project)
               %li
                 = link_to _("Auszug"), "#abstract_tab"
-            - if set.is_a?(Media::Project)
+            - if false #mongo# TODO set.is_a?(Media::Project)
               %li
                 = link_to _("Vokabular"), "#vocabulary_tab"
               %li
@@ -45,13 +37,13 @@
           #info_tab.clearfix
             - context = Meta::Context.media_set
             = display_meta_data_for(set, context)
-          - if set.is_a?(Media::Project)
+          - if false #mongo# TODO set.is_a?(Media::Project)
             #abstract_tab.clearfix
               %p
                 Diese Metadaten wurden am häufigsten vergeben. Sie zeigen den thematischen Schwerpunkt des Projekts an.
               = display_project_abstract_slider(set, @paginated_media_entry_ids.total_entries)
               = display_project_abstract(set, (@paginated_media_entry_ids.total_entries * 30 / 100), @_media_entry_ids)
-          - if set.is_a?(Media::Project)
+          - if false #mongo# TODO set.is_a?(Media::Project)
             #vocabulary_tab.clearfix
               = display_project_vocabulary(set, @_media_entry_ids)
 

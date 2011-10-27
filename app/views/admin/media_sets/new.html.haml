@@ -2,7 +2,7 @@
   %table
     %tr
       %td Type
-      %td= f.select :type, [Media::Set, Media::Project].collect {|o| [o, o]}
+      %td= "Media::Set" #mongo#old# [Media::Set, Media::Project].collect {|o| [o, o]}
 
     - f.fields_for :meta_data, f.object.meta_data.get("title") do |ff|
       %tr

@@ -23,6 +23,11 @@ MAdeKMongo::Application.routes.draw do
   
 ##############################################################################################
 
+  # TODO shallow ??
+  resources :media_sets do
+    resources :resources
+  end
+
   resources :resources do
     collection do
       get :favorites, :to => "resources#index"

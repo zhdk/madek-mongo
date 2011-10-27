@@ -32,8 +32,9 @@ class Admin::MediaSetsController < Admin::AdminController
       @set.individual_contexts = Meta::Context.find(params[:individual_contexts])
     end
     
+    #mongo# FIXME
     type = params[:media_set].delete(:type)
-    if type == "Media::Project" && !@set.respond_to?(:individual_contexts)
+    unless @set.respond_to?(:individual_contexts)
       # here we are allowing for a one-way conversion of Media::Set into Media::Project
       @set.type = type # can't usually mass assign the type attribute
       @set.attributes = params[:media_set]
@@ -58,14 +59,14 @@ class Admin::MediaSetsController < Admin::AdminController
 #####################################################
 
   def featured
-    @set = Media::FeaturedSet.first || Media::FeaturedSet.new(:user => current_user)
+    @set = Media::Set.featured || Media::Set.new(:is_featured => true)
     if request.post?
       if @set.new_record?
+        @set.default_permission=({:view => true})
         @set.save
-        @set.default_permission.set_actions({:view => true})
       end
-      @set.children.delete_all
-      @set.children << Media::Set.find(params[:children]) unless params[:children].blank?
+      @set.media_resources.delete_all
+      @set.media_resources << Media::Set.find(params[:children]) unless params[:children].blank?
     end
   end
 

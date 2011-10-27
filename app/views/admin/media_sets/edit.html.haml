@@ -5,7 +5,7 @@
       - if true #mongo# f.object.respond_to? :individual_contexts
         %td= f.object._type
       - else
-        %td= f.select :_type, [Media::Set, Media::Project].collect {|o| [o, o]}
+        -#mongo#old# %td= f.select :_type, [Media::Set, Media::Project].collect {|o| [o, o]}
 
     = f.fields_for :meta_data, f.object.meta_data.get("title") do |ff|
       %tr

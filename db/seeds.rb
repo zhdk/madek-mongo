@@ -214,6 +214,17 @@ parsed_import["media_sets"].each do |h|
   media_set = factory_resource(h, Media::Set)
   media_set.individual_contexts << h["individual_context_ids"].map {|id| @map[Meta::Context][id] }
 end
+parsed_import["media_sets"].each do |h|
+  next if h["child_ids"].blank?
+  @map[Media::Set][h["id"]].media_resources << h["child_ids"].map {|id| @map[Media::Set][id] }
+end
+
+##########################################################################
+
+puts "Importing media_featured_set..."
+
+id = parsed_import["media_featured_set_id"]
+@map[Media::Set][id].update_attributes(:is_featured => true)
 
 ##########################################################################
 

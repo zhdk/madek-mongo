@@ -7,12 +7,22 @@ module Media
 
     ########################################################
 
+    field :is_featured, type: Boolean
+
+    scope :featured, where(:is_featured => true).limit(1)
+
+    ########################################################
+
     def to_s
       #mongo#
       #s = "#{title} " 
       #s += "- %s " % self.class.name.split('::').last # OPTIMIZE get class name without module name
       #s += (static? ? "(#{media_entries.count})" : "(#{MediaEntry.search_count(query, :match_mode => :extended2)}) [#{query}]")
-      title
+      if is_featured
+        "Beispielhafte Sets"
+      else
+        title
+      end
     end
 
     ########################################################

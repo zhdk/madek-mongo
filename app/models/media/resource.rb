@@ -186,7 +186,7 @@ module Media
 
     def title_and_user
       s = ""
-      s += "[Projekt] " if is_a?(Media::Project)
+      #mongo#old# s += "[Projekt] " if is_a?(Media::Project)
       s += "#{title} (#{user})"
     end
     
