@@ -11,7 +11,7 @@
         #set_info
           %div.item_box_set
             %div.item_permission_set
-              =#mongo# TODO display_permission(set, :icon)
+              = display_permission(set, :icon)
             %div{:class => thumb_class}
               = thumb_for(set, :small_125)
         #set_actions

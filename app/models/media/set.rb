@@ -9,7 +9,7 @@ module Media
 
     field :is_featured, type: Boolean
 
-    scope :featured, where(:is_featured => true).limit(1)
+    scope :featured, where(:is_featured => true) # OPTIMIZE doesn't work .limit(1)
 
     ########################################################
 

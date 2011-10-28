@@ -59,14 +59,17 @@ class Admin::MediaSetsController < Admin::AdminController
 #####################################################
 
   def featured
-    @set = Media::Set.featured || Media::Set.new(:is_featured => true)
+    @set = Media::Set.featured.first || Media::Set.new(:is_featured => true)
     if request.post?
       if @set.new_record?
         @set.default_permission=({:view => true})
-        @set.save
+        #old# @set.save
       end
-      @set.media_resources.delete_all
-      @set.media_resources << Media::Set.find(params[:children]) unless params[:children].blank?
+      #old# @set.media_resources.delete_all
+      #old# @set.media_resources << Media::Set.find(params[:children]) unless params[:children].blank?
+      @set.media_resource_ids.clear
+      params[:children].each {|s| @set.media_resource_ids << BSON::ObjectId.from_string(s)} unless params[:children].blank?
+      @set.save
     end
   end
 
