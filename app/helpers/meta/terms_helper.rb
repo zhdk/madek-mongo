@@ -1,6 +1,6 @@
 # -*- encoding : utf-8 -*-
 module Meta
-  module TermHelper
+  module TermsHelper
     
     #mongo#dirty# OPTIMIZE filter
     def display_meta_data_checkboxes(resource_ids)

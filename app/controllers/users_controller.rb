@@ -6,7 +6,7 @@ class UsersController < ApplicationController
     people = Person.search(params[:term]) unless params[:term].blank?
 
     respond_to do |format|
-      format.html
+      #tmp# format.html
       format.js { render :json => people.map {|x| {:id => x.id, :value => x.to_s} } }
     end
   end

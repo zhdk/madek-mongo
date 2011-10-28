@@ -104,7 +104,7 @@ module Media
 
           image = MiniMagick::Image.open(file)
           
-          self.height, self.width = [image[:height], image[:width]] if self.height.nil? or self.width.nil?
+          self.height, self.width = [image[:height], image[:width]] unless self.height.present? and self.width.present?
           
           image.resize THUMBNAILS[size]
           image.format "jpg"

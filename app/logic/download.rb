@@ -88,7 +88,7 @@ class Download
       end
 
       # A transcoded, smaller-than-original version of the video
-      if !params['video_thumbnail'].blank? or !params['audio_preview'].blank?
+      unless params['video_thumbnail'].blank? and params['audio_preview'].blank?
         content_type = if !params['video_thumbnail'].blank?
           "video/webm"
         elsif !params['audio_preview'].blank?
