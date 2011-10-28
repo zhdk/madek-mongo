@@ -120,6 +120,9 @@ module Media
     #########################################################
 
     default_scope order_by([[:updated_at, :desc], [:created_at, :desc]])
+    
+    scope :media_entries, where(:_type => "Media::Entry")
+    scope :media_sets, where(:_type => "Media::Set")
 
     #########################################################
 

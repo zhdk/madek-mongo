@@ -18,10 +18,14 @@ module Media
       #s = "#{title} " 
       #s += "- %s " % self.class.name.split('::').last # OPTIMIZE get class name without module name
       #s += (static? ? "(#{media_entries.count})" : "(#{MediaEntry.search_count(query, :match_mode => :extended2)}) [#{query}]")
+      title
+    end
+    
+    def title
       if is_featured
         "Beispielhafte Sets"
       else
-        title
+        super
       end
     end
 
@@ -44,7 +48,15 @@ module Media
 
     # OPTIMIZE
     def main_media_resource(ability)
-      media_resources.accessible_by(ability).first
+      r = media_resources.media_entries.accessible_by(ability).first
+      r ||= begin
+        q = nil
+        media_resources.media_sets.accessible_by(ability).each do |set|
+          break if (q = set.main_media_resource(ability))
+        end
+        q
+      end
+      r
     end
 
     ########################################################
