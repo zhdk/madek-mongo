@@ -19,9 +19,13 @@ module Media
 
     #########################################################
 
-=begin #working here#
-    field :data, type: Hash, default: {}
+    #working here# field :data, type: Hash, default: {}
+    
     def set_data(meta_key, new_value)
+      #meta_data.build(:meta_key => meta_key, :value => new_value )
+      meta_data.create(:meta_key => meta_key, :value => new_value )
+      
+=begin #working here#
       return if new_value.nil?
       #data[meta_key.id] = new_value.respond_to?(:id) ? new_value.id : new_value
       data[meta_key.id] = if new_value.is_a? String
@@ -42,8 +46,8 @@ module Media
         BSON::DBRef.new(new_value.collection.name, new_value.id)
       end
       puts data.inspect
-    end
 =end
+    end
 
     index "meta_data._id" # TODO , unique: true
 
@@ -140,7 +144,7 @@ module Media
         end
 
         # find existing meta_datum, if it exists
-        if attr[:id].blank? and (md = meta_data.where(:meta_key_id => attr[:meta_key_id]).first)
+        if attr[:id].blank? and (md = meta_data.where(:_id => attr[:meta_key_id]).first)
           attr[:id] = md.id
         end
 

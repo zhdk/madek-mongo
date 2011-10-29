@@ -48,7 +48,7 @@ module Upload
               mandatory_key_ids = Meta::Key.where(:label => ['title', 'copyright notice']).collect(&:id)
               if media_entry.meta_data.where(:_id => mandatory_key_ids).empty?
                 mandatory_key_ids.each do |key_id|
-                  media_entry.meta_data.create(:_id => key_id, :value => 'Auto-created default during import')
+                  media_entry.set_data(key_id, 'Auto-created default during import')
                 end
               end
             end

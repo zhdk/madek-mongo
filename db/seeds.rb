@@ -189,8 +189,7 @@ def factory_meta_data(h, resource)
       else
         value 
     end
-    resource.meta_data.build(:meta_key => meta_key, :value => v)
-    #working here# resource.set_data(meta_key, v)
+    resource.set_data(meta_key, v)
   end
 end
 
