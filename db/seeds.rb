@@ -228,7 +228,8 @@ id = parsed_import["media_featured_set_id"]
 ##########################################################################
 
 puts "Importing media_entries..."
-parsed_import["media_entries"].each do |h|
+# TODO import all
+parsed_import["media_entries"][0,100].each do |h|
   media_file = h.delete("media_file")
   media_entry = factory_resource(h, Media::Entry)
   media_entry.media_sets << h["media_set_ids"].map {|id| @map[Media::Set][id] }
