@@ -19,8 +19,9 @@
        }
 
 #old# parsed_import = JSON.parse(`curl http://localhost:4000/admin/media_entries/export.js`)
-file_path = "#{Rails.root}/db/full_export.json"
-#parsed_import = YAML.load(File.read(file_path))
+
+#tmp# file_path = "#{Rails.root}/db/full_export.json"
+file_path = "#{Rails.root}/db/minimal_setup.json"
 parsed_import = JSON.parse(File.read(file_path))
 
 ##########################################################################
@@ -112,8 +113,6 @@ end
 
 ##########################################################################
 
-puts "Importing people..."
-
 def factory_subject(h, klass)
   id = h.delete("id")
   user = h.delete("user")
@@ -136,23 +135,28 @@ def factory_subject(h, klass)
   subject
 end
 
-parsed_import["subjects"]["people"].each do |h|
-  factory_subject(h, Person)
+people = parsed_import["subjects"]["people"] if parsed_import["subjects"]
+if people
+  puts "Importing people..."
+  people.each do |h|
+    factory_subject(h, Person)
+  end
 end
 
 ##########################################################################
 
-puts "Importing groups..."
-parsed_import["subjects"]["groups"].each do |h|
-  person_ids = h.delete("person_ids")
-  type = h.delete("type")
-  group = factory_subject(h, type.constantize)
-  group.people << person_ids.map {|id| @map[Person][id] } unless person_ids.blank?
+groups = parsed_import["subjects"]["groups"] if parsed_import["subjects"]
+if groups
+  puts "Importing groups..."
+  groups.each do |h|
+    person_ids = h.delete("person_ids")
+    type = h.delete("type")
+    group = factory_subject(h, type.constantize)
+    group.people << person_ids.map {|id| @map[Person][id] } unless person_ids.blank?
+  end
 end
 
 ##########################################################################
-
-puts "Importing media_sets..."
 
 def factory_permissions(h, resource)
   h.each do |p|
@@ -209,72 +213,74 @@ def factory_resource(h, klass)
   @map[klass][h["id"]] = resource
 end
 
-parsed_import["media_sets"].each do |h|
-  media_set = factory_resource(h, Media::Set)
-  media_set.individual_contexts << h["individual_context_ids"].map {|id| @map[Meta::Context][id] }
-end
-parsed_import["media_sets"].each do |h|
-  next if h["child_ids"].blank?
-  @map[Media::Set][h["id"]].media_resources << h["child_ids"].map {|id| @map[Media::Set][id] }
-end
-
-##########################################################################
-
-puts "Importing media_featured_set..."
-
-id = parsed_import["media_featured_set_id"]
-@map[Media::Set][id].update_attributes(:is_featured => true)
-
-##########################################################################
-
-puts "Importing media_entries..."
-# TODO import all
-parsed_import["media_entries"][0,100].each do |h|
-  media_file = h.delete("media_file")
-  media_entry = factory_resource(h, Media::Entry)
-  media_entry.media_sets << h["media_set_ids"].map {|id| @map[Media::Set][id] }
-
-  @map["Upload_sessions"][h["upload_session_id"]].media_entries << media_entry
-  
-  #old# previews = media_file.delete("previews")
-  attr = {}
-  media_file.each_pair {|k,v| attr[k.to_sym] = v }
-  mf = media_entry.create_media_file(attr)
-  #old# previews.each {|p| mf.previews.create(p)}
-end
-
-##########################################################################
-
-puts "Importing snapshots..."
-parsed_import["snapshots"].each do |h|
-  media_file = h.delete("media_file")
-  snapshot_media_entry = factory_resource(h, Media::Entry)
-
-  if(media_entry = @map[Media::Entry][h["media_entry_id"]])
-    media_entry.snapshot_media_entry = snapshot_media_entry
-    media_entry.save
+media_sets = parsed_import["media_sets"]
+if media_sets
+  puts "Importing media_sets..."
+  media_sets.each do |h|
+    media_set = factory_resource(h, Media::Set)
+    media_set.individual_contexts << h["individual_context_ids"].map {|id| @map[Meta::Context][id] }
   end
-
-  attr = {}
-  media_file.each_pair {|k,v| attr[k.to_sym] = v }
-  mf = snapshot_media_entry.create_media_file(attr)
+  parsed_import["media_sets"].each do |h|
+    next if h["child_ids"].blank?
+    @map[Media::Set][h["id"]].media_resources << h["child_ids"].map {|id| @map[Media::Set][id] }
+  end
 end
 
 ##########################################################################
 
-puts "Importing favorites..."
-@map["User_favorites"].each_pair do |user_id, ids|
-  @map["User"][user_id].favorite_resources << ids.map {|id| @map[Media::Entry][id] }
+media_featured_set_id = parsed_import["media_featured_set_id"]
+if media_featured_set_id
+  puts "Importing media_featured_set..."
+  @map[Media::Set][media_featured_set_id].update_attributes(:is_featured => true)
 end
 
+##########################################################################
 
+media_entres = parsed_import["media_entries"]
+if media_entres
+  puts "Importing media_entries..."
+  media_entries.each do |h|
+    media_file = h.delete("media_file")
+    media_entry = factory_resource(h, Media::Entry)
+    media_entry.media_sets << h["media_set_ids"].map {|id| @map[Media::Set][id] }
+  
+    @map["Upload_sessions"][h["upload_session_id"]].media_entries << media_entry
+    
+    #old# previews = media_file.delete("previews")
+    attr = {}
+    media_file.each_pair {|k,v| attr[k.to_sym] = v }
+    mf = media_entry.create_media_file(attr)
+    #old# previews.each {|p| mf.previews.create(p)}
+  end
+end
 
+##########################################################################
 
+snapshots = parsed_import["snapshots"]
+if snapshots
+  puts "Importing snapshots..."
+  snapshots.each do |h|
+    media_file = h.delete("media_file")
+    snapshot_media_entry = factory_resource(h, Media::Entry)
+  
+    if(media_entry = @map[Media::Entry][h["media_entry_id"]])
+      media_entry.snapshot_media_entry = snapshot_media_entry
+      media_entry.save
+    end
+  
+    attr = {}
+    media_file.each_pair {|k,v| attr[k.to_sym] = v }
+    mf = snapshot_media_entry.create_media_file(attr)
+  end
+end
 
+##########################################################################
 
-
-
-
-
-
+favorites = @map["User_favorites"]
+if favorites
+  puts "Importing favorites..."
+  favorites.each_pair do |user_id, ids|
+    @map["User"][user_id].favorite_resources << ids.map {|id| @map[Media::Entry][id] }
+  end
+end
 
