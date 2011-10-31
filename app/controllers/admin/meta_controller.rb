@@ -40,7 +40,7 @@ class Admin::MetaController < Admin::AdminController
         
         if meta[:meta_terms] and meta[:meta_keys] and meta[:meta_contexts] and meta[:meta_definitions]   
     
-          [MetaKey, MetaContext, MetaKeyDefinition, Meta::Term, UsageTerm].each {|a| a.destroy_all }
+          [Meta::Key, MetaContext, MetaKeyDefinition, Meta::Term, UsageTerm].each {|a| a.destroy_all }
     
           meta[:meta_terms].each do |term|
             k = Meta::Term.new(term)
@@ -51,7 +51,7 @@ class Admin::MetaController < Admin::AdminController
     
           meta[:meta_keys].each do |meta_key|
             meta_terms = meta_key.delete("meta_terms")
-            k = MetaKey.new(meta_key)
+            k = Meta::Key.new(meta_key)
             k.id = meta_key["id"]
             k.save
             k.meta_terms << Meta::Term.find(meta_terms) if meta_terms
@@ -128,13 +128,13 @@ class Admin::MetaController < Admin::AdminController
 
       h[:meta_terms] = Meta::Term.all.collect(&:attributes)
 
-      h[:meta_keys] = MetaKey.all.collect do |meta_key|
+      h[:meta_keys] = Meta::Key.all.collect do |meta_key|
         a = meta_key.attributes
         a["meta_terms"] = meta_key.meta_terms.collect(&:id) if meta_key.object_type == "Meta::Term"
         a
       end
 
-      h[:meta_contexts] = MetaContext.all.collect do |meta_contexts|
+      h[:meta_contexts] = Meta::Context.all.collect do |meta_contexts|
         a = {}
         ["id", "name", "is_user_interface"].each do |b|
           v = meta_contexts.send(b)

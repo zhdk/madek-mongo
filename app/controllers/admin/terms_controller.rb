@@ -4,7 +4,7 @@ class Admin::TermsController < Admin::AdminController # TODO rename to Admin::Me
   before_filter :pre_load
 
   def index
-    @terms = Meta::Term.order(LANGUAGES.first)
+    @terms = Meta::Term.order_by(LANGUAGES.first)
   end
 
   def new

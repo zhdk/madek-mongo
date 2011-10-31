@@ -63,5 +63,7 @@ end
 FILE_UTIL_PATH = "/usr/bin/file " + (`uname -s`.include?("Darwin") ? "-Ib" : "-ib")
 #mongo#new# FILE_UTIL_PATH = "/usr/bin/file -b --mime-type"
 
+LANGUAGES = [:de_CH, :en_GB]
+DEFAULT_LANGUAGE = :de_CH
 
 RELEASE_VERSION = "0.4"
