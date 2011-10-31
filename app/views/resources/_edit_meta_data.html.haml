@@ -2,8 +2,13 @@
   != auto_link(context.description.to_s, :all, :target => "_blank")
 
   :ruby
-    # if meta_data are sent in it means that we are editing multiple resources at once
-    meta_data ||= resource.object.meta_data.for_context(context)
+    # if multiple resources are sent in, it means that we are editing multiple resources at once 
+    meta_data = if resource.is_a? Array
+      resource = Media::Entry.compare_batch_by_meta_data_in_context(resource, context)
+      resource.meta_data
+    else
+      resource.object.meta_data.for_context(context)
+    end
 
     labels = {}
     last_label = nil
@@ -19,7 +24,7 @@
       end 
     end
     labels.delete_if {|k, v| v.size < 2 }
-
+    
   = resource.fields_for :meta_data, meta_data do |meta_datum|
     :ruby
       label = meta_datum.object.meta_key.label
@@ -41,7 +46,7 @@
           .expander
             = link_to _("+ Weitere Angaben"), "#"
       %li{:style => "width: 55%;"}
-        = meta_datum.hidden_field :id unless meta_datum.object.new_record?
+        =#working here# meta_datum.hidden_field :id unless meta_datum.object.new_record?
         =#mongo# meta_datum.hidden_field :keep_original_value, :class => "keep" if meta_datum.object.keep_original_value
         = field_tag(meta_datum, context)
       %li{:style => "width: auto;"}

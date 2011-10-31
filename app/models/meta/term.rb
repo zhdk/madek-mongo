@@ -21,6 +21,27 @@ module Meta
       self.send(lang)
     end
 
+    ######################################################
+
+    def is_used?
+      false #mongo# TODO self.class.used_ids.include?(self.id)
+    end
+
+=begin #mongo#  
+    # TODO method cache
+    def self.used_ids
+      @used_ids ||= begin
+        ids = (MetaContext.all + MetaKeyDefinition.all).collect do |x|
+          # TODO fetch id directly
+          [x.meta_field.label.try(:id), x.meta_field.description.try(:id), x.meta_field.hint.try(:id)]
+        end
+        ids += MetaKey.for_meta_terms.collect(&:used_term_ids)
+        ids += Keyword.select(:meta_term_id).group(:meta_term_id).collect(&:meta_term_id)
+        ids.flatten.uniq.compact
+      end
+    end
+=end
+  
     #########################################################
 
     def self.for_s(s)

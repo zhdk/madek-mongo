@@ -7,6 +7,9 @@ module Media
 
     ########################################################
 
+    field :is_snapshot, type: Boolean
+    # TODO move to super #scope :snapshots, media_entries.where(:is_snapshot => true)
+
     belongs_to :snapshot_media_entry, class_name: "Media::Entry" # TODO has_one ??
 
     def to_snapshot
@@ -16,10 +19,12 @@ module Media
         self.snapshot_media_entry = Media::Entry.create(:meta_data => meta_data.clone, :media_file => media_file.clone) do |x| 
           subject = Group.where(:name => "MIZ-Archiv").first
           actions = {:view => true, :edit => true, :hi_res => true, :manage_permissions => true}
+          x.build_permission unless x.permission # TODO merge with after_initialize
           actions.each_pair do |action, boolean|
             x.permission.send((boolean.to_s == "true" ? :grant : :deny), {action => subject}) 
           end
           # TODO push to Snapshot group ??
+          x.is_snapshot = true
         end
 
         save
@@ -140,6 +145,25 @@ module Media
       end
     end
 =end
+
+    ########################################################
+
+    def self.compare_batch_by_meta_data_in_context(media_entries, context)
+      compared_against, other_entries = media_entries[0], media_entries[1..-1]
+      meta_data_for_context = compared_against.meta_data.for_context(context)
+
+      new_blank_media_entry = self.new
+      meta_data_for_context.each do |md_bare|
+        if other_entries.any? {|me| not me.meta_data.get(md_bare[:_id]).same_value?(md_bare[:value])}
+          new_blank_media_entry.meta_data.build(:_id => md_bare[:_id], :value => nil, :keep_original_value => true)
+        else
+          new_blank_media_entry.meta_data.build(:_id => md_bare[:_id], :value => md_bare[:value])
+        end
+      end
+      new_blank_media_entry
+    end
+
+    ########################################################
 
   end
 end

@@ -40,6 +40,11 @@ module Meta
       r = mr["results"].first
       r ? r["value"].to_i : 0
     end
+    
+    def self.group_by_meta_term_id
+      #mongo# collection.group(:key => :meta_term_id, :initial => {:count => 0}, :reduce => "function(doc, prev){}")
+      []
+    end
 
   end
 end

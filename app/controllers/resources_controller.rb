@@ -17,6 +17,8 @@ class ResourcesController < ApplicationController
     klass = case params[:type]
       when "entry"
         klass.media_entries
+      when "snapshot"
+        klass.media_entries.where(:is_snapshot => true)
       when "set"
         klass.media_sets
       else
@@ -229,5 +231,72 @@ class ResourcesController < ApplicationController
       format.js { render :partial => "favorite_link", :locals => {:resource => @resource} }
     end
   end
+
+############################################################################################
+# BATCH actions
+  before_filter :pre_load_for_batch, :only => [:edit_multiple, :update_multiple, :remove_multiple, :edit_multiple_permissions]
+
+  def remove_multiple
+    @media_set.media_entries.delete(@media_entries)
+    flash[:notice] = "Die Medieneinträge wurden aus dem Set/Projekt gelöscht."
+    redirect_to media_set_url(@media_set)
+  end
+  
+  def edit_multiple
+    # custom hash for jQuery json templates
+    
+    #working here#
+    #@info_to_json = @media_entries.map do |me|
+    #  me.attributes.merge!(me.get_basic_info(current_user, ["uploaded at", "uploaded by", "keywords", "copyright notice", "portrayed object dates"]))
+    #end.to_json
+    
+    @info_to_json = @media_entries.as_json({:user => current_user, :ability => current_ability}).to_json
+  end
+  
+  def update_multiple
+    MediaEntry.suspended_delta do
+      @media_entries.each do |media_entry|
+        if media_entry.update_attributes(params[:resource], current_user)
+          flash[:notice] = "Die Änderungen wurden gespeichert." # TODO appending success message and resource reference (id, title)
+        else
+          flash[:error] = "Die Änderungen wurden nicht gespeichert." # TODO appending success message and resource reference (id, title)
+        end
+      end
+    end
+    
+    redirect_back_or_default(media_entries_path)
+  end
+  
+  def edit_multiple_permissions
+    @permissions_json = Permission.compare(@media_entries).to_json
+
+    @media_entries_json = @media_entries.map do |me|
+      me.attributes.merge!(me.get_basic_info(current_user))
+    end.to_json
+  end
+
+  def pre_load_for_batch
+    params.delete_if {|k,v| v.blank? }
+    action = request[:action].to_sym
+    
+    @media_set = Media::Set.find(params[:media_set_id]) unless params[:media_set_id].blank?
+    
+     if not params[:media_entry_ids].blank?
+        selected_ids = params[:media_entry_ids].split(",")
+        @media_entries = case action
+          when :edit_multiple, :update_multiple
+            Media::Entry.accessible_by(current_ability, :update).find(selected_ids)
+          when :edit_multiple_permissions
+            Media::Entry.accessible_by(current_ability, :manage_permissions).find(selected_ids)
+          when :remove_multiple
+            Media::Entry.accessible_by(current_ability, :read).find(selected_ids)
+         end
+     else
+       flash[:error] = "Sie haben keine Medieneinträge ausgewählt."
+       redirect_to :back
+     end
+  end
+
+############################################################################################
 
 end
