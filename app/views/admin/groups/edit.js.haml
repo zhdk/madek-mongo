@@ -16,6 +16,7 @@ Add user:
     			url: '#{membership_admin_group_user_path(@group)}',
     			data: {user_id: ui.item.id},
     			type: "post",
+    			dataType: "html",
     			success: function(response){
             $("input#new_user").val("");
             $(response).appendTo('table#members').effect('highlight');
