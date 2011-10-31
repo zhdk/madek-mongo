@@ -72,7 +72,7 @@ module Meta
         when "Meta::Keyword"
           Array(@value).each do |x|
             if x.is_a? String
-              meta_keywords.build(:meta_term => Meta::Term.for_s(x))
+              meta_keywords.where(:meta_term_id => x).first || meta_keywords.build(:meta_term => Meta::Term.for_s(x))
             else
               meta_keywords.build(x)
             end

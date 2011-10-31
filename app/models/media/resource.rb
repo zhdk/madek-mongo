@@ -22,8 +22,19 @@ module Media
     #working here# field :data, type: Hash, default: {}
     
     def set_data(meta_key, new_value)
-      #meta_data.build(:meta_key => meta_key, :value => new_value )
-      meta_data.create(:meta_key => meta_key, :value => new_value )
+      #old# meta_data.create(:meta_key => meta_key, :value => new_value )
+      h = {:meta_key => meta_key, :value => new_value}
+      md = meta_data.where(:_id => meta_key.id).first
+      if md
+        if new_value.blank?
+          md.delete
+        else
+          #old# md.attributes = h
+          md.update_attributes(h)
+        end
+      else
+        meta_data.create(h) unless new_value.blank?
+      end
       
 =begin #working here#
       return if new_value.nil?
@@ -81,17 +92,9 @@ module Media
       attributes.values.each do |h|
         #old# id = h.delete(:_id)
         #old# md = meta_data.find_or_initialize_by(:_id => id) {}
-        md = meta_data.where(:_id => h[:_id]).first
-        if md
-          if h[:value].blank?
-            md.delete
-          else
-            #old# md.attributes = h
-            md.update_attributes(h)
-          end
-        else
-          meta_data.create(h) unless h[:value].blank?
-        end
+
+        meta_key = Meta::Key.find(h[:_id])
+        set_data(meta_key, h[:value])
       end
     end    
 
