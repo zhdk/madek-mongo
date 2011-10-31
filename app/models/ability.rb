@@ -21,7 +21,9 @@ class Ability
 
     ####################################
     can :manage_permissions, Media::Resource, :"permission.manage_permissions.true".in => ids
-    
+
+    ####################################
+    can :edit_tms, Media::Resource if user.groups.is_member?("Expert")
   end
 
 =begin

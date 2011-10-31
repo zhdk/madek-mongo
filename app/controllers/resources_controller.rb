@@ -71,9 +71,18 @@ class ResourcesController < ApplicationController
   def edit
     authorize! :update, @resource => Media::Resource
 
+    @is_expert = current_user.groups.is_member?("Expert")
+
+    @meta_contexts = if params[:context] == "tms"
+      authorize! :edit_tms, @resource => Media::Resource
+      [Meta::Context.tms]
+    else
+      Meta::Context.default_contexts #mongo# TODO + @resource.individual_contexts
+    end
+
     respond_to do |format|
       format.html {}
-      format.js { render :partial => "edit_context" }
+      #mongo# TODO still needed ?? format.js { render :partial => "edit_context" }
     end
     #tmp# respond_with @resource
   end

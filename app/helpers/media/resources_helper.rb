@@ -69,5 +69,33 @@ module Media
       end
     end
 
+    ######################################################################
+
+    def resource_sizes(resource)
+      capture_haml do
+        haml_tag :div do
+          haml_concat dimensions_for(resource.media_file)
+          haml_tag :br
+          haml_concat number_to_human_size(resource.media_file.size)
+        end
+      end
+    end
+
+    ######################################################################
+
+    def snapshot_info(media_entry)
+      capture_haml do
+        haml_tag :div, :class => "notice_tms" do
+          date = media_entry.snapshot_media_entry.created_at.to_formatted_s(:date)
+          time = media_entry.snapshot_media_entry.created_at.to_formatted_s(:time)
+          haml_concat "Eine Kopie dieses Medieneintrages wurde am #{date} um #{time} Uhr für das MIZ-Archiv erstellt."
+        end if media_entry.snapshot_media_entry
+        haml_tag :div, :class => "notice_tms" do
+          haml_concat _("Diese Kopie wird gegenwärtig durch das MIZ-Archiv bearbeitet.")
+        end unless media_entry.snapshotable?
+      end
+    end
+
+
   end
 end

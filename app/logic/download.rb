@@ -34,11 +34,11 @@ class Download
         preview = @media_entry.media_file.get_preview(size)
         filename = [filename.split('.', 2).first, preview.thumbnail].join('_')
         content_type = preview.content_type
-        return [500, {"Content-Type" => "text/html"}, ["Sie haben nicht die notwendige Zugriffsberechtigung."]] unless current_user.ability.can?(:hi_res, @media_entry => Media::Resource) 
+        return [500, {"Content-Type" => "text/html"}, ["Sie haben nicht die notwendige Zugriffsberechtigung."]] unless current_user.can?(:hi_res, @media_entry => Media::Resource) 
       else
         # TODO check permissions for original file ??
         content_type = @media_entry.media_file.content_type
-        return [500, {"Content-Type" => "text/html"}, ["Sie haben nicht die notwendige Zugriffsberechtigung."]] unless current_user.ability.can?(:read, @media_entry => Media::Resource) 
+        return [500, {"Content-Type" => "text/html"}, ["Sie haben nicht die notwendige Zugriffsberechtigung."]] unless current_user.can?(:read, @media_entry => Media::Resource) 
       end
 
 #####################################################################################################################

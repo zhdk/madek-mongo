@@ -5,27 +5,31 @@
   .ui-autocomplete { 
       width: 10px;
   }
+
 = prevent_leaving_page
-- is_expert = current_user.groups.is_member?("Expert")
 
 .container_12
   %section#content_body.clearfix
     #detail-main.grid_2
       #detail-image{:style => "padding: 5px 0 0 0;"}
         = link_to thumb_for(@resource, :small), resource_path(@resource)
-      - if is_expert and @resource.snapshotable?
-        #detail-action-bar
-          %ul
-            %li=#mongo# link_to _("Metadaten für MIZ-Archiv editieren"), edit_tms_resource_path(@resource), :style => "line-height: 1em; float: none; padding: 5px 0; font-size: 0.8em;"
+      - if @is_expert
+        - if params[:context] == "tms"
+          = resource_sizes(@resource)
+          %div= snapshot_info(@resource)
+
+        - elsif @resource.snapshotable?
+          #detail-action-bar
+            %ul
+              %li= link_to _("Metadaten für MIZ-Archiv editieren"), edit_resource_path(@resource, :context => "tms"), :style => "line-height: 1em; float: none; padding: 5px 0; font-size: 0.8em;"
     .grid_9
       %h3= _("Metadaten editieren")
       = form_for @resource, :as => :resource, :url => resource_path(@resource) do |resource|
-        - meta_contexts = Meta::Context.default_contexts #mongo# TODO + @resource.individual_contexts
         #detail_specification.tabs
           %ul
-            - meta_contexts.each do |meta_context|
+            - @meta_contexts.each do |meta_context|
               %li= link_to meta_context, "##{meta_context.name}"
-          - meta_contexts.each do |meta_context|
+          - @meta_contexts.each do |meta_context|
             = render :partial => "edit_meta_data", :locals => { :resource => resource, :context => meta_context }
           
         .save_buttons

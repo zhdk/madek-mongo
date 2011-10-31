@@ -75,15 +75,8 @@
 
                 - if is_expert
                   %tr
-                    %td{:colspan => 2} 
-                      - if entry.snapshot_media_entry
-                        .notice_tms
-                          - date = entry.snapshot_media_entry.created_at.to_formatted_s(:date)
-                          - time = entry.snapshot_media_entry.created_at.to_formatted_s(:time)
-                          = "Eine Kopie dieses Medieneintrages wurde am #{date} um #{time} Uhr für das MIZ-Archiv erstellt."
-                      - unless entry.snapshotable?
-                        .notice_tms
-                          = _("Diese Kopie wird gegenwärtig durch das MIZ-Archiv bearbeitet.")
+                    %td{:colspan => 2}
+                      = snapshot_info(entry)
 
         #detail-set-bar
           - sets = entry.media_sets.accessible_by(current_ability)
@@ -92,7 +85,7 @@
         #detail-action-bar
           %ul#toggle-panel
             - if is_expert and entry.snapshotable?
-              %li= link_to _("Metadaten für MIZ-Archiv editieren"), "#" #mongo# edit_tms_entry_path(entry)
+              %li= link_to _("Metadaten für MIZ-Archiv editieren"), edit_resource_path(entry, :context => "tms")
               - if can_edit
                 %li= link_to _("Kopie für MIZ-Archiv erstellen"), to_snapshot_resource_path(entry)
             - if can_edit

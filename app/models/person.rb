@@ -64,6 +64,7 @@ class Person < Subject
 
   #########################################################
 
+  delegate :can?, :cannot?, :to => :ability
   def ability
     @ability ||= Ability.new(self)
   end
