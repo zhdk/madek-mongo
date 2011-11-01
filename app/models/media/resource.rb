@@ -234,6 +234,10 @@ module Media
 
     #########################################################
     
+    def is_snapshot
+      false
+    end
+    
     def self.to_tms_doc(resources, context = Meta::Context.tms)
       require 'active_support/builder' unless defined?(::Builder)
       
