@@ -37,6 +37,7 @@ MAdeKMongo::Application.routes.draw do
       post :edit_multiple
       put :update_multiple
       post :edit_multiple_permissions
+      get :export_tms
     end
     member do
       get :browse

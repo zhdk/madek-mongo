@@ -16,13 +16,13 @@ class ResourcesController < ApplicationController
     end
     klass = case params[:type]
       when "entry"
-        klass.media_entries
+        klass.media_entries.where(:is_snapshot.in => [nil, false])
       when "snapshot"
         klass.media_entries.where(:is_snapshot => true)
       when "set"
-        klass.media_sets
+        klass.media_sets.where(:is_snapshot.in => [nil, false])
       else
-        klass
+        klass.where(:is_snapshot.in => [nil, false])
     end
     resources = klass.accessible_by(current_ability, can_action).page(params[:page])
     resources = resources.where(:_id.in => current_user.favorite_resource_ids) if request.fullpath =~ /favorites/
@@ -63,7 +63,8 @@ class ResourcesController < ApplicationController
     end
 
     respond_to do |format|
-      format.html
+      format.html { redirect_to edit_resource_path(@resource) if @resource.is_snapshot }
+      format.tms { render :xml => Media::Resource.to_tms_doc(@resource) }
     end
     #tmp# respond_with @resource
   end
@@ -73,6 +74,7 @@ class ResourcesController < ApplicationController
 
     @is_expert = current_user.groups.is_member?("Expert")
 
+    params[:context] = "tms" if @resource.is_snapshot
     @meta_contexts = if params[:context] == "tms"
       authorize! :edit_tms, @resource => Media::Resource
       [Meta::Context.tms]
@@ -116,7 +118,12 @@ class ResourcesController < ApplicationController
     respond_to do |format|
       format.html { 
         flash[:notice] = _("Der Medieneintrag wurde gelöscht.")
-        redirect_back_or_default(resources_path)
+        path = if @resource.is_snapshot
+          resources_path(:type => :snapshot)
+        else
+          resources_path
+        end
+        redirect_back_or_default(path)
       }
       format.js { render :json => {:id => @resource.id} }
     end
@@ -304,6 +311,57 @@ class ResourcesController < ApplicationController
        flash[:error] = "Sie haben keine Medieneinträge ausgewählt."
        redirect_to :back
      end
+  end
+
+############################################################################################
+
+  # Reponsible for the export of snapshots of media entries into a zipfile with xml file, for tms (The Museum System)
+  # /resources/export_tms?resource_ids[]=1&resource_ids[]=2
+  def export_tms
+    @snapshots = Media::Entry.where(:is_snapshot => true).find(params[:resource_ids])
+
+    all_good = true
+    clxn = []
+
+    @snapshots.each do |snapshot|
+      xml = Media::Resource.to_tms_doc(snapshot)
+
+      # not providing the full filename of the media_file to be zipped,
+      # since it will be provided to the 3rd party receiving system in the accompanying XML
+      # however we do apparently need to supply the suffix for the file. hence the unoptimsed nonsense below.
+      file_ext = snapshot.media_file.filename.split(".").last
+      filetype_extension = ".#{file_ext}" if Media::File::KNOWN_EXTENSIONS.any? {|e| e == file_ext } #OPTIMIZE
+      filetype_extension ||= ""
+      timestamp = Time.now.to_i # stops racing below
+      filename = [snapshot.id, timestamp ].join("_")
+      media_filename  = filename + filetype_extension
+      xml_filename    = filename + ".xml"
+      path = snapshot.updated_resource_file
+
+      clxn << [ xml, media_filename, xml_filename, path ] if path
+      all_good = false unless path
+    end
+
+#    zip = xml+file
+
+    if all_good
+      race_free_filename = ["snapshot", rand(Time.now.to_i).to_s].join("_") + ".zip" # TODO handle user-provided filename
+      Zip::ZipOutputStream.open("#{Media::File::DOWNLOAD_STORAGE_DIR}/#{race_free_filename}") do |zos|
+        clxn.each do |snapshot|
+          xml, filename, xml_filename, path = snapshot
+
+          zos.put_next_entry(filename)
+          zos.print IO.read(path)
+          zos.put_next_entry(xml_filename)
+          zos.print xml
+        end # snapshot
+      end # zos
+
+      send_file File.join(Media::File::DOWNLOAD_STORAGE_DIR, race_free_filename), :type => "application/zip"
+    else
+      flash[:error] = "There was a problem creating the files(s) for export"
+      redirect_to snapshots_path # TODO correct redirect path.
+    end
   end
 
 ############################################################################################

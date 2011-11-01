@@ -41,6 +41,12 @@ module Meta
     end
 
     ########################################################
+
+    def key_map_for(context)
+      context.meta_definitions.find(id).try(:key_map)
+    end
+  
+    ########################################################
     
     # Return a meta_key matching the provided key-map
     #

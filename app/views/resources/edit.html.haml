@@ -13,15 +13,23 @@
     #detail-main.grid_2
       #detail-image{:style => "padding: 5px 0 0 0;"}
         = link_to thumb_for(@resource, :small), resource_path(@resource)
-      - if @is_expert
+        
+      - if @resource.is_snapshot
+        = resource_sizes(@resource)
+        #detail-action-bar
+          %ul
+            %li= link_to _("XML exportieren"), resource_path(@resource, :format => :tms)
+            %li= link_to _("ZIP exportieren"), export_tms_resources_path(:resource_ids => [@resource])
+            %li= link_to _("Kopie löschen"), resource_path(@resource), :method => :delete, :confirm => _("Sind Sie sicher?")
+      - elsif @is_expert
         - if params[:context] == "tms"
           = resource_sizes(@resource)
           %div= snapshot_info(@resource)
-
         - elsif @resource.snapshotable?
           #detail-action-bar
             %ul
               %li= link_to _("Metadaten für MIZ-Archiv editieren"), edit_resource_path(@resource, :context => "tms"), :style => "line-height: 1em; float: none; padding: 5px 0; font-size: 0.8em;"
+
     .grid_9
       %h3= _("Metadaten editieren")
       = form_for @resource, :as => :resource, :url => resource_path(@resource) do |resource|

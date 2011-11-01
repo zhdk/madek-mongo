@@ -19,6 +19,11 @@ module Media
     FileUtils.mkdir_p(FILE_STORAGE_DIR)
     FileUtils.mkdir_p(DOWNLOAD_STORAGE_DIR)
 
+    # OPTIMIZE
+    tmp_ext = `exiftool -listf`.downcase.split("\n") # a list of file extensions that exiftool knows about. If it's here, its a good chance it's file we can understand
+    tmp_ext.shift # get rid of the "recognized file extensions:"
+    KNOWN_EXTENSIONS = tmp_ext.join.split # now we have an array of individual extensions..
+
 
     field :guid, type: String
     field :content_type, type: String
