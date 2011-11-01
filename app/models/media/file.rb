@@ -84,6 +84,11 @@ module Media
 
       target = file_storage_location
       FileUtils.copy(source, target)
+
+      image = MiniMagick::Image.open(target)
+      self.height = image[:height]
+      self.width = image[:width]
+
       return target
     end
 
@@ -108,9 +113,6 @@ module Media
           return false unless ::File.exist?(file)
 
           image = MiniMagick::Image.open(file)
-          
-          self.height, self.width = [image[:height], image[:width]] unless self.height.present? and self.width.present?
-          
           image.resize THUMBNAILS[size]
           image.format "jpg"
           blob = image.to_blob
