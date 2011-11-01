@@ -14,7 +14,7 @@ defaults: &defaults
   identity_map_enabled: true #not working yet# http://mongoid.org/docs/identity_map.html Access as Mongoid::IdentityMap.get(Person, id)
                              #but using the mongoid_identity_map gem for now
   #allow_dynamic_fields: false
-  parameterize_keys: false
+  #parameterize_keys: false
   # configuration options:
   # http://mongoid.org/docs/installation/configuration.html
 

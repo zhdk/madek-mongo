@@ -27,6 +27,6 @@
               - key.meta_terms.each do |term|
                 %li= term.to_s
         %td.with_actions
-          =#mongo# FIXME link_to _("Edit"), edit_admin_key_path(key), :class => "buttons", :remote => true, :"data-type" => "html"
+          = link_to _("Edit"), edit_admin_key_path(key), :class => "buttons", :remote => true, :"data-type" => "html"
           %br
-          =#mongo# FIXME link_to _("Delete"), admin_key_path(key), :class => "buttons", :method => :delete, :confirm => _("Sind Sie sicher?") if key.meta_definitions.empty?
+          = link_to _("Delete"), admin_key_path(key), :class => "buttons", :method => :delete, :confirm => _("Sind Sie sicher?") if key.meta_definitions.empty?
