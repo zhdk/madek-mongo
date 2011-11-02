@@ -68,4 +68,53 @@ class Permission
     end
   end
 
+  #################################################
+  class << self
+    
+    #wip#4 merge to ResourcesController#edit_permissions
+    def compare(resources)
+      permissions = resources.map(&:permission)
+      combined_permissions = { "public" => {:view => false, :edit => false, :hi_res => false, :manage_permissions => false, :name => "Öffentlich", :type => 'nil'},
+                               "Person" => [],
+                               "Group" => [] }
+
+      all_subjects = permissions.map(&:subject_ids).flatten.uniq
+      all_subjects.each do |subject_id|
+        if subject_id == :public
+          ACTIONS.each do |key|
+            combined_permissions["public"][key] = case permissions.select {|p| p.send(key)["true"].include?(:public) }.size
+              when resources.size
+                true
+              when 0
+                false
+              else
+                :mixed
+            end
+          end
+        else
+          subject = Subject.find(subject_id)
+          combined_permissions[subject._type] << begin
+            h = {:id => subject.id, :name => subject.to_s, :type => subject._type}
+            ACTIONS.each do |key|
+              h[key] = case permissions.select {|p| p.send(key)["true"].include?(subject.id) }.size
+                when resources.size
+                  true
+                when 0
+                  false
+                else
+                  :mixed
+              end
+            end
+            h
+          end
+        end
+      end
+
+      return combined_permissions
+    end
+    
+  end
+    
+  #################################################
+
 end

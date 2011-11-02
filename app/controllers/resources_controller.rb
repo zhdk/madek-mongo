@@ -131,12 +131,12 @@ class ResourcesController < ApplicationController
 
 ############################################################################################
 
+  #wip#4 merge to Permission#compare
   def edit_permissions
     authorize! :manage_permissions, @resource => Media::Resource
 
     #mongo# TODO move to Permission#as_json
     permission = @resource.permission
-    keys = Permission::ACTIONS
     # OPTIMIZE
     @permissions_json = { "public" => {:view => false, :edit => false, :hi_res => false, :manage_permissions => false, :name => "Öffentlich", :type => 'nil'},
                           "Person" => [],
@@ -145,12 +145,12 @@ class ResourcesController < ApplicationController
     all_subjects = permission.subject_ids
     all_subjects.each do |subject_id|
       if subject_id == :public
-        keys.each {|key| @permissions_json["public"][key] = permission.send(key)["true"].include?(:public) }
+        Permission::ACTIONS.each {|key| @permissions_json["public"][key] = permission.send(key)["true"].include?(:public) }
       else
         subject = Subject.find(subject_id)
         @permissions_json[subject._type] << begin
           h = {:id => subject.id, :name => subject.to_s, :type => subject._type}
-          keys.each {|key| h[key] = permission.send(key)["true"].include?(subject.id) }
+          Permission::ACTIONS.each {|key| h[key] = permission.send(key)["true"].include?(subject.id) }
           h
         end
       end
@@ -158,7 +158,7 @@ class ResourcesController < ApplicationController
     @permissions_json = @permissions_json.to_json
         
     respond_to do |format|
-      format.html
+      #mongo#old#?? format.html
       format.js { render :partial => "permissions/edit_multiple" }
     end
   end
@@ -265,7 +265,6 @@ class ResourcesController < ApplicationController
     #@info_to_json = @media_entries.map do |me|
     #  me.attributes.merge!(me.get_basic_info(current_user, ["uploaded at", "uploaded by", "keywords", "copyright notice", "portrayed object dates"]))
     #end.to_json
-    
     @info_to_json = @media_entries.as_json({:user => current_user, :ability => current_ability}).to_json
   end
   
@@ -286,9 +285,11 @@ class ResourcesController < ApplicationController
   def edit_multiple_permissions
     @permissions_json = Permission.compare(@media_entries).to_json
 
-    @media_entries_json = @media_entries.map do |me|
-      me.attributes.merge!(me.get_basic_info(current_user))
-    end.to_json
+    #working here#
+    #@media_entries_json = @media_entries.map do |me|
+    #  me.attributes.merge!(me.get_basic_info(current_user))
+    #end.to_json
+    @media_entries_json = @media_entries.as_json({:user => current_user, :ability => current_ability}).to_json
   end
 
   def pre_load_for_batch
