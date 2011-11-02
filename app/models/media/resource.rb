@@ -19,7 +19,7 @@ module Media
 
     #########################################################
 
-    #working here# field :data, type: Hash, default: {}
+    #wip#1 field :data, type: Hash, default: {}
     
     def set_data(meta_key, new_value)
       #old# meta_data.create(:meta_key => meta_key, :value => new_value )
@@ -36,7 +36,7 @@ module Media
         meta_data.create(h) unless new_value.blank?
       end
       
-=begin #working here#
+=begin #wip#1
       return if new_value.nil?
       #data[meta_key.id] = new_value.respond_to?(:id) ? new_value.id : new_value
       data[meta_key.id] = if new_value.is_a? String
@@ -64,6 +64,7 @@ module Media
 
     embeds_many :meta_data, :class_name => "Meta::Datum" do # TODO validates_uniqueness :meta_key
       def get(key_id)
+        key_id = key_id.gsub(/[^a-z0-9]+/, ' ').strip.gsub(' ', '-') if Mongoid.parameterize_keys
         r = where(:_id => key_id).first # OPTIMIZE prevent find if is_dynamic meta_key
         r ||= build(:_id => key_id)
       end
@@ -189,7 +190,7 @@ module Media
 
     def title
       t = meta_data.get_value_for("title")
-      #working here# t = data["title"]
+      #wip#1 t = data["title"]
       t = "Ohne Titel" if t.blank?
       t
     end

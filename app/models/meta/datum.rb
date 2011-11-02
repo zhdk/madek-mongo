@@ -12,7 +12,7 @@ module Meta
 
     #########################################################
     
-    #working here#
+    #wip#2
     belongs_to :meta_key, class_name: "Meta::Key", foreign_key: :_id # indexed on parent # TODO , foreign_key: :_id ??????
     #key :meta_key_id
     #validates_presence_of :meta_key_id
@@ -70,13 +70,15 @@ module Meta
             meta_keywords.build(:meta_term => x)
           end
         when "Meta::Keyword"
-          Array(@value).each do |x|
+          mks = Array(@value).collect do |x|
             if x.is_a? String
               meta_keywords.where(:meta_term_id => x).first || meta_keywords.build(:meta_term => Meta::Term.for_s(x))
             else
               meta_keywords.build(x)
             end
           end
+          #mongo# FIXME
+          (meta_keywords - mks).each {|x| x.delete }
         when "Meta::Date" # TODO use Ruby Date directly ??
           klass = meta_key.object_type.constantize
           Array(@value).each do |x|
