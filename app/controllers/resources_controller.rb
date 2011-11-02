@@ -166,27 +166,39 @@ class ResourcesController < ApplicationController
   #mongo# merge with update ??
   # OPTIMIZE
   def update_permissions
-    authorize! :manage_permissions, @resource => Media::Resource
-
-    if(actions = params[:subject]["nil"])
-      actions.each_pair do |action, boolean|
-        @resource.permission.send((boolean.to_s == "true" ? :grant : :deny), {action => :public}) 
-      end
+    @resources = if params[:media_entry_ids]
+      redirect_back_or_default(resources_path)
+      pre_load_for_batch
+      @media_entries
+    else
+      redirect_to resource_path(@resource)
+      [@resource]
     end
-    # TOOD drop and merge to Subject
-    ["Person", "User", "Group"].each do |key|
-      params[:subject][key].each_pair do |subject_id, actions|
-        subject = Subject.find(subject_id)
-        # OPTIMIZE it's not sure that the current_user is the owner (manager) of the current resource # TODO use Permission.assign_manage_to ?? 
-        actions[:manage_permissions] = true if subject == current_user
+
+    @resources.each do |resource|
+      authorize! :manage_permissions, resource => Media::Resource
+  
+      ########## TODO refactor to Permission or Resource
+      if(actions = params[:subject]["nil"])
         actions.each_pair do |action, boolean|
-          @resource.permission.send((boolean.to_s == "true" ? :grant : :deny), {action => subject}) 
+          resource.permission.send((boolean.to_s == "true" ? :grant : :deny), {action => :public}) 
         end
-      end if params[:subject][key]
+      end
+      # TOOD drop and merge to Subject
+      ["Person", "User", "Group"].each do |key|
+        params[:subject][key].each_pair do |subject_id, actions|
+          subject = Subject.find(subject_id)
+          # OPTIMIZE it's not sure that the current_user is the owner (manager) of the current resource # TODO use Permission.assign_manage_to ?? 
+          actions[:manage_permissions] = true if subject == current_user
+          actions.each_pair do |action, boolean|
+            resource.permission.send((boolean.to_s == "true" ? :grant : :deny), {action => subject}) 
+          end
+        end if params[:subject][key]
+      end
+      ##########
     end
 
-    flash[:notice] = _("Die Zugriffsberechtigungen wurden erfolgreich gespeichert.")  
-    redirect_to :action => :show
+    flash[:notice] = _("Die Zugriffsberechtigungen wurden erfolgreich gespeichert.") 
   end
 
 ############################################################################################
@@ -267,7 +279,8 @@ class ResourcesController < ApplicationController
     #end.to_json
     @info_to_json = @media_entries.as_json({:user => current_user, :ability => current_ability}).to_json
   end
-  
+
+  #mongo# FIXME  
   def update_multiple
     MediaEntry.suspended_delta do
       @media_entries.each do |media_entry|
@@ -303,7 +316,7 @@ class ResourcesController < ApplicationController
         @media_entries = case action
           when :edit_multiple, :update_multiple
             Media::Entry.accessible_by(current_ability, :update).find(selected_ids)
-          when :edit_multiple_permissions
+          when :edit_multiple_permissions, :update_permissions
             Media::Entry.accessible_by(current_ability, :manage_permissions).find(selected_ids)
           when :remove_multiple
             Media::Entry.accessible_by(current_ability, :read).find(selected_ids)

@@ -38,11 +38,12 @@ MAdeKMongo::Application.routes.draw do
       put :update_multiple
       post :edit_multiple_permissions
       get :export_tms
+      put :update_permissions
     end
     member do
       get :browse
-      get :edit_permissions #mongo# TODO
-      put :update_permissions #mongo# TODO
+      get :edit_permissions
+      put :update_permissions
       get :to_snapshot # TODO post ??
       post :media_sets
       post :toggle_favorites

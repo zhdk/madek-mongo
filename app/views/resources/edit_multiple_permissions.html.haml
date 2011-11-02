@@ -12,20 +12,6 @@
             %h4= "#{@media_entries.size} Medieneinträge ausgewählt"
         #selected_items_edit
           #list_as_thumbnails
-            hello from thumbnails
-            
-:plain    
-  <script type="text/x-jquery-tmpl" id="thumbnail_view">
-      <div class="thumb_box">
-        <a href="/media_entries/${id}">
-          <img src="${thumb_base64}">
-        </a>
-        <!-- <p>
-          <span class="item_title">${title}</span>
-          <span class="item_author">${author}</span>
-        </p> -->
-      </div>
-  </script>
 
 .container_12.clearfix  
   %section#content_body2.clearfix
@@ -43,13 +29,16 @@
         %p.info Unterschiedliche Berechtigungen vorhanden. Achtung: Bestehende Werte werden durch Änderungen überschrieben! Wenn keine Änderungen vorgenommen werden, bleiben die verschiedenen Werte erhalten.
     .clear
 
+
+%script#thumbnail_view{:type => "text/x-jquery-tmpl"}
+  .thumb_box
+    %a{:href => "/media_entries/${id}"}
+      %img{:src => "${thumb_base64}"}
    
 :javascript
-
   $(function() {
     var data = #{@media_entries_json};
     $("#list_as_thumbnails").html($("#thumbnail_view").tmpl(data));
-    
   });
 
     
