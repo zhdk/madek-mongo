@@ -380,4 +380,12 @@ class ResourcesController < ApplicationController
 
 ############################################################################################
 
+  # only for media_sets
+  def abstract
+    authorize! :read, @resource => Media::Resource
+    respond_to do |format|
+      format.js { render :layout => false }
+    end
+  end
+
 end

@@ -60,29 +60,30 @@ module Media
     end
 
     ########################################################
-=begin
-#mongo# 
+
     # TODO scope accessible media_entries only
-    def abstract(min_media_entries = nil, accessible_media_entry_ids = nil)
+    def abstract(current_ability, min_media_entries = nil)
       min_media_entries ||= media_entries.count.to_f * 50 / 100
-      accessible_media_entry_ids ||= media_entry_ids
-      meta_key_ids = individual_contexts.map(&:meta_key_ids).flatten
+      #old# meta_key_ids = individual_contexts.map(&:meta_key_ids).flatten
+      meta_key_ids = individual_contexts.map{|ic| ic.meta_keys(true).map(&:id) }.flatten
       h = {} #1005# TODO upgrade to Ruby 1.9 and use ActiveSupport::OrderedHash.new
-      mds = MetaDatum.where(:meta_key_id => meta_key_ids, :resource_type => "MediaEntry", :resource_id => accessible_media_entry_ids)
-      mds.each do |md|
-        h[md.meta_key_id] ||= [] # TODO md.meta_key
-        h[md.meta_key_id] << md.value
+
+      media_resources.accessible_by(current_ability).each do |r|
+        r.meta_data.where(:_id.in => meta_key_ids).each do |md|
+          h[md._id] ||= [] # TODO md.meta_key
+          h[md._id] << md.value
+          h[md._id].flatten!
+        end
       end
+
       h.delete_if {|k, v| v.size < min_media_entries }
       h.each_pair {|k, v| h[k] = v.flatten.group_by {|x| x}.delete_if {|k, v| v.size < min_media_entries }.keys }
       h.delete_if {|k, v| v.blank? }
       #1005# return h.collect {|k, v| meta_data.build(:meta_key_id => k, :value => v) }
       b = []
-      h.each_pair {|k, v| b[meta_key_ids.index(k)] = meta_data.build(:meta_key_id => k, :value => v) }
+      h.each_pair {|k, v| b[meta_key_ids.index(k)] = meta_data.build(:_id => k, :value => v) }
       return b.compact
     end
-  
-=end
 
     def used_meta_terms(current_ability)
       meta_key_ids = individual_contexts.map{|ic| ic.meta_keys(true).map(&:id) }.flatten

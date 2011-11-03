@@ -24,8 +24,11 @@ MAdeKMongo::Application.routes.draw do
 ##############################################################################################
 
   # TODO shallow ??
-  resources :media_sets do
+  resources :media_sets, :controller => 'resources' do
     resources :resources
+    member do
+      get :abstract
+    end
   end
 
   resources :resources do

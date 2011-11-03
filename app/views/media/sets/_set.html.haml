@@ -26,10 +26,10 @@
               = link_to tab_title, "#info_tab"
             %li
               = link_to _("Zugriffsberechtigungen"), edit_permissions_resource_path(set)
-            - if false #mongo# TODO set.is_a?(Media::Project)
+            - if true #mongo#old# set.is_a?(Media::Project)
               %li
                 = link_to _("Auszug"), "#abstract_tab"
-            - if true #mongo# TODO set.is_a?(Media::Project)
+            - if true #mongo#old# set.is_a?(Media::Project)
               %li
                 = link_to _("Vokabular"), "#vocabulary_tab"
               %li
@@ -37,13 +37,13 @@
           #info_tab.clearfix
             - context = Meta::Context.media_set
             = display_meta_data_for(set, context)
-          - if false #mongo# TODO set.is_a?(Media::Project)
+          - if true #mongo#old# set.is_a?(Media::Project)
             #abstract_tab.clearfix
               %p
                 Diese Metadaten wurden am häufigsten vergeben. Sie zeigen den thematischen Schwerpunkt des Projekts an.
-              = display_project_abstract_slider(set, @paginated_media_entry_ids.total_entries)
-              = display_project_abstract(set, (@paginated_media_entry_ids.total_entries * 30 / 100), @_media_entry_ids)
-          - if true #mongo# TODO set.is_a?(Media::Project)
+              = display_project_abstract_slider(set, @results[:pagination][:total_entries])
+              = display_project_abstract(set, (@results[:pagination][:total_entries] * 30 / 100))
+          - if true #mongo#old# set.is_a?(Media::Project)
             #vocabulary_tab.clearfix
               = display_project_vocabulary(set)
 
@@ -51,7 +51,7 @@
   %div.page_title_left
     %div{:class => icon_class}
     = content_title
-    %span=#mongo# TODO "#{@paginated_media_entry_ids.total_entries} von #{set.media_entries.count} Medieneinträge für Sie sichtbar"
+    %span= "#{@results[:pagination][:total_entries]} von #{set.media_resources.count} Medieneinträge für Sie sichtbar"
   .clear
   
   =#mongo# TODO ?? render :partial => "resources/index"

@@ -178,7 +178,7 @@ module Media
                 change: function( event, ui ) {
                   update_amount($(this));
                   $.ajax({
-                    url: "#{abstract_media_set_path(@media_set)}",
+                    url: "#{abstract_media_set_path(project)}",
                     data: {value: ui.value},
                     complete: function(response){ $("#slider").nextAll(".meta_data:first").replaceWith(response.responseText); }
                   });
@@ -193,8 +193,8 @@ module Media
       end
     end
   
-    def display_project_abstract(project, min_media_entries, accessible_media_entry_ids)
-      meta_data = project.abstract(min_media_entries, accessible_media_entry_ids)
+    def display_project_abstract(project, min_media_entries)
+      meta_data = project.abstract(current_ability, min_media_entries)
       capture_haml do
         haml_tag :div, :class => "meta_data" do
           if meta_data.blank?
@@ -202,11 +202,11 @@ module Media
           else
             contexts = project.individual_contexts
             meta_data.collect do |meta_datum|
-              meta_datum.meta_key.reload #tmp# TODO remove this line, is an Identity Map problem ??
+              #mongo# meta_datum.meta_key.reload #tmp# TODO remove this line, is an Identity Map problem ??
               context = contexts.detect {|c| meta_datum.meta_key.meta_contexts.include?(c) }
               next unless context
-              definition = meta_datum.meta_key.meta_key_definitions.for_context(context)
-              haml_tag :h4, definition.meta_field.label
+              definition = context.meta_definitions.where(:meta_key_id => meta_datum.meta_key.id).first
+              haml_tag :h4, definition.label
               haml_tag :p, preserve(formatted_value(meta_datum))
             end
           end
