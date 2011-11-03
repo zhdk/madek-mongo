@@ -10,6 +10,8 @@ module Meta
     embeds_many :meta_references, class_name: "Meta::Reference" #mongo# TODO merge meta_keywords into meta_references
     embeds_many :meta_dates, class_name: "Meta::Date"
 
+    attr_accessor :keep_original_value
+
     #########################################################
     
     #wip#2

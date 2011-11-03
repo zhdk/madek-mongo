@@ -40,7 +40,7 @@
             = link_to _("+ Weitere Angaben"), "#"
       %li{:style => "width: 55%;"}
         =#wip#2 meta_datum.hidden_field :id unless meta_datum.object.new_record?
-        =#mongo# meta_datum.hidden_field :keep_original_value, :class => "keep" if meta_datum.object.keep_original_value
+        = meta_datum.hidden_field :keep_original_value, :class => "keep" if meta_datum.object.keep_original_value
         = field_tag(meta_datum, context)
       %li{:style => "width: auto;"}
         = description_toggler(definition) # TODO unescape html with !=

@@ -281,6 +281,9 @@ class ResourcesController < ApplicationController
   end
 
   def update_multiple
+    # To avoid overriding at batch update: remove from attribute hash if :keep_original_value and value is blank
+    params[:resource][:meta_data_attributes].delete_if { |key, attr| attr[:keep_original_value] and attr[:value].blank? }
+
     @media_entries.each do |media_entry|
       if media_entry.update_attributes(params[:resource], current_user)
         flash[:notice] = "Die Änderungen wurden gespeichert." # TODO appending success message and resource reference (id, title)
