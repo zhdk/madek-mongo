@@ -3,7 +3,7 @@ module Meta
   class Context
     include Mongoid::Document
 
-    key :name
+    key :name # FIXME what happens to the references if the name changes ??
     field :name, type: String
     field :is_user_interface, type: Boolean, default: true
 
@@ -13,8 +13,13 @@ module Meta
     belongs_to :label, class_name: "Meta::Term"
     belongs_to :description, class_name: "Meta::Term"
     
-    def meta_keys
-      meta_definitions.collect(&:meta_key)
+    def meta_keys(for_meta_terms = false)
+      r = meta_definitions.collect(&:meta_key)
+      if for_meta_terms
+        r.select {|mk| mk.object_type == "Meta::Term"}
+      else
+        r
+      end
     end
     def meta_key_ids
       meta_definitions.collect(&:meta_key_id)
