@@ -79,7 +79,7 @@ class ResourcesController < ApplicationController
       authorize! :edit_tms, @resource => Media::Resource
       [Meta::Context.tms]
     else
-      Meta::Context.default_contexts #mongo# TODO + @resource.individual_contexts
+      Meta::Context.default_contexts + @resource.individual_contexts
     end
 
     respond_to do |format|
