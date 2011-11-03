@@ -141,7 +141,7 @@
         - contexts = Meta::Context.default_contexts + entry.individual_contexts
         - contexts.collect do |context|
           %li
-            - if false #can_edit #working here#
+            - if false #can_edit #wip#3
               = link_to edit_resource_path(entry, :meta_context_id => context), :title => _("Editieren"), :remote => true do
                 .button_edit_active
             = display_meta_data_for(entry, context)

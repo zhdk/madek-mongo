@@ -46,7 +46,7 @@
           .expander
             = link_to _("+ Weitere Angaben"), "#"
       %li{:style => "width: 55%;"}
-        =#working here# meta_datum.hidden_field :id unless meta_datum.object.new_record?
+        =#wip#2 meta_datum.hidden_field :id unless meta_datum.object.new_record?
         =#mongo# meta_datum.hidden_field :keep_original_value, :class => "keep" if meta_datum.object.keep_original_value
         = field_tag(meta_datum, context)
       %li{:style => "width: auto;"}

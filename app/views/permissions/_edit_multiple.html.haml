@@ -1,7 +1,7 @@
 - @display_hi_res_action = true
 
 - if @media_entries
-  = form_tag update_permissions_resource_path(0), :method => :put do
+  = form_tag update_permissions_resources_path, :method => :put do
     = hidden_field_tag :media_entry_ids, @media_entries.map(&:id).join(',')
     = render :partial => "permissions/table" #mongo#, :locals => {:cancel_path => "javascript:history.back(1);"}
 - elsif @resource and @resource.is_a?(Media::Entry)

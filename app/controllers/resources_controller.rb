@@ -79,7 +79,7 @@ class ResourcesController < ApplicationController
       authorize! :edit_tms, @resource => Media::Resource
       [Meta::Context.tms]
     else
-      Meta::Context.default_contexts #mongo# TODO + @resource.individual_contexts
+      Meta::Context.default_contexts + @resource.individual_contexts
     end
 
     respond_to do |format|
@@ -131,12 +131,12 @@ class ResourcesController < ApplicationController
 
 ############################################################################################
 
+  #wip#4 merge to Permission#compare
   def edit_permissions
     authorize! :manage_permissions, @resource => Media::Resource
 
     #mongo# TODO move to Permission#as_json
     permission = @resource.permission
-    keys = Permission::ACTIONS
     # OPTIMIZE
     @permissions_json = { "public" => {:view => false, :edit => false, :hi_res => false, :manage_permissions => false, :name => "Öffentlich", :type => 'nil'},
                           "Person" => [],
@@ -145,12 +145,12 @@ class ResourcesController < ApplicationController
     all_subjects = permission.subject_ids
     all_subjects.each do |subject_id|
       if subject_id == :public
-        keys.each {|key| @permissions_json["public"][key] = permission.send(key)["true"].include?(:public) }
+        Permission::ACTIONS.each {|key| @permissions_json["public"][key] = permission.send(key)["true"].include?(:public) }
       else
         subject = Subject.find(subject_id)
         @permissions_json[subject._type] << begin
           h = {:id => subject.id, :name => subject.to_s, :type => subject._type}
-          keys.each {|key| h[key] = permission.send(key)["true"].include?(subject.id) }
+          Permission::ACTIONS.each {|key| h[key] = permission.send(key)["true"].include?(subject.id) }
           h
         end
       end
@@ -158,7 +158,7 @@ class ResourcesController < ApplicationController
     @permissions_json = @permissions_json.to_json
         
     respond_to do |format|
-      format.html
+      #mongo#old#?? format.html
       format.js { render :partial => "permissions/edit_multiple" }
     end
   end
@@ -166,27 +166,39 @@ class ResourcesController < ApplicationController
   #mongo# merge with update ??
   # OPTIMIZE
   def update_permissions
-    authorize! :manage_permissions, @resource => Media::Resource
-
-    if(actions = params[:subject]["nil"])
-      actions.each_pair do |action, boolean|
-        @resource.permission.send((boolean.to_s == "true" ? :grant : :deny), {action => :public}) 
-      end
+    @resources = if params[:media_entry_ids]
+      redirect_back_or_default(resources_path)
+      pre_load_for_batch
+      @media_entries
+    else
+      redirect_to resource_path(@resource)
+      [@resource]
     end
-    # TOOD drop and merge to Subject
-    ["Person", "User", "Group"].each do |key|
-      params[:subject][key].each_pair do |subject_id, actions|
-        subject = Subject.find(subject_id)
-        # OPTIMIZE it's not sure that the current_user is the owner (manager) of the current resource # TODO use Permission.assign_manage_to ?? 
-        actions[:manage_permissions] = true if subject == current_user
+
+    @resources.each do |resource|
+      authorize! :manage_permissions, resource => Media::Resource
+  
+      ########## TODO refactor to Permission or Resource
+      if(actions = params[:subject]["nil"])
         actions.each_pair do |action, boolean|
-          @resource.permission.send((boolean.to_s == "true" ? :grant : :deny), {action => subject}) 
+          resource.permission.send((boolean.to_s == "true" ? :grant : :deny), {action => :public}) 
         end
-      end if params[:subject][key]
+      end
+      # TOOD drop and merge to Subject
+      ["Person", "User", "Group"].each do |key|
+        params[:subject][key].each_pair do |subject_id, actions|
+          subject = Subject.find(subject_id)
+          # OPTIMIZE it's not sure that the current_user is the owner (manager) of the current resource # TODO use Permission.assign_manage_to ?? 
+          actions[:manage_permissions] = true if subject == current_user
+          actions.each_pair do |action, boolean|
+            resource.permission.send((boolean.to_s == "true" ? :grant : :deny), {action => subject}) 
+          end
+        end if params[:subject][key]
+      end
+      ##########
     end
 
-    flash[:notice] = _("Die Zugriffsberechtigungen wurden erfolgreich gespeichert.")  
-    redirect_to :action => :show
+    flash[:notice] = _("Die Zugriffsberechtigungen wurden erfolgreich gespeichert.") 
   end
 
 ############################################################################################
@@ -265,10 +277,10 @@ class ResourcesController < ApplicationController
     #@info_to_json = @media_entries.map do |me|
     #  me.attributes.merge!(me.get_basic_info(current_user, ["uploaded at", "uploaded by", "keywords", "copyright notice", "portrayed object dates"]))
     #end.to_json
-    
     @info_to_json = @media_entries.as_json({:user => current_user, :ability => current_ability}).to_json
   end
-  
+
+  #mongo# FIXME  
   def update_multiple
     MediaEntry.suspended_delta do
       @media_entries.each do |media_entry|
@@ -286,9 +298,11 @@ class ResourcesController < ApplicationController
   def edit_multiple_permissions
     @permissions_json = Permission.compare(@media_entries).to_json
 
-    @media_entries_json = @media_entries.map do |me|
-      me.attributes.merge!(me.get_basic_info(current_user))
-    end.to_json
+    #working here#
+    #@media_entries_json = @media_entries.map do |me|
+    #  me.attributes.merge!(me.get_basic_info(current_user))
+    #end.to_json
+    @media_entries_json = @media_entries.as_json({:user => current_user, :ability => current_ability}).to_json
   end
 
   def pre_load_for_batch
@@ -302,7 +316,7 @@ class ResourcesController < ApplicationController
         @media_entries = case action
           when :edit_multiple, :update_multiple
             Media::Entry.accessible_by(current_ability, :update).find(selected_ids)
-          when :edit_multiple_permissions
+          when :edit_multiple_permissions, :update_permissions
             Media::Entry.accessible_by(current_ability, :manage_permissions).find(selected_ids)
           when :remove_multiple
             Media::Entry.accessible_by(current_ability, :read).find(selected_ids)
@@ -365,5 +379,13 @@ class ResourcesController < ApplicationController
   end
 
 ############################################################################################
+
+  # only for media_sets
+  def abstract
+    authorize! :read, @resource => Media::Resource
+    respond_to do |format|
+      format.js { render :layout => false }
+    end
+  end
 
 end

@@ -178,7 +178,7 @@ module Media
                 change: function( event, ui ) {
                   update_amount($(this));
                   $.ajax({
-                    url: "#{abstract_media_set_path(@media_set)}",
+                    url: "#{abstract_media_set_path(project)}",
                     data: {value: ui.value},
                     complete: function(response){ $("#slider").nextAll(".meta_data:first").replaceWith(response.responseText); }
                   });
@@ -193,8 +193,8 @@ module Media
       end
     end
   
-    def display_project_abstract(project, min_media_entries, accessible_media_entry_ids)
-      meta_data = project.abstract(min_media_entries, accessible_media_entry_ids)
+    def display_project_abstract(project, min_media_entries)
+      meta_data = project.abstract(current_ability, min_media_entries)
       capture_haml do
         haml_tag :div, :class => "meta_data" do
           if meta_data.blank?
@@ -202,11 +202,11 @@ module Media
           else
             contexts = project.individual_contexts
             meta_data.collect do |meta_datum|
-              meta_datum.meta_key.reload #tmp# TODO remove this line, is an Identity Map problem ??
+              #mongo# meta_datum.meta_key.reload #tmp# TODO remove this line, is an Identity Map problem ??
               context = contexts.detect {|c| meta_datum.meta_key.meta_contexts.include?(c) }
               next unless context
-              definition = meta_datum.meta_key.meta_key_definitions.for_context(context)
-              haml_tag :h4, definition.meta_field.label
+              definition = context.meta_definitions.where(:meta_key_id => meta_datum.meta_key.id).first
+              haml_tag :h4, definition.label
               haml_tag :p, preserve(formatted_value(meta_datum))
             end
           end
@@ -214,8 +214,7 @@ module Media
       end
     end
   
-    def display_project_vocabulary(project, accessible_media_entry_ids)
-      used_meta_term_ids = project.used_meta_term_ids(accessible_media_entry_ids)
+    def display_project_vocabulary(set)
       capture_haml do
         haml_tag :p do
           haml_concat "Für dieses Projekt wurde ein spezifisches Vokabular erstellt."
@@ -224,15 +223,16 @@ module Media
         end
         haml_tag :br
         
-        project.individual_contexts.each do |context|
+        used_meta_terms = set.used_meta_terms(current_ability)
+        set.individual_contexts.each do |context|
           haml_tag :h3, context
           haml_tag :p, context.description
-          context.meta_keys.for_meta_terms.each do |meta_key|
-            definition = meta_key.meta_key_definitions.for_context(context)
-            haml_tag :h4, definition.meta_field.label
+          context.meta_keys(true).each do |meta_key|
+            definition = context.meta_definitions.where(:meta_key_id => meta_key.id).first
+            haml_tag :h4, definition.label
             haml_tag :div, :class => "columns_3" do
               meta_key.meta_terms.each do |meta_term|
-                is_used = used_meta_term_ids.include?(meta_term.id)
+                is_used = used_meta_terms.include?(meta_term)
                 haml_tag :p, meta_term, :"data-meta_term_id" => meta_term.id, :"data-used" => (is_used ? 1 : 0)
               end
             end

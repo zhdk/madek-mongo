@@ -9,7 +9,7 @@
       %th= f.label :object_type
       %td
         - if f.object.object_type.nil?
-          = f.select :object_type, MetaKey.object_types.collect {|o| [o, o]}, { :include_blank => true }
+          = f.select :object_type, Meta::Key.object_types.collect {|o| [o, o]}, { :include_blank => true }
         - else
           = f.object.object_type
     - if f.object.object_type == "Meta::Term"
@@ -20,6 +20,7 @@
           %ul.sortable
             - f.object.meta_terms.build
             = f.fields_for :meta_terms do |term_f|
+              -#mongo# FIXME
               %li{:style => "padding-bottom: 1em;", :id => (term_f.object.new_record? ? nil : "position_#{term_f.object.id}")}
                 - unless term_f.object.new_record?
                   = term_f.hidden_field :id # NOTE placeholder for the hidden id used by fields_for

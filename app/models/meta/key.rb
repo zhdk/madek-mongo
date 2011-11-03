@@ -31,6 +31,10 @@ module Meta
 
     ########################################################
 
+    scope :for_meta_terms, where(:object_type => "Meta::Term") 
+
+    ########################################################
+
     def to_s
       label #.capitalize
     end
@@ -88,6 +92,17 @@ module Meta
                                     :position => mc.meta_definitions.map(&:position).max + 1 )
       end
       mk
+    end
+
+    def self.object_types
+      all.collect(&:object_type).uniq.compact.sort
+    end
+
+    ###################################################
+
+    # TODO refactor to association has_many :used_meta_terms, :through ...
+    def used_term_ids
+      meta_data.collect(&:value).flatten.uniq.compact if object_type == "Meta::Term"
     end
 
     ###################################################

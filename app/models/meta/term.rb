@@ -24,23 +24,29 @@ module Meta
     ######################################################
 
     def is_used?
-      false #mongo# TODO self.class.used_ids.include?(self.id)
+      # OPTIMIZE use .exists?(conditions: {...}) ??
+      self.class.used_ids.include?(self.id)
     end
 
-=begin #mongo#  
     # TODO method cache
     def self.used_ids
+      # OPTIMIZE use map_reduce ??
       @used_ids ||= begin
-        ids = (MetaContext.all + MetaKeyDefinition.all).collect do |x|
+        ids = []
+        Meta::Context.all.each do |x|
+          #MetaKeyDefinition.all
           # TODO fetch id directly
-          [x.meta_field.label.try(:id), x.meta_field.description.try(:id), x.meta_field.hint.try(:id)]
+          ids += [x.label_id, x.description_id]
+          x.meta_definitions.each do |y|
+            ids += [y.label_id, y.description_id, y.hint_id]
+          end
         end
-        ids += MetaKey.for_meta_terms.collect(&:used_term_ids)
-        ids += Keyword.select(:meta_term_id).group(:meta_term_id).collect(&:meta_term_id)
+        #tmp# ids += Meta::Key.all.collect(&:meta_term_ids)
+        ids += Meta::Key.for_meta_terms.collect(&:used_term_ids)
+        #mongo# TODO ids += Keyword.select(:meta_term_id).group(:meta_term_id).collect(&:meta_term_id)
         ids.flatten.uniq.compact
       end
     end
-=end
   
     #########################################################
 
