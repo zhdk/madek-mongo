@@ -64,7 +64,7 @@ module Media
 
     embeds_many :meta_data, :class_name => "Meta::Datum" do # TODO validates_uniqueness :meta_key
       def get(key_id)
-        key_id = key_id.gsub(/[^a-z0-9]+/, ' ').strip.gsub(' ', '-') if Mongoid.parameterize_keys
+        key_id = key_id.identify
         r = where(:_id => key_id).first # OPTIMIZE prevent find if is_dynamic meta_key
         r ||= build(:_id => key_id)
       end
