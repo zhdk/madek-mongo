@@ -45,9 +45,13 @@
     .grid_9.alpha
       = form_tag update_multiple_resources_path, :method => :put do
         = hidden_field_tag 'media_entry_ids', @media_entries.map(&:id).join(',')
-        - meta_contexts = Meta::Context.default_contexts
-        - common_individual_contexts = @media_entries.map(&:individual_contexts).inject(&:&) # individual contexts common to all
-        - meta_contexts = (meta_contexts + common_individual_contexts).flatten
+        :ruby
+          meta_contexts = Meta::Context.default_contexts
+          common_individual_contexts = @media_entries.map(&:individual_contexts).inject(&:&) # individual contexts common to all
+          meta_contexts = (meta_contexts + common_individual_contexts).flatten
+          r = Media::Entry.compare_meta_data(@media_entries)
+          resource = instantiate_builder("resource", r, {})
+
         - content_for :buttons do
           %div{:class => "save_buttons"}
             = link_to _("Abbrechen"), :back, :class => "buttons"
@@ -58,7 +62,7 @@
             - meta_contexts.each do |meta_context|
               %li= link_to meta_context, "##{meta_context.name}" 
           - meta_contexts.each do |meta_context|
-            = render :partial => "edit_meta_data", :locals => { :resource => @media_entries, :context => meta_context }
+            = render :partial => "edit_meta_data", :locals => { :resource => resource, :context => meta_context }
 
         = yield :buttons
     .grid_3.omega
@@ -73,62 +77,42 @@
         %p{:style => "background: white; height: 30px ; border: 1px solid #ccc; padding: 4px;"} 
           %span.wert Text
         %p.info Gleiche Metadaten vorhanden.
-    .clear 
-    :plain    
-      <script type="text/x-jquery-tmpl" id="thumbnail_view">
-          <div class="thumb_box">
-            <a href="/media_entries/${id}">
-              <img src="${thumb_base64}">
-            </a>
-            <!-- <p>
-              <span class="item_title">${title}</span>
-              <span class="item_author">${author}</span>
-            </p> -->
-          </div>
-      </script>
-  
-      <script type="text/x-jquery-tmpl" id="list_view">
-            <tr>
-              <td>
-                <div class="thumb_mini">
-                  <a href="/media_entries/${id}">
-                    <img src="${thumb_base64}">
-                  </a>
-                </div>
-              </td> 
-              <td>
-                ${title}
-                <br />
-                ${author}
-              </td> 
-              <td>
-                ${portrayed_object_dates}
-              </td>
-              <td>
-                ${keywords}
-              </td>
-              <td>
-                ${copyright_notice}
-              </td>
-              <td>
-                ${uploaded_by}
-              </td>
-              <td>
-                ${uploaded_at}
-              </td>
-            </tr>
-      </script>
-   
+    .clear
+
+
+%script#thumbnail_view{:type => "text/x-jquery-tmpl"}
+  .thumb_box
+    %a{:href => "/resources/${id}"}
+      %img{:src => "${thumb_base64}"}
+
+%script#list_view{:type => "text/x-jquery-tmpl"}
+  %tr
+    %td
+      .thumb_mini
+        %a{:href => "/resources/${id}"}
+          %img{:src => "${thumb_base64}"}
+    %td
+      ${title}
+      %br
+      ${author}
+    %td
+      ${portrayed_object_dates}
+    %td
+      ${keywords}
+    %td
+      ${copyright_notice}
+    %td
+      ${uploaded_by}
+    %td
+      ${uploaded_at}
 
 :javascript
-
   $(document).ready(function () { 
     var data = #{@info_to_json};
     showListAsThumbnails();
     
     // by default
     $("input.keep").parents("li").addClass("different_values");
-    
     
     $('a#toggle').click(function() {
       if($("#list_as_thumbnails").is(":visible")) {

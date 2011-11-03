@@ -280,19 +280,15 @@ class ResourcesController < ApplicationController
     @info_to_json = @media_entries.as_json({:user => current_user, :ability => current_ability}).to_json
   end
 
-  #mongo# FIXME  
   def update_multiple
-    MediaEntry.suspended_delta do
-      @media_entries.each do |media_entry|
-        if media_entry.update_attributes(params[:resource], current_user)
-          flash[:notice] = "Die Änderungen wurden gespeichert." # TODO appending success message and resource reference (id, title)
-        else
-          flash[:error] = "Die Änderungen wurden nicht gespeichert." # TODO appending success message and resource reference (id, title)
-        end
+    @media_entries.each do |media_entry|
+      if media_entry.update_attributes(params[:resource], current_user)
+        flash[:notice] = "Die Änderungen wurden gespeichert." # TODO appending success message and resource reference (id, title)
+      else
+        flash[:error] = "Die Änderungen wurden nicht gespeichert." # TODO appending success message and resource reference (id, title)
       end
     end
-    
-    redirect_back_or_default(media_entries_path)
+    redirect_back_or_default(resources_path)
   end
   
   def edit_multiple_permissions

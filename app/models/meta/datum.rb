@@ -178,7 +178,7 @@ module Meta
             referenced_meta_term_ids = Keyword.where(:id => other_value).all.map(&:meta_term_id)
             deserialized_value.map(&:meta_term_id).uniq.sort.eql?(referenced_meta_term_ids.uniq.sort)
           else
-            value.uniq.sort.eql?(other_value.uniq.sort)
+            value.uniq.compact.sort.eql?(other_value.compact.uniq.sort)
           end
         when NilClass
           other_value.blank?

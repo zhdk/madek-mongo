@@ -148,18 +148,19 @@ module Media
 
     ########################################################
 
-    def self.compare_batch_by_meta_data_in_context(media_entries, context)
+    def self.compare_meta_data(media_entries)
       compared_against, other_entries = media_entries[0], media_entries[1..-1]
-      meta_data_for_context = compared_against.meta_data.for_context(context)
 
       new_blank_media_entry = self.new
-      meta_data_for_context.each do |md_bare|
-        if other_entries.any? {|me| not me.meta_data.get(md_bare[:_id]).same_value?(md_bare[:value])}
-          new_blank_media_entry.meta_data.build(:_id => md_bare[:_id], :value => nil, :keep_original_value => true)
+      compared_against.meta_data.each do |md_bare|
+        if other_entries.any? {|me| not me.meta_data.get(md_bare.id).same_value?(md_bare.value)}
+          new_blank_media_entry.meta_data.build(:_id => md_bare.id, :value => nil, :keep_original_value => true)
         else
-          new_blank_media_entry.meta_data.build(:_id => md_bare[:_id], :value => md_bare[:value])
+          new_md = new_blank_media_entry.meta_data.build(:_id => md_bare.id, :value => md_bare.value)
+          new_md.valid? # NOTE in order to set value
         end
       end
+
       new_blank_media_entry
     end
 
