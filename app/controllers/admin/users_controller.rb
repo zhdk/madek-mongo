@@ -19,7 +19,7 @@ class Admin::UsersController < Admin::AdminController
   def update
     groups = params[:user].delete(:groups_attributes)
     groups.each_pair do |key, group|
-      id = group[:id].to_i
+      id = group[:id]
       if group[:_destroy]
         @user.groups.delete(Group.find(id))
       elsif !@user.groups.collect(&:id).include?(id)
