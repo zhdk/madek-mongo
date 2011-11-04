@@ -2,8 +2,8 @@
 	%table
 		%tr
 			%th
-				MetaKey
-			- keys = MetaKey.order(:label)
+				Meta::Key
+			- keys = Meta::Key.order_by(:label)
 			- keys -= (@context.meta_keys - [@definition.meta_key])
 			%td{:colspan => 2}
 				= f.hidden_field :meta_context_id

@@ -22,6 +22,8 @@ module Media
     #wip#1 field :data, type: Hash, default: {}
     
     def set_data(meta_key, new_value)
+      return false if meta_key.nil?
+      
       #old# meta_data.create(:meta_key => meta_key, :value => new_value )
       h = {:meta_key => meta_key, :value => new_value}
       md = meta_data.where(:_id => meta_key.id).first

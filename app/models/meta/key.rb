@@ -3,7 +3,7 @@ module Meta
   class Key
     include Mongoid::Document
     
-    key :label
+    key :label # FIXME what happens to the references if the label changes ??
     field :label, type: String
     field :object_type, type: String #mongo# TODO
     field :is_dynamic, type: Boolean #, default: false #mongo# TODO
@@ -12,6 +12,7 @@ module Meta
     index :object_type
 
     has_and_belongs_to_many :meta_terms, class_name: "Meta::Term", inverse_of: :meta_keys # NOTE need inverse_of
+    accepts_nested_attributes_for :meta_terms, :reject_if => proc { |attributes| LANGUAGES.all? {|l| attributes[l].blank? } } #old# , :allow_destroy => true
     
     # Mongoid::Errors::MixedRelations: Referencing a(n) Meta::Datum document from the Meta::Key
     # document via a relational association is not allowed since the Meta::Datum is embedded.  

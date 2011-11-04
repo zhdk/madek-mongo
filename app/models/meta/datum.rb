@@ -75,6 +75,8 @@ module Meta
           mks = Array(@value).collect do |x|
             if x.is_a? String
               meta_keywords.where(:meta_term_id => x).first || meta_keywords.build(:meta_term => Meta::Term.for_s(x))
+            elsif x.is_a? Meta::Term
+              meta_keywords.build(:meta_term_id => x)
             else
               meta_keywords.build(x)
             end

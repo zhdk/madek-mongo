@@ -100,9 +100,9 @@ module Media
               # TODO priority ??
               case entry_key
                 when "Datum", "Datierung"
-                  meta_key = MetaKey.find_by_label("portrayed object dates")
+                  meta_key = Meta::Key.find_by_label("portrayed object dates")
                 when "Autor/in"
-                  meta_key = MetaKey.find_by_label("author")
+                  meta_key = Meta::Key.find_by_label("author")
                 else
                   next
               end

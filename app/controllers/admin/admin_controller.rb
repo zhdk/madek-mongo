@@ -8,8 +8,8 @@ class Admin::AdminController < ApplicationController
 ##############################################  
   private
   
+  # OPTIMIZE refactor to ability
   def group_required
-    # OPTIMIZE
     required_group = Group.find_or_create_by(:name => "Admin")
     unless current_user.groups.is_member?(required_group)
       flash[:error] = "The function you wish to use is only available to admin users"
