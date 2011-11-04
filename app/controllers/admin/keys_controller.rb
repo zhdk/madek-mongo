@@ -69,7 +69,9 @@ class Admin::KeysController < Admin::AdminController # TODO rename to Admin::Met
 #####################################################
 
   def mapping
-    @graph = Meta::Key.keymapping_graph
+    #tmp# @graph = Meta::Key.keymapping_graph
+    Meta::Key.keymapping_graph
+    @graph ="#{Rails.root}/app/assets/images/graphs/meta.svg"
     respond_to do |format|
       format.html
       format.js { render :layout => false }
