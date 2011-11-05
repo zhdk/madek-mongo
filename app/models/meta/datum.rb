@@ -81,7 +81,6 @@ module Meta
               meta_keywords.build(x)
             end
           end
-          #mongo# FIXME
           (meta_keywords - mks).each {|x| x.delete }
         when "Meta::Date" # TODO use Ruby Date directly ??
           klass = meta_key.object_type.constantize

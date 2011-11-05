@@ -100,12 +100,7 @@ class ResourcesController < ApplicationController
 
     respond_to do |format|
       format.html {
-        #mongo#
-        #if @resource.is_a? Snapshot
-        #  redirect_to snapshots_path
-        #else
-          redirect_to :action => :show
-        #end
+        redirect_to :action => :show
       }
     end
   end
