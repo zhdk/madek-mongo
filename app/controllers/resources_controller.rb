@@ -387,4 +387,53 @@ class ResourcesController < ApplicationController
     end
   end
 
+############################################################################################
+
+  # only for media_sets
+  def add_member
+    authorize! :read, @resource => Media::Resource
+    @media_set = @resource
+    if @media_set
+      new_members = 0 #temp#
+      #raise params[:media_entry_ids].inspect
+      if params[:media_entry_ids] && !(params[:media_entry_ids] == "null") #check for blank submission from select
+        ids = params[:media_entry_ids].is_a?(String) ? params[:media_entry_ids].split(",") : params[:media_entry_ids]
+        media_entries = Media::Entry.find(ids)
+
+        #mongo#old# new_members = @media_set.media_entries.push_uniq(media_entries)
+        new_members = 0
+        media_entries.each do |media_entry|
+          next if @media_set.media_resource_ids.include?(media_entry.id)
+          @media_set.media_resources << media_entry 
+          new_members += 1
+        end
+      end
+      flash[:notice] = if new_members > 1
+         "#{new_members} neue Medieneinträge wurden dem Set/Projekt #{@media_set.title} hinzugefügt" 
+      elsif new_members == 1
+        "Ein neuer Medieneintrag wurde dem Set/Projekt #{@media_set.title} hinzugefügt" 
+      else
+        "Es wurden keine neuen Medieneinträge hinzugefügt."
+      end
+      respond_to do |format|
+        format.html { 
+          unless params[:media_entry_ids] == "null" # check for blank submission of batch edit form.
+            redirect_to(@media_set) 
+          else
+            flash[:error] = "Keine Medieneinträge ausgewählt"
+            redirect_to @media_set
+          end
+          } # OPTIMIZE
+#temp3#
+#        format.js { 
+#          render :update do |page|
+#            page.replace_html 'flash', flash_content
+#          end
+#        }
+      end
+    else
+      @media_sets = @user.media_sets
+    end
+  end
+
 end

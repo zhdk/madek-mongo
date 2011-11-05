@@ -16,7 +16,7 @@
       = button_to _("Zugriffsberechtigungen editieren"), edit_multiple_permissions_resources_path, :method => :post
     %li.seperator.edit
     %li#batch-add-to-set.action_btn
-      = form_tag add_member_resource_url(@media_set || 1) do
+      = form_tag add_member_resource_url(@media_set || :media_set_id) do
         - editable_sets = Media::Set.accessible_by(current_ability, :update)
         = select_tag "media_set_id", options_for_select([["Set/Projekt auswählen…", ""]] + editable_sets.collect {|set| [set.title_and_user, set.id]})
         = submit_tag "Hinzufügen"

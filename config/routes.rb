@@ -50,7 +50,6 @@ MAdeKMongo::Application.routes.draw do
       get :to_snapshot # TODO post ??
       post :media_sets
       post :toggle_favorites
-      #working here#
       post :add_member
     end
   end

@@ -39,13 +39,17 @@ $(document).ready(function () {
      $("#batch-add-to-set form").submit();
    });
   
-    $("#batch-add-to-set form").submit(function() {
-      var editable_ids = new Array();
-      $("#selected_items .thumb_mini").each(function(i, elem){
-        editable_ids.push($(this).attr("rel"));
-      });
-      $(this).append("<input type='hidden' name='media_entry_ids' value='"+editable_ids+"'>");
-    });
+	$("#batch-add-to-set form").submit(function() {
+		var editable_ids = new Array();
+		$("#selected_items .thumb_mini").each(function(i, elem){
+			editable_ids.push($(this).attr("rel"));
+		});
+		$(this).append("<input type='hidden' name='media_entry_ids' value='"+editable_ids+"'>");
+		
+		var current_action = $(this).attr("action");
+		var new_action = current_action.replace('media_set_id', $(this).find("#media_set_id").val());
+		$(this).attr("action", new_action);
+	});
 
     $(".item_box:not(.tmp)").live({
       mouseenter: function() {
