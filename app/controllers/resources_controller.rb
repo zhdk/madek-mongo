@@ -242,8 +242,10 @@ class ResourcesController < ApplicationController
 ############################################################################################
 
   def keywords
-    @all_keywords = [] #mongo# TODO Keyword.select("*, COUNT(*) AS q").group(:meta_term_id).order("q DESC")
-    @my_keywords = [] #mongo# TODO Keyword.select("*, COUNT(*) AS q").where(:user_id => current_user).group(:meta_term_id).order("q DESC")
+    all_keywords = Meta::Keyword.group_by_meta_term_id
+    @all_keywords_sorted_by_quantity = all_keywords.sort{|a,b| b.q <=> a.q}
+    @all_keywords_sorted_by_created_at = all_keywords.sort{|a,b| b.created_at <=> a.created_at}
+    @my_keywords = Meta::Keyword.group_by_meta_term_id(current_user).sort{|a,b| b.q <=> a.q}
         
     respond_to do |format|
       format.html
