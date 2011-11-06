@@ -76,9 +76,9 @@ module Meta
             if x.is_a? String
               meta_keywords.where(:meta_term_id => x).first || meta_keywords.create(:meta_term => Meta::Term.for_s(x))
             elsif x.is_a? Meta::Term
-              meta_keywords.create(:meta_term_id => x)
+              meta_keywords.build(:meta_term_id => x)
             else
-              meta_keywords.create(x)
+              meta_keywords.build(x)
             end
           end
           (meta_keywords - mks).each {|x| x.delete }
