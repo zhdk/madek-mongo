@@ -154,8 +154,8 @@ module Meta
         when "Meta::Keyword"
           keywords = meta_datum.object.meta_keywords
           meta_term_ids = keywords.collect(&:meta_term_id)
-          all_grouped_keywords = [] #mongo TODO use ?? Meta::Keyword.group_by_meta_term_id
-          #mongo# FIXME 1 all_grouped_keywords = all_grouped_keywords.where(["meta_term_id NOT IN (?)", meta_term_ids]) unless meta_term_ids.empty?
+          all_grouped_keywords = Meta::Keyword.group_by_meta_term_id
+          all_grouped_keywords.delete_if {|k| meta_term_ids.include?(k.meta_term_id) } unless meta_term_ids.empty?
           all_options = keywords.collect {|x| {:label => x.to_s, :id => x.meta_term_id, :selected => true}}
           all_options += all_grouped_keywords.collect {|x| {:label => x.to_s, :id => x.meta_term_id, :selected => false}}
           all_options.sort! {|a,b| a[:label].downcase <=> b[:label].downcase}

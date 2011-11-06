@@ -49,8 +49,23 @@ module Meta
   
     #########################################################
 
+=begin
+    def self.for(x)
+      case x.class
+        when String
+          for_s(x)
+        when Hash
+        when Meta::Term
+          x
+        else
+          # do nothing
+      end
+    end
+=end
+
     def self.for_s(s)
-      r = Meta::Term.where(DEFAULT_LANGUAGE => s).first
+      r = Meta::Term.find(s) if BSON::ObjectId.legal?(s)
+      r ||= Meta::Term.where(DEFAULT_LANGUAGE => s).first
       r ||= begin
         r2 = nil
         LANGUAGES.each do |lang|

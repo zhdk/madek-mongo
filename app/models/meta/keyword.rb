@@ -50,7 +50,7 @@ module Meta
       k = Media::Resource.all.distinct("meta_data.meta_keywords")
       #k.uniq_by!{|x| x["meta_term_id"]}
       k.keep_if {|h| h["subject_id"].to_s == subject.id } if subject
-      k.delete_if {|h| h["created_at"].nil? } #mongo# FIXME 2 a created_at should always be present 
+      k.delete_if {|h| h["created_at"].nil? } # a keyword always has the created_at, a normal term doesn't 
       gk = k.group_by{|x| x["meta_term_id"]}
       keywords = []
       gk.each_value do |v|
