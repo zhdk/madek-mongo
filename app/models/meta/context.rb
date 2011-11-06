@@ -38,6 +38,31 @@ module Meta
     
     #########################################################
 
+=begin
+    def label=(h)
+      binding.pry
+      #@label = Meta::Term.for(h)
+    end
+
+    def description=(h)
+      binding.pry
+      #@description = Meta::Term.for(h)      
+    end
+=end
+
+    def update_attributes_with_pre(new_attributes)
+      if(label = new_attributes.delete(:label))
+        self.label = Meta::Term.for(label) 
+      end
+      if(description = new_attributes.delete(:description))
+        self.description = Meta::Term.for(description) 
+      end
+      update_attributes_without_pre(new_attributes)
+    end
+    alias_method_chain :update_attributes, :pre
+
+    #########################################################
+
     def to_s
       "#{label}"
     end

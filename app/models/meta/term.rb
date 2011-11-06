@@ -49,19 +49,22 @@ module Meta
   
     #########################################################
 
+    def self.for(h)
 =begin
-    def self.for(x)
-      case x.class
+      case h.class 
         when String
-          for_s(x)
-        when Hash
+          for_s(h)
+        when Hash, HashWithIndifferentAccess
         when Meta::Term
-          x
+          h
         else
           # do nothing
       end
-    end
 =end
+      if h.is_a?(Hash) and !h.values.join.blank?
+        find_or_create_by(h)
+      end
+    end
 
     def self.for_s(s)
       r = Meta::Term.find(s) if BSON::ObjectId.legal?(s)
