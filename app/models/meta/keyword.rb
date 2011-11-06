@@ -41,9 +41,12 @@ module Meta
       r ? r["value"].to_i : 0
     end
     
+    def self.used_meta_term_ids
+      Media::Resource.all.distinct("meta_data.meta_keywords.meta_term_id") #.map{|id| Meta::Term.find(id).to_s}
+    end
+    
     def self.group_by_meta_term_id(subject = false)
       #tmp# collection.group(:key => :meta_term_id, :initial => {:count => 0}, :reduce => "function(doc, prev){}")
-      #Media::Resource.all.distinct("meta_data.meta_keywords.meta_term_id") #.map{|id| Meta::Term.find(id).to_s}
       k = Media::Resource.all.distinct("meta_data.meta_keywords")
       #k.uniq_by!{|x| x["meta_term_id"]}
       k.keep_if {|h| h["subject_id"].to_s == subject.id } if subject

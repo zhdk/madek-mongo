@@ -56,7 +56,7 @@ module Media
     
     # OPTIMIZE
     def individual_contexts
-      media_sets.collect {|project| project.individual_contexts }.flatten.uniq
+      media_sets.flat_map {|project| project.individual_contexts }.uniq
     end
 
     ########################################################

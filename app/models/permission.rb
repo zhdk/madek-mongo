@@ -18,10 +18,10 @@ class Permission
   end
 
   def subject_ids
-    ACTIONS.map do |key|
+    ACTIONS.flat_map do |key|
       send("#{key}=", {"true" => [], "false" => []}) unless send(key)
       send(key)["true"] + send(key)["false"]
-    end.flatten.uniq
+    end.uniq
   end
 
   ##########################################
@@ -78,7 +78,7 @@ class Permission
                                "Person" => [],
                                "Group" => [] }
 
-      all_subjects = permissions.map(&:subject_ids).flatten.uniq
+      all_subjects = permissions.flat_map(&:subject_ids).uniq
       all_subjects.each do |subject_id|
         if subject_id == :public
           ACTIONS.each do |key|

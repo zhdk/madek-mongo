@@ -21,13 +21,13 @@ module Meta
     #mongo# OPTIMIZE
     def meta_data
       #tmp# media_resources.collect(&:meta_data).flatten.select{|md| md.meta_key_id == id}
-      media_resources.fields(:meta_data => 1).collect{|mr| mr.meta_data.where(:_id => id) }.flatten
+      media_resources.fields(:meta_data => 1).flat_map{|mr| mr.meta_data.where(:_id => id) }
     end
 
     has_many :meta_contexts, class_name: "Meta::Context", foreign_key: "meta_definitions.meta_key_id"
     #mongo# OPTIMIZE
     def meta_definitions
-      meta_contexts.fields(:meta_definitions => 1).collect{|mc| mc.meta_definitions.where(:meta_key_id => id) }.flatten
+      meta_contexts.fields(:meta_definitions => 1).flat_map{|mc| mc.meta_definitions.where(:meta_key_id => id) }
     end
 
     ########################################################
@@ -41,7 +41,6 @@ module Meta
     end
 
     def all_context_labels
-      #meta_key_definitions.collect {|d| "#{d.meta_context}: #{d.meta_field.label}" if d.key_map.blank? }.compact.join(', ')
       meta_definitions.collect {|d| d.label if d.key_map.blank? }.compact.uniq.join(', ')
     end
 
@@ -80,14 +79,7 @@ module Meta
       if mk.nil?
         mk = Meta::Key.find_or_create_by(:label => entry_name)
         mc = Meta::Context.io_interface
-  
-        # Would be nice to build some useful info into the meta_field for this new creation.. but we know nothing about it apart from its namespace:tagname
-        meta_field = { :label => {:en_GB => "", :de_CH => ""},
-                       :description => {:en_GB => "", :de_CH => ""}
-                     }
-
         mc.meta_definitions.create( :meta_key => mk,
-                                    :meta_field => meta_field,
                                     :key_map => key_map,
                                     :key_map_type => nil,
                                     :position => mc.meta_definitions.map(&:position).max + 1 )
@@ -103,7 +95,7 @@ module Meta
 
     # TODO refactor to association has_many :used_meta_terms, :through ...
     def used_term_ids
-      meta_data.collect(&:value).flatten.uniq.compact if object_type == "Meta::Term"
+      meta_data.flat_map(&:value).map(&:_id).uniq.compact if object_type == "Meta::Term"
     end
 
     ###################################################
