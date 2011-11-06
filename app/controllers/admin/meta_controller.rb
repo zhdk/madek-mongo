@@ -4,7 +4,9 @@ class Admin::MetaController < Admin::AdminController
   def import
     @buffer = []
     if request.post? and params[:uploaded_data]
-      ActiveRecord::Base.transaction do
+      #mongo# TODO atomic # ActiveRecord::Base.transaction do
+
+=begin #mongo#
         ###################################################
         # collect existing meta_data references
         @meta_data = {}
@@ -33,50 +35,56 @@ class Admin::MetaController < Admin::AdminController
         end
         
         Meta::Datum.update_all("meta_key_id = (meta_key_id * -1)")
+=end
   
         ###################################################
         # core meta import
-        meta = YAML.load(params[:uploaded_data])
+        meta = JSON.parse(params[:uploaded_data].read)
         
-        if meta[:meta_terms] and meta[:meta_keys] and meta[:meta_contexts] and meta[:meta_definitions]   
+        #mongo# if meta[:meta_terms] and meta[:meta_keys] and meta[:meta_contexts] and meta[:meta_definitions]   
     
-          [Meta::Key, MetaContext, MetaKeyDefinition, Meta::Term, UsageTerm].each {|a| a.destroy_all }
+          #mongo#tmp# [Meta::Key, Meta::Context, Meta::Term, Meta::Copyright, UsageTerm].each {|a| a.destroy_all }
     
-          meta[:meta_terms].each do |term|
+          meta["meta_terms"].each do |term|
             k = Meta::Term.new(term)
             k.id = term["id"]
             k.save
-#            @buffer << k.inspect
+            @buffer << k.inspect
           end
     
-          meta[:meta_keys].each do |meta_key|
+          meta["meta_keys"].each do |meta_key|
             meta_terms = meta_key.delete("meta_terms")
             k = Meta::Key.new(meta_key)
             k.id = meta_key["id"]
             k.save
             k.meta_terms << Meta::Term.find(meta_terms) if meta_terms
-#            @buffer << k.inspect
+           @buffer << k.inspect
           end
     
-          meta[:meta_contexts].each do |meta_context|
-            k = MetaContext.new(meta_context)
+          meta["meta_contexts"].each do |meta_context|
+            k = Meta::Context.new(meta_context)
             k.id = meta_context["id"]
             k.save
-#            @buffer << k.inspect
+           @buffer << k.inspect
           end
     
-          meta[:meta_definitions].each do |meta_key_definition|
-            k = MetaKeyDefinition.new(meta_key_definition)
-            k.id = meta_key_definition["id"]
-            k.save
-#            @buffer << k.inspect
-          end
+          # meta[:meta_definitions].each do |meta_key_definition|
+            # k = MetaKeyDefinition.new(meta_key_definition)
+            # k.id = meta_key_definition["id"]
+            # k.save
+           # @buffer << k.inspect
+          # end
 
-          k = UsageTerm.new(meta[:usage_terms])
-          k.id = meta[:usage_terms]["id"]
-          k.save
-        end
-  
+          meta["usage_terms"].each do |usage_term|
+            k = UsageTerm.new(usage_term)
+            k.id = usage_term["id"]
+            k.save
+           @buffer << k.inspect
+          end
+    
+        #mongo# end
+
+=begin #mongo#
         ###################################################
         # re-reference existing meta_data
   
@@ -118,14 +126,15 @@ class Admin::MetaController < Admin::AdminController
           @buffer << `rake ts:reindex`
           @buffer << "--- Import completed successfully ---"
         end
-        
-      end
+=end        
+      #mongo# atomic # end
     end
   end
 
   def export
       h = {}
 
+=begin
       h[:meta_terms] = Meta::Term.all.collect(&:attributes)
 
       h[:meta_keys] = Meta::Key.all.collect do |meta_key|
@@ -158,8 +167,15 @@ class Admin::MetaController < Admin::AdminController
 #      h[:copyrights] = Copyright.all.collect(&:attributes)
 
       h[:usage_terms] = UsageTerm.current.attributes
+=end
 
-      send_data h.to_yaml, :filename => "meta.yml", :type => :yaml
+      h[:meta_terms] = Meta::Term.all.as_json
+      h[:meta_keys] = Meta::Key.all.as_json
+      h[:meta_contexts] = Meta::Context.all.as_json
+      h[:meta_copyrights] = Meta::Copyright.all.as_json
+      h[:usage_terms] = UsageTerm.all.as_json
+
+      send_data h.to_json, :filename => "meta.json", :type => :json
   end
 
 end
