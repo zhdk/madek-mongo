@@ -43,7 +43,7 @@ class Admin::MetaController < Admin::AdminController
         
         #mongo# if meta[:meta_terms] and meta[:meta_keys] and meta[:meta_contexts] and meta[:meta_definitions]   
     
-          #mongo#tmp# [Meta::Key, Meta::Context, Meta::Term, Meta::Copyright, UsageTerm].each {|a| a.destroy_all }
+          [Meta::Key, Meta::Context, Meta::Term, Meta::Copyright, UsageTerm].each {|a| a.destroy_all }
     
           meta["meta_terms"].each do |term|
             k = Meta::Term.new(term)
