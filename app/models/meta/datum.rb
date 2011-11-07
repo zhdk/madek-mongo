@@ -10,6 +10,8 @@ module Meta
     embeds_many :meta_references, class_name: "Meta::Reference" #mongo# TODO merge meta_keywords into meta_references
     embeds_many :meta_dates, class_name: "Meta::Date"
 
+    attr_accessor :keep_original_value
+
     #########################################################
     
     #wip#2
@@ -56,14 +58,18 @@ module Meta
             meta_references.build(:reference => x)
           end
         when "Person"
+          #mongo# OPTIMIZE
+          meta_references.delete_all
           klass = meta_key.object_type.constantize
           Array(@value).each do |x|
-            if x.is_a? String
+            if BSON::ObjectId.legal?(x)
+              x = klass.find(x)
+            elsif x.is_a? String
               #@value = klass.split(Array(@value))
               firstname, lastname = klass.parse(x)
               x = klass.find_or_create_by(:firstname => firstname.try(:capitalize), :lastname => lastname.try(:capitalize)) if firstname or lastname
             end
-            meta_references.build(:reference => x)
+            meta_references.build(:reference => x) #mongo# FIXME 1 create ??
           end
         when "Meta::Term"
           Array(@value).each do |x|
@@ -72,12 +78,13 @@ module Meta
         when "Meta::Keyword"
           mks = Array(@value).collect do |x|
             if x.is_a? String
-              meta_keywords.where(:meta_term_id => x).first || meta_keywords.build(:meta_term => Meta::Term.for_s(x))
+              meta_keywords.where(:meta_term_id => x).first || meta_keywords.build(:meta_term => Meta::Term.for_s(x)) #mongo# FIXME 1
+            elsif x.is_a? Meta::Term
+              meta_keywords.build(:meta_term_id => x)
             else
               meta_keywords.build(x)
             end
           end
-          #mongo# FIXME
           (meta_keywords - mks).each {|x| x.delete }
         when "Meta::Date" # TODO use Ruby Date directly ??
           klass = meta_key.object_type.constantize
@@ -178,7 +185,7 @@ module Meta
             referenced_meta_term_ids = Keyword.where(:id => other_value).all.map(&:meta_term_id)
             deserialized_value.map(&:meta_term_id).uniq.sort.eql?(referenced_meta_term_ids.uniq.sort)
           else
-            value.uniq.sort.eql?(other_value.uniq.sort)
+            value.uniq.compact.sort.eql?(other_value.compact.uniq.sort)
           end
         when NilClass
           other_value.blank?

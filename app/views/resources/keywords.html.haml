@@ -4,7 +4,7 @@
     %li= link_to _("Beliebteste"), "#tabs_2"
     %li= link_to _("Neueste"), "#tabs_3"
 	
-  - [@my_keywords, @all_keywords, @all_keywords.sort{|a,b| b.created_at <=> a.created_at}].each_with_index do |keywords, index|
+  - [@my_keywords, @all_keywords_sorted_by_quantity, @all_keywords_sorted_by_created_at].each_with_index do |keywords, index|
     %ul.holder.all{:id => "tabs_#{index+1}", :style => "background-color: white; max-height: 20em; padding: 1.3em 0.3em 1em 0.3em; overflow-y: auto;"}
       - keywords.each do |k|
         %li.bit-box{:title => "#{k}", :rel => "#{k.meta_term_id}"}

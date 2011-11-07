@@ -22,11 +22,11 @@
             = _("extensible list")
         %td= key.is_dynamic
         %td
-          - if key.meta_terms
+          - unless key.meta_term_ids.blank?
             %ul
               - key.meta_terms.each do |term|
                 %li= term.to_s
         %td.with_actions
           = link_to _("Edit"), edit_admin_key_path(key), :class => "buttons", :remote => true, :"data-type" => "html"
           %br
-          = link_to _("Delete"), admin_key_path(key), :class => "buttons", :method => :delete, :confirm => _("Sind Sie sicher?") if key.meta_definitions.empty?
+          = link_to _("Delete"), admin_key_path(key), :class => "buttons", :method => :delete, :confirm => _("Sind Sie sicher?") if key.meta_contexts.empty?

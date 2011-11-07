@@ -41,6 +41,12 @@ module Meta
         definition = context.meta_definitions.where(:meta_key_id => meta_datum._id).first
         h[definition.label] = formatted_value(meta_datum) 
       end
+      if resource.is_a? Media::Set
+        uploaded_by = resource.meta_data.get("uploaded by")
+        uploaded_at = resource.meta_data.get("uploaded at")
+        h[_("Erstellt von/am")] = formatted_value_for_people(Array(uploaded_by.value)) + " / " + formatted_value(uploaded_at)
+        h[_("Verwaltet durch")] = formatted_value_for_people(resource.managers)
+      end
       display_meta_data_helper(context, h)
     end
     
@@ -66,6 +72,17 @@ module Meta
     end
 
     #####################################################################################
+
+    def formatted_value_for_people(people)
+      capture_haml do
+        s = people.map do |p|
+          next unless p
+          #temp# link_to p, p
+          link_to p, resources_path(:query => p.name)
+        end
+        haml_concat raw s.join('<br />')
+      end
+    end
 
     # TODO merge with Meta::Datum#to_s ?? or Decorator (gem 'draper') ??
     def formatted_value(meta_datum)
@@ -143,19 +160,19 @@ module Meta
       case meta_key.object_type.constantize.name
         when "Meta::Department"
           selected = Array(meta_datum.object.value)
-          all_options = Meta::Department.all.collect {|x| {:label => x.to_s, :id => x.id, :selected => selected.include?(x.id)} }
+          all_options = Meta::Department.all.collect {|x| {:label => x.to_s, :id => x.id, :selected => selected.include?(x)} }
         when "Meta::Term"
           selected = Array(meta_datum.object.value)
-          all_options = meta_key.meta_terms.collect {|x| {:label => x.to_s, :id => x.id, :selected => selected.include?(x.id)}}
+          all_options = meta_key.meta_terms.collect {|x| {:label => x.to_s, :id => x.id, :selected => selected.include?(x)}}
         when "Person"
           selected = Array(meta_datum.object.value)
           @people ||= meta_key.object_type.constantize.with_media_entries
-          all_options = @people.collect {|x| {:label => x.to_s, :id => x.id, :selected => selected.include?(x.id)}}
+          all_options = @people.collect {|x| {:label => x.to_s, :id => x.id, :selected => selected.include?(x)}}
         when "Meta::Keyword"
           keywords = meta_datum.object.meta_keywords
           meta_term_ids = keywords.collect(&:meta_term_id)
           all_grouped_keywords = Meta::Keyword.group_by_meta_term_id
-          #mongo# TODO all_grouped_keywords = all_grouped_keywords.where(["meta_term_id NOT IN (?)", meta_term_ids]) unless meta_term_ids.empty?
+          all_grouped_keywords.delete_if {|k| meta_term_ids.include?(k.meta_term_id) } unless meta_term_ids.empty?
           all_options = keywords.collect {|x| {:label => x.to_s, :id => x.meta_term_id, :selected => true}}
           all_options += all_grouped_keywords.collect {|x| {:label => x.to_s, :id => x.meta_term_id, :selected => false}}
           all_options.sort! {|a,b| a[:label].downcase <=> b[:label].downcase}

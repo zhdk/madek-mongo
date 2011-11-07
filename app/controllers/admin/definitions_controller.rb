@@ -19,7 +19,7 @@ class Admin::DefinitionsController < Admin::AdminController
 
   def create
     # OPTIMIZE define position on MetaKeyDefinition#before_save
-    @context.meta_definitions.create(params[:meta_key_definition].merge(:position => @context.next_position))
+    @context.meta_definitions.create(params[:meta_definition]) #mongo# .merge(:position => @context.next_position))
     redirect_to admin_contexts_path
   end
 
@@ -30,7 +30,7 @@ class Admin::DefinitionsController < Admin::AdminController
   end
 
   def update
-    @definition.update_attributes(params[:meta_key_definition])
+    @definition.update_attributes(params[:meta_definition])
     redirect_to admin_contexts_path
   end
 

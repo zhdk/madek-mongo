@@ -1,0 +1,41 @@
+- n = Time.now.to_i
+
+.tabs.small{:style => "padding:10px; background-color: white;"}
+  %ul
+    %li= link_to _("Person"), "#new_person_#{n}"
+    %li= link_to _("Gruppe"), "#new_group_#{n}"
+
+  = form_for @person, :remote => true, :html => {:id => "new_person_#{n}", :"data-type" => :json } do |f|
+    = icon_tag("icon_person")
+    %ul
+      = f.label :lastname, "Nachname:"
+      = f.text_field :lastname
+      %br
+      = f.label :firstname, "Vorname:"
+      = f.text_field :firstname
+      %br
+      = f.label :pseudonym, "Pseudonym:"
+      = f.text_field :pseudonym
+      %br
+    = f.submit _("Personendaten einfügen")
+
+  = form_for Person.new(:is_group => true), :remote => true, :html => {:id => "new_group_#{n}", :"data-type" => :json} do |f|
+    = icon_tag("icon_group")
+    = f.hidden_field :is_group
+    %ul
+      = f.label :firstname, "Name:"
+      = f.text_field :firstname
+      %br
+    = f.submit _("Gruppendaten einfügen")
+
+:javascript
+  $(document).ready(function(){
+    // TODO already in application.js, use live()
+    $(".tabs").tabs({ cache: true,
+                      add: function(event, ui) {
+                        $(this).tabs('select', ui.index);
+                      },
+                      fx: { opacity: 'toggle' },
+                      ajaxOptions: { dataType: 'html' }
+    });
+  });

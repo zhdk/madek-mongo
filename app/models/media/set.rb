@@ -65,7 +65,7 @@ module Media
     def abstract(current_ability, min_media_entries = nil)
       min_media_entries ||= media_entries.count.to_f * 50 / 100
       #old# meta_key_ids = individual_contexts.map(&:meta_key_ids).flatten
-      meta_key_ids = individual_contexts.map{|ic| ic.meta_keys(true).map(&:id) }.flatten
+      meta_key_ids = individual_contexts.flat_map{|ic| ic.meta_keys(true).flat_map(&:id) }
       h = {} #1005# TODO upgrade to Ruby 1.9 and use ActiveSupport::OrderedHash.new
 
       media_resources.accessible_by(current_ability).each do |r|
@@ -86,10 +86,10 @@ module Media
     end
 
     def used_meta_terms(current_ability)
-      meta_key_ids = individual_contexts.map{|ic| ic.meta_keys(true).map(&:id) }.flatten
-      media_resources.accessible_by(current_ability).map do |r|
-        r.meta_data.where(:_id.in => meta_key_ids).map(&:meta_keywords)
-      end.flatten.uniq.compact.map(&:meta_term)
+      meta_key_ids = individual_contexts.flat_map{|ic| ic.meta_keys(true).flat_map(&:id) }
+      media_resources.accessible_by(current_ability).flat_map do |r|
+        r.meta_data.where(:_id.in => meta_key_ids).flat_map(&:meta_keywords)
+      end.compact.map(&:meta_term).uniq
     end
 
     ########################################################

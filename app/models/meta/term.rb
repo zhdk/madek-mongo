@@ -13,7 +13,7 @@ module Meta
 
     has_many :media_resources, class_name: "Media::Resource", foreign_key: "meta_data.meta_keywords.meta_term_id"
     def meta_data
-      media_resources.collect(&:meta_data).flatten.select{|md| md.meta_keywords.any? {|x| x.meta_term_id == id }}
+      media_resources.flat_map(&:meta_data).select{|md| md.meta_keywords.any? {|x| x.meta_term_id == id }}
     end
 
     def to_s(lang = nil)
@@ -41,17 +41,34 @@ module Meta
             ids += [y.label_id, y.description_id, y.hint_id]
           end
         end
-        #tmp# ids += Meta::Key.all.collect(&:meta_term_ids)
-        ids += Meta::Key.for_meta_terms.collect(&:used_term_ids)
-        #mongo# TODO ids += Keyword.select(:meta_term_id).group(:meta_term_id).collect(&:meta_term_id)
+        ids += Meta::Key.for_meta_terms.flat_map(&:used_term_ids)
+        ids += Meta::Keyword.used_meta_term_ids
         ids.flatten.uniq.compact
       end
     end
   
     #########################################################
 
+    def self.for(h)
+=begin
+      case h.class 
+        when String
+          for_s(h)
+        when Hash, HashWithIndifferentAccess
+        when Meta::Term
+          h
+        else
+          # do nothing
+      end
+=end
+      if h.is_a?(Hash) and !h.values.join.blank?
+        find_or_create_by(h)
+      end
+    end
+
     def self.for_s(s)
-      r = Meta::Term.where(DEFAULT_LANGUAGE => s).first
+      r = Meta::Term.find(s) if BSON::ObjectId.legal?(s)
+      r ||= Meta::Term.where(DEFAULT_LANGUAGE => s).first
       r ||= begin
         r2 = nil
         LANGUAGES.each do |lang|

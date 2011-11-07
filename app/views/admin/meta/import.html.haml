@@ -1,0 +1,10 @@
+= form_tag import_admin_meta_path, :multipart => true do
+  %label
+    Json auswählen...
+  = file_field_tag "uploaded_data", :multiple => false
+  %br
+  = submit_tag _("Import") + " »"
+
+%ul
+  - @buffer.each do |b|
+    %li= b

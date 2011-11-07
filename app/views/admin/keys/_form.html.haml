@@ -20,7 +20,6 @@
           %ul.sortable
             - f.object.meta_terms.build
             = f.fields_for :meta_terms do |term_f|
-              -#mongo# FIXME
               %li{:style => "padding-bottom: 1em;", :id => (term_f.object.new_record? ? nil : "position_#{term_f.object.id}")}
                 - unless term_f.object.new_record?
                   = term_f.hidden_field :id # NOTE placeholder for the hidden id used by fields_for

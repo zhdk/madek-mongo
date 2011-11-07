@@ -22,6 +22,8 @@ module Media
     #wip#1 field :data, type: Hash, default: {}
     
     def set_data(meta_key, new_value)
+      return false if meta_key.nil?
+
       #old# meta_data.create(:meta_key => meta_key, :value => new_value )
       h = {:meta_key => meta_key, :value => new_value}
       md = meta_data.where(:_id => meta_key.id).first
@@ -29,8 +31,9 @@ module Media
         if new_value.blank?
           md.delete
         else
-          #old# md.attributes = h
-          md.update_attributes(h)
+          #loop!# md.update_attributes(h)
+          md.attributes = h
+          #loop!# md.save
         end
       else
         meta_data.create(h) unless new_value.blank?
@@ -213,7 +216,7 @@ module Media
 
     #mongo# TODO validates presence of the owner's permissions?
     def owner
-      Person.where(:_id.in => permission.manage_permissions["true"]).first
+      managers.first
     end
     alias :user :owner
 
@@ -223,6 +226,10 @@ module Media
       actions.each_pair do |action, boolean|
         permission.send((boolean.to_s == "true" ? :grant : :deny), {action => user}) 
       end
+    end
+    
+    def managers
+      Person.where(:_id.in => permission.manage_permissions["true"])
     end
 
     #########################################################

@@ -39,15 +39,16 @@ class Admin::KeysController < Admin::AdminController # TODO rename to Admin::Met
 
     if params[:term_positions]
       positions = CGI.parse(params[:term_positions])["position[]"]
-      positions.each_with_index do |id, i|
-        # meta_terms_attributes.values.detect{|x| x[:id].to_i == id.to_i}[:position] = i+1
-        @key.meta_key_meta_terms.where(:meta_term_id => id).first.update_attributes(:position => i+1)
-      end
+      #mongo# FIXME
+      #positions.each_with_index do |id, i|
+      #  @key.meta_key_meta_terms.where(:meta_term_id => id).first.update_attributes(:position => i+1)
+      #end
+      #mongo#tmp# @key.meta_terms = positions.map {|id| @key.meta_terms.detect {|mt| mt.id.to_s == id} }
     end
 
     meta_terms_attributes.each_value do |h|
       if h[:id].nil? and LANGUAGES.any? {|l| not h[l].blank? }
-        term = Meta::Term.find_or_create_by_en_GB_and_de_CH(h)
+        term = Meta::Term.find_or_create_by(h)
         @key.meta_terms << term
         #old??# h[:id] = term.id
       elsif h[:_destroy].to_i == 1
@@ -68,7 +69,9 @@ class Admin::KeysController < Admin::AdminController # TODO rename to Admin::Met
 #####################################################
 
   def mapping
-    @graph = Meta::Key.keymapping_graph
+    #tmp# @graph = Meta::Key.keymapping_graph
+    Meta::Key.keymapping_graph
+    @graph ="#{Rails.root}/app/assets/images/graphs/meta.svg"
     respond_to do |format|
       format.html
       format.js { render :layout => false }

@@ -6,7 +6,7 @@
         %br
         = "Label: #{@context.label}"
         %br
-        != "Description: #{simple_format(@context.description)}"
+        = "Description: #{@context.description}" #mongo#tmo# != "Description: #{simple_format(@context.description)}"
         %br
         = "#{_("For user interface")}: #{@context.is_user_interface?}"
       %td{:colspan => 2, :style => "text-align: right; white-space: nowrap;"}

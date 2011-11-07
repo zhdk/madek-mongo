@@ -41,9 +41,25 @@ module Meta
       r ? r["value"].to_i : 0
     end
     
-    def self.group_by_meta_term_id
-      #mongo# collection.group(:key => :meta_term_id, :initial => {:count => 0}, :reduce => "function(doc, prev){}")
-      []
+    def self.used_meta_term_ids
+      Media::Resource.all.distinct("meta_data.meta_keywords.meta_term_id") #.map{|id| Meta::Term.find(id).to_s}
+    end
+    
+    def self.group_by_meta_term_id(subject = false)
+      #tmp# collection.group(:key => :meta_term_id, :initial => {:count => 0}, :reduce => "function(doc, prev){}")
+      k = Media::Resource.all.distinct("meta_data.meta_keywords")
+      #k.uniq_by!{|x| x["meta_term_id"]}
+      k.keep_if {|h| h["subject_id"].to_s == subject.id } if subject
+      k.delete_if {|h| h["created_at"].nil? } # a keyword always has the created_at, a normal term doesn't 
+      gk = k.group_by{|x| x["meta_term_id"]}
+      keywords = []
+      gk.each_value do |v|
+        most_recent = v.sort_by {|h| h["created_at"]}.last
+        keywords << Meta::Keyword.new(most_recent) do |x|
+          x[:q] = v.size
+        end
+      end
+      keywords
     end
 
   end

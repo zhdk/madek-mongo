@@ -18,7 +18,7 @@
           - if @can_edit_set
             = display_edit_icon(set, current_user)
             = display_delete_icon(set, current_user)
-        =#mongo# TODO render :partial => "media_entries/browsing"
+        = render :partial => "media/entries/browsing"
       .grid_9
         #detail_specification.tabs
           %ul
@@ -54,12 +54,13 @@
     %span= "#{@results[:pagination][:total_entries]} von #{set.media_resources.count} Medieneinträge für Sie sichtbar"
   .clear
   
-  =#mongo# TODO ?? render :partial => "resources/index"
-  = render :partial => "resources/templates"
+  =#tmp# render :partial => "resources/templates"
+  = render :partial => "resources/batch_bar"
   #results
 
 :javascript
   $(document).ready(function () {
-    display_results(#{@results.to_json});
-    //#mongo# TODO setupBatch(#{@results.to_json}, #{set.id}, #{set.media_resource_ids.to_json});
+    //tmp// display_results(#{@results.to_json});
+    //tmp// setupBatch(#{@results.to_json}, #{set.id}, #{set.media_resource_ids.to_json});
+    setupBatch(#{@results.to_json});
   });

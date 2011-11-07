@@ -34,7 +34,7 @@ class Admin::GroupsController < Admin::AdminController
   end
 
   def destroy
-    @group.destroy if @group.users.empty?
+    @group.destroy if @group.people.empty?
     redirect_to admin_groups_path
   end
 

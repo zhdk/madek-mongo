@@ -100,12 +100,7 @@ class ResourcesController < ApplicationController
 
     respond_to do |format|
       format.html {
-        #mongo#
-        #if @resource.is_a? Snapshot
-        #  redirect_to snapshots_path
-        #else
-          redirect_to :action => :show
-        #end
+        redirect_to :action => :show
       }
     end
   end
@@ -242,8 +237,10 @@ class ResourcesController < ApplicationController
 ############################################################################################
 
   def keywords
-    @all_keywords = [] #mongo# TODO Keyword.select("*, COUNT(*) AS q").group(:meta_term_id).order("q DESC")
-    @my_keywords = [] #mongo# TODO Keyword.select("*, COUNT(*) AS q").where(:user_id => current_user).group(:meta_term_id).order("q DESC")
+    all_keywords = Meta::Keyword.group_by_meta_term_id
+    @all_keywords_sorted_by_quantity = all_keywords.sort{|a,b| b.q <=> a.q}
+    @all_keywords_sorted_by_created_at = all_keywords.sort{|a,b| b.created_at <=> a.created_at}
+    @my_keywords = Meta::Keyword.group_by_meta_term_id(current_user).sort{|a,b| b.q <=> a.q}
         
     respond_to do |format|
       format.html
@@ -280,19 +277,18 @@ class ResourcesController < ApplicationController
     @info_to_json = @media_entries.as_json({:user => current_user, :ability => current_ability}).to_json
   end
 
-  #mongo# FIXME  
   def update_multiple
-    MediaEntry.suspended_delta do
-      @media_entries.each do |media_entry|
-        if media_entry.update_attributes(params[:resource], current_user)
-          flash[:notice] = "Die Änderungen wurden gespeichert." # TODO appending success message and resource reference (id, title)
-        else
-          flash[:error] = "Die Änderungen wurden nicht gespeichert." # TODO appending success message and resource reference (id, title)
-        end
+    # To avoid overriding at batch update: remove from attribute hash if :keep_original_value and value is blank
+    params[:resource][:meta_data_attributes].delete_if { |key, attr| attr[:keep_original_value] and attr[:value].blank? }
+
+    @media_entries.each do |media_entry|
+      if media_entry.update_attributes(params[:resource], current_user)
+        flash[:notice] = "Die Änderungen wurden gespeichert." # TODO appending success message and resource reference (id, title)
+      else
+        flash[:error] = "Die Änderungen wurden nicht gespeichert." # TODO appending success message and resource reference (id, title)
       end
     end
-    
-    redirect_back_or_default(media_entries_path)
+    redirect_back_or_default(resources_path)
   end
   
   def edit_multiple_permissions
@@ -385,6 +381,55 @@ class ResourcesController < ApplicationController
     authorize! :read, @resource => Media::Resource
     respond_to do |format|
       format.js { render :layout => false }
+    end
+  end
+
+############################################################################################
+
+  # only for media_sets
+  def add_member
+    authorize! :read, @resource => Media::Resource
+    @media_set = @resource
+    if @media_set
+      new_members = 0 #temp#
+      #raise params[:media_entry_ids].inspect
+      if params[:media_entry_ids] && !(params[:media_entry_ids] == "null") #check for blank submission from select
+        ids = params[:media_entry_ids].is_a?(String) ? params[:media_entry_ids].split(",") : params[:media_entry_ids]
+        media_entries = Media::Entry.find(ids)
+
+        #mongo#old# new_members = @media_set.media_entries.push_uniq(media_entries)
+        new_members = 0
+        media_entries.each do |media_entry|
+          next if @media_set.media_resource_ids.include?(media_entry.id)
+          @media_set.media_resources << media_entry 
+          new_members += 1
+        end
+      end
+      flash[:notice] = if new_members > 1
+         "#{new_members} neue Medieneinträge wurden dem Set/Projekt #{@media_set.title} hinzugefügt" 
+      elsif new_members == 1
+        "Ein neuer Medieneintrag wurde dem Set/Projekt #{@media_set.title} hinzugefügt" 
+      else
+        "Es wurden keine neuen Medieneinträge hinzugefügt."
+      end
+      respond_to do |format|
+        format.html { 
+          unless params[:media_entry_ids] == "null" # check for blank submission of batch edit form.
+            redirect_to(@media_set) 
+          else
+            flash[:error] = "Keine Medieneinträge ausgewählt"
+            redirect_to @media_set
+          end
+          } # OPTIMIZE
+#temp3#
+#        format.js { 
+#          render :update do |page|
+#            page.replace_html 'flash', flash_content
+#          end
+#        }
+      end
+    else
+      @media_sets = @user.media_sets
     end
   end
 
