@@ -160,14 +160,14 @@ module Meta
       case meta_key.object_type.constantize.name
         when "Meta::Department"
           selected = Array(meta_datum.object.value)
-          all_options = Meta::Department.all.collect {|x| {:label => x.to_s, :id => x.id, :selected => selected.include?(x.id)} }
+          all_options = Meta::Department.all.collect {|x| {:label => x.to_s, :id => x.id, :selected => selected.include?(x)} }
         when "Meta::Term"
           selected = Array(meta_datum.object.value)
-          all_options = meta_key.meta_terms.collect {|x| {:label => x.to_s, :id => x.id, :selected => selected.include?(x.id)}}
+          all_options = meta_key.meta_terms.collect {|x| {:label => x.to_s, :id => x.id, :selected => selected.include?(x)}}
         when "Person"
           selected = Array(meta_datum.object.value)
           @people ||= meta_key.object_type.constantize.with_media_entries
-          all_options = @people.collect {|x| {:label => x.to_s, :id => x.id, :selected => selected.include?(x.id)}}
+          all_options = @people.collect {|x| {:label => x.to_s, :id => x.id, :selected => selected.include?(x)}}
         when "Meta::Keyword"
           keywords = meta_datum.object.meta_keywords
           meta_term_ids = keywords.collect(&:meta_term_id)

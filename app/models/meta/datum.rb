@@ -58,14 +58,18 @@ module Meta
             meta_references.build(:reference => x)
           end
         when "Person"
+          #mongo# OPTIMIZE
+          meta_references.delete_all
           klass = meta_key.object_type.constantize
           Array(@value).each do |x|
-            if x.is_a? String
+            if BSON::ObjectId.legal?(x)
+              x = klass.find(x)
+            elsif x.is_a? String
               #@value = klass.split(Array(@value))
               firstname, lastname = klass.parse(x)
               x = klass.find_or_create_by(:firstname => firstname.try(:capitalize), :lastname => lastname.try(:capitalize)) if firstname or lastname
             end
-            meta_references.build(:reference => x)
+            meta_references.build(:reference => x) #mongo# FIXME 1 create ??
           end
         when "Meta::Term"
           Array(@value).each do |x|
