@@ -20,8 +20,7 @@
 
 #old# parsed_import = JSON.parse(`curl http://localhost:4000/admin/media_entries/export.js`)
 
-#tmp# file_path = "#{Rails.root}/db/full_export.json"
-file_path = "#{Rails.root}/db/minimal_setup.json"
+file_path = "#{Rails.root}/db/madek_0.3.9.json" 
 parsed_import = JSON.parse(File.read(file_path))
 
 ##########################################################################
@@ -236,8 +235,8 @@ end
 
 ##########################################################################
 
-media_entres = parsed_import["media_entries"]
-if media_entres
+media_entries = parsed_import["media_entries"]
+if media_entries
   puts "Importing media_entries..."
   media_entries.each do |h|
     media_file = h.delete("media_file")
