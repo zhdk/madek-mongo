@@ -216,7 +216,7 @@ module Media
 
     #mongo# TODO validates presence of the owner's permissions?
     def owner
-      Person.where(:_id.in => permission.manage_permissions["true"]).first
+      managers.first
     end
     alias :user :owner
 
@@ -226,6 +226,10 @@ module Media
       actions.each_pair do |action, boolean|
         permission.send((boolean.to_s == "true" ? :grant : :deny), {action => user}) 
       end
+    end
+    
+    def managers
+      Person.where(:_id.in => permission.manage_permissions["true"])
     end
 
     #########################################################

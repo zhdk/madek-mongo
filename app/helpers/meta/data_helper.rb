@@ -41,6 +41,12 @@ module Meta
         definition = context.meta_definitions.where(:meta_key_id => meta_datum._id).first
         h[definition.label] = formatted_value(meta_datum) 
       end
+      if resource.is_a? Media::Set
+        uploaded_by = resource.meta_data.get("uploaded by")
+        uploaded_at = resource.meta_data.get("uploaded at")
+        h[_("Erstellt von/am")] = formatted_value_for_people(Array(uploaded_by.value)) + " / " + formatted_value(uploaded_at)
+        h[_("Verwaltet durch")] = formatted_value_for_people(resource.managers)
+      end
       display_meta_data_helper(context, h)
     end
     
@@ -66,6 +72,17 @@ module Meta
     end
 
     #####################################################################################
+
+    def formatted_value_for_people(people)
+      capture_haml do
+        s = people.map do |p|
+          next unless p
+          #temp# link_to p, p
+          link_to p, resources_path(:query => p.name)
+        end
+        haml_concat raw s.join('<br />')
+      end
+    end
 
     # TODO merge with Meta::Datum#to_s ?? or Decorator (gem 'draper') ??
     def formatted_value(meta_datum)
