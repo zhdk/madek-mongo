@@ -23,7 +23,6 @@
 
 %script#thumbnail_mini{:type => "text/x-jquery-tmpl"}
   %div{:class => "thumb_mini {{if is_editable}}edit{{/if}} {{if is_manageable}}manage{{/if}}", :rel => "${id}"}
-    = image_tag("icons/button_remove_action.png", :class => "thumb_remove")
     {{tmpl "#tmpl_img"}}
 
 %script#tmpl_img{:type => "text/x-jquery-tmpl"}

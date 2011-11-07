@@ -154,7 +154,7 @@ function setupBatch(json, media_set_id, media_entry_ids_in_set) {
         
         // remove also from sessionStorage and selectedItems
       var media_entries_json = get_media_entries_json();
-      var media_entry_ids = $.map(media_entries_json, function(elem, i){ if (elem != null) return parseInt(elem.id); });
+      var media_entry_ids = $.map(media_entries_json, function(elem, i){ if (elem != null) return elem.id; });
       var i = media_entry_ids.indexOf(data.id);
       if (i > -1){
         media_entries_json.splice(i, 1);
@@ -167,23 +167,21 @@ function setupBatch(json, media_set_id, media_entry_ids_in_set) {
     );
   
   // make thumbnails removable from the selected items bar
-    $('#selected_items .thumb_mini').live("hover", function() {
-        $(this).children('img.thumb_remove').toggle();
-    }).live("click", function() {
-    var id = $(this).attr("rel");
-    $(this).remove();
-    toggleSelected(id);
+    $('#selected_items .thumb_mini').live("click", function() {
+	    var id = $(this).attr("rel");
+	    $(this).remove();
+	    toggleSelected(id);
     });
 
     $(".check_box").live("click", function(){
-    toggleSelected($(this).closest(".item_box").tmplItem().data);
+    	toggleSelected($(this).closest(".item_box").tmplItem().data);
     });
 
   // hide the select_deselect_all checkbox on the browse page
   if($(".item_box .check_box").length < 2) { $("#batch-select-all").hide(); $("#batch-deselect-all").hide(); $("#batch-deselect-all").next().hide() }
 
   // select all function
-  $("#batch-select-all").click(function(){
+  $("#batch-select-all").click(function(event){
     event.preventDefault();
     var media_entries_json = get_media_entries_json();
     // select all the visible and not already selected items
@@ -240,7 +238,7 @@ function setupBatch(json, media_set_id, media_entry_ids_in_set) {
 
   function toggleSelected(me) {
     var media_entries_json = get_media_entries_json();
-    var id = (typeof(me) == "object" ? me.id : parseInt(me));
+    var id = (typeof(me) == "object" ? me.id : me);
     var i = is_Selected(media_entries_json, id);
     
     if(i > -1) {

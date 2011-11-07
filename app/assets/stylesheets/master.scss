@@ -1836,15 +1836,12 @@ form.new_person {
 	direction:rtl;  /* Right To left */ 
 	text-align:center; /* Override direction */
 	
-	.thumb_remove { 
-		position:absolute;
-		top: 5px;
-		left: 5px;
-		cursor:pointer;
-		display: none;
-	    text-align: center;
-	    font-size: 2.2em;
-	    line-height: 55px;
+	.thumb_mini:hover {
+		background: url("icons/button_remove_action.png") center center;
+		cursor: pointer;
+		img {
+			visibility: hidden;
+		}
 	}
 }
 
