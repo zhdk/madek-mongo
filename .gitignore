@@ -11,3 +11,4 @@ db/full_export.json
 .project
 .rvmrc
 config/definitions/metadata/ExifTool_config.pl
+db/madek_0.3.9.json

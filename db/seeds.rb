@@ -20,8 +20,9 @@
 
 #old# parsed_import = JSON.parse(`curl http://localhost:4000/admin/media_entries/export.js`)
 
-file_path = "#{Rails.root}/db/madek_0.3.9.json" 
-parsed_import = JSON.parse(File.read(file_path))
+file_path = "#{Rails.root}/db/madek_0.3.9.json"
+file_path = "#{Rails.root}/db/madek_0.3.9_minimal.json" unless File.exist?(file_path)
+parsed_import = JSON.parse(File.read(file_path)) if File.exist?(file_path)
 
 ##########################################################################
   
